@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
+import os
+from datetime import timedelta
 from pathlib import Path
 
 import environ
@@ -34,16 +36,37 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
-
-INSTALLED_APPS = [
+DJANGO_CORE_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+]
+
+THIRD_PARTY_APPS = [
+    "health_check",  # required
+    "health_check.db",  # stock Django health checkers
+    # "health_check.cache",
+    # "health_check.storage",
+    "health_check.contrib.migrations",
+    # "health_check.contrib.celery",  # requires celery
+    # "health_check.contrib.celery_ping",  # requires celery
+    # "health_check.contrib.psutil",  # disk and memory utilization; requires psutil
+    # "health_check.contrib.s3boto3_storage",  # requires boto3 and S3BotoStorage backend
+    # "health_check.contrib.rabbitmq",  # requires RabbitMQ broker
+    # "health_check.contrib.redis",  # requires Redis broker
+    "rest_framework",
+    "rest_framework_simplejwt",
+    "drf_spectacular",
+]
+
+LOCAL_APPS = [
     "djbooking.domain.users",
 ]
+
+INSTALLED_APPS = DJANGO_CORE_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -55,7 +78,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "djbooking.django_app.django_app.urls"
+ROOT_URLCONF = "djbooking.django_app.django_core.urls"
 
 TEMPLATES = [
     {
@@ -73,7 +96,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "djbooking.django_app.django_app.wsgi.application"
+WSGI_APPLICATION = "djbooking.django_app.django_core.wsgi.application"
 
 # https://docs.djangoproject.com/en/4.0/ref/settings/#csrf-trusted-origins
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS")
@@ -129,6 +152,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATIC_URL = "static/"
+STATIC_ROOT = os.path.join(BASE_DIR, STATIC_URL)
+
+MEDIA_URL = "media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, MEDIA_URL)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
@@ -137,6 +164,28 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "users.User"
 
-AUTHENTICATION_BACKENDS = [
-    "djbooking.django_app.backends.EmailOrUsernameModelBackend",
-]
+AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.ModelBackend"]
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": "rest_framework.permissions.IsAuthenticated",
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "dj-lodging API",
+    "DESCRIPTION": "Django powered lodging reservation application",
+    "VERSION": "1.0.0",
+    "SCHEMA_PATH_PREFIX": "/api/",
+    "SCHEMA_COERCE_PATH_PK_SUFFIX": True,
+    "COMPONENT_SPLIT_REQUEST": True,
+    "SERVE_INCLUDE_SCHEMA": False,
+}
