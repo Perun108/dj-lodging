@@ -9,8 +9,11 @@ from drf_spectacular.views import (
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
+from djbooking.api.users.views import UserViewSet
+
 router = routers.SimpleRouter()
-# router.register(r'users', UserViewSet)
+router.register(r"users", UserViewSet, basename="user")
+
 urlpatterns = [
     path("", include(router.urls)),
     path("auth/", include("rest_framework.urls", namespace="rest_framework")),
