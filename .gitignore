@@ -29,5 +29,5 @@ Thumbs.db
 
 .vscode/
 
-/src/djbooking/django_app/django_core/.env
+/src/djlodging/django_app/django_core/.env
 .env

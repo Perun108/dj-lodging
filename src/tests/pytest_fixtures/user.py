@@ -1,14 +1,18 @@
 import pytest
-from django.contrib.auth import get_user_model
+from faker import Faker
 
-User = get_user_model()
+from djlodging.domain.users.models import User
+
+fake = Faker()
 
 
-@pytest.fixture()
-def user():
+@pytest.fixture
+def password():
+    return fake.password()
+
+
+@pytest.fixture
+def user(password):
     email = "example@example.com"
-    password = "1234"
-    user = User.objects.create(email=email, password=password)
-    user.set_password(password)
-    user.save()
+    user = User.objects.create_user(email=email, password=password, username="TestUser")
     return user

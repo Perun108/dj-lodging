@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "djbooking"
+name = "djlodging"
 version = "0.1.0"
 description = "Django backend for the lodging reservation application"
 authors = ["Kostiantyn Perun <kosperun@gmail.com>"]
@@ -31,10 +31,10 @@ ipython = "^8.4.0"
 minversion = "6.0"
 addopts = "--reuse-db"
 testpaths = "tests"
-DJANGO_SETTINGS_MODULE = "djbooking.django_app.django_core.settings"
+DJANGO_SETTINGS_MODULE = "djlodging.django_app.django_core.settings"
 
 [tool.poetry.scripts]
-manage = 'djbooking.django_app.manage:main'
+manage = 'djlodging.django_app.manage:main'
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

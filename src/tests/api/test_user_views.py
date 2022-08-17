@@ -1,4 +1,7 @@
+from uuid import uuid4
+
 import pytest
+from django.core.exceptions import ValidationError as DjangoValidationError
 from faker import Faker
 from rest_framework.reverse import reverse
 from rest_framework.status import (
@@ -8,71 +11,22 @@ from rest_framework.status import (
     HTTP_401_UNAUTHORIZED,
 )
 
-from djbooking.domain.users.models import User
+from djlodging.domain.users.models import User
 from tests.domain.users.factories import UserFactory
 
 fake = Faker()
 
 
-@pytest.mark.django_db
-def test_user_login_with_fixtures_succeeds(api_client, user):
-    url = reverse("users:user-login")  # "/api/users/login/"
-    payload = {"email": user.email, "password": "1234"}
-    response = api_client.post(url, payload)
-
-    assert response.status_code == HTTP_200_OK
-
-
-@pytest.mark.django_db
-def test_user_login_succeeds(api_client):
-    password = fake.password()
-    user = UserFactory(password=password)
-    user.set_password(password)
-    user.save()
-    url = reverse("users:user-login")  # "/api/users/login/"
-    payload = {"email": user.email, "password": password}
-    response = api_client.post(url, payload)
-
-    assert response.status_code == HTTP_200_OK
-
-
-@pytest.mark.django_db
-def test_user_login_with_wrong_email_fails(api_client):
-    password = fake.password()
-    user = UserFactory(password=password)
-    user.set_password(password)
-    user.save()
-    url = reverse("users:user-login")  # "/api/users/login/"
-    payload = {"email": fake.email(), "password": password}
-    response = api_client.post(url, payload)
-
-    assert response.status_code == HTTP_401_UNAUTHORIZED
-
-
-@pytest.mark.django_db
-def test_user_login_with_wrong_password_fails(api_client):
-    password = fake.password()
-    wrong_password = fake.password()
-    user = UserFactory(password=password)
-    user.set_password(password)
-    user.save()
-    url = reverse("users:user-login")  # "/api/users/login/"
-    payload = {"email": user.email, "password": wrong_password}
-    response = api_client.post(url, payload)
-
-    assert response.status_code == HTTP_401_UNAUTHORIZED
-
-
 # @pytest.mark.usefixtures("api_client")
 @pytest.mark.django_db
-class TestUserViewSet:
-    def test_user_create_succeeds(self, api_client):
+class TestUserSingUpAPIView:
+    def test_user_sign_up_succeeds(self, api_client):
         original_count = User.objects.count()
 
         email = fake.email()
         password = fake.password()
 
-        url = reverse("user-list")  # "/api/users/"
+        url = reverse("users:sign-up")  # "/api/users/sign-up/"
         payload = {"email": email, "password": password}
         response = api_client.post(url, payload)
 
@@ -87,7 +41,7 @@ class TestUserViewSet:
     def test_user_create_without_email_fails(self, api_client):
         password = fake.password()
 
-        url = reverse("user-list")  # "/api/users/"
+        url = reverse("users:sign-up")  # "/api/users/sign-up/"
         payload = {"password": password}
         response = api_client.post(url, payload)
 
@@ -100,7 +54,7 @@ class TestUserViewSet:
     def test_user_create_without_password_fails(self, api_client):
         email = fake.email()
 
-        url = reverse("user-list")  # "/api/users/"
+        url = reverse("users:sign-up")  # "/api/users/sign-up/"
         payload = {"email": email}
         response = api_client.post(url, payload)
 
@@ -114,7 +68,7 @@ class TestUserViewSet:
         invalid_email = f"{fake.first_name()}@com"
         password = fake.password()
 
-        url = reverse("user-list")  # "/api/users/"
+        url = reverse("users:sign-up")  # "/api/users/sign-up/"
         payload = {"email": invalid_email, "password": password}
         response = api_client.post(url, payload)
 
@@ -123,3 +77,106 @@ class TestUserViewSet:
             str(response.data)
             == "{'email': [ErrorDetail(string='Enter a valid email address.', code='invalid')]}"
         )
+
+
+@pytest.mark.django_db
+class TestUserRegistrationConfirmAPIView:
+    def test_confirm_registration_succeeds(self, api_client):
+        user = UserFactory(is_active=False)
+        assert user.is_active is False
+        assert user.registration_token != ""
+
+        url = reverse("users:registration")
+        payload = {"registration_token": user.registration_token}
+
+        response = api_client.post(url, payload)
+        assert response.status_code == HTTP_200_OK
+
+        user.refresh_from_db()
+        assert user.is_active is True
+        assert user.registration_token == ""
+        assert response.data["id"] == str(user.id)
+        assert response.data["email"] == user.email
+
+    def test_confirm_registration_without_token_fails(self, api_client):
+        user = UserFactory(is_active=False)
+        assert user.registration_token != ""
+        assert user.is_active is False
+
+        url = reverse("users:registration")
+        payload = {"registration_token": ""}
+
+        response = api_client.post(url, payload)
+        assert response.status_code == HTTP_400_BAD_REQUEST
+
+        user.refresh_from_db()
+        assert user.is_active is False
+        assert user.registration_token != ""
+
+    def test_confirm_registration_with_wrong_token_fails(self, api_client):
+        user = UserFactory(is_active=False)
+        wrong_token = uuid4()
+        assert user.registration_token != wrong_token
+        assert user.is_active is False
+
+        url = reverse("users:registration")
+        payload = {"registration_token": wrong_token}
+
+        with pytest.raises(DjangoValidationError) as exc:
+            response = api_client.post(url, payload)
+            assert response.status_code == HTTP_400_BAD_REQUEST
+        assert "Such user does not exist" in exc.value
+
+        user.refresh_from_db()
+        assert user.is_active is False
+        assert user.registration_token != ""
+
+
+@pytest.mark.django_db
+class TestUserLoginAPIView:
+    def test_user_login_with_fixtures_succeeds(self, api_client, user, password):
+        url = reverse("users:login")  # "/api/users/login/"
+        payload = {"email": user.email, "password": password}
+        response = api_client.post(url, payload)
+
+        assert response.status_code == HTTP_200_OK
+
+    def test_user_login_succeeds(self, api_client):
+        raw_password = fake.password()
+        user = UserFactory(password=raw_password)
+        url = reverse("users:login")  # "/api/users/login/"
+        payload = {"email": user.email, "password": raw_password}
+        response = api_client.post(url, payload)
+
+        assert response.status_code == HTTP_200_OK
+
+    def test_user_login_with_wrong_email_fails(self, api_client):
+        raw_password = fake.password()
+        user = UserFactory(password=raw_password)  # noqa
+        url = reverse("users:login")  # "/api/users/login/"
+        payload = {"email": fake.email(), "password": raw_password}
+        response = api_client.post(url, payload)
+
+        assert response.status_code == HTTP_401_UNAUTHORIZED
+
+    def test_user_login_with_wrong_password_fails(self, api_client):
+        wrong_password = fake.password()
+        user = UserFactory()
+        url = reverse("users:login")  # "/api/users/login/"
+        payload = {"email": user.email, "password": wrong_password}
+        response = api_client.post(url, payload)
+
+        assert response.status_code == HTTP_401_UNAUTHORIZED
+
+    def test_inactive_user_login_fails(self, api_client):
+        raw_password = fake.password()
+        user = UserFactory(password=raw_password, is_active=False)
+
+        url = reverse("users:login")  # "/api/users/login/"
+        payload = {"email": user.email, "password": raw_password}
+        response = api_client.post(url, payload)
+
+        assert response.status_code == HTTP_401_UNAUTHORIZED
+
+
+# # class TestUserViewSet:
