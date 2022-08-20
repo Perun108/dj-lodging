@@ -60,11 +60,10 @@ THIRD_PARTY_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "drf_spectacular",
+    "silk",
 ]
 
-LOCAL_APPS = [
-    "djlodging.domain.users",
-]
+LOCAL_APPS = ["djlodging.domain.users", "djlodging.domain.lodgings"]
 
 INSTALLED_APPS = DJANGO_CORE_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
@@ -76,6 +75,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "silk.middleware.SilkyMiddleware",
 ]
 
 ROOT_URLCONF = "djlodging.django_app.django_core.urls"
@@ -172,6 +172,7 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "EXCEPTION_HANDLER": "djlodging.api.exception_handlers.drf_default_with_modifications_exception_handler",  # noqa
 }
 
 

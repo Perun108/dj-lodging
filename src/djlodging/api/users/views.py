@@ -15,7 +15,15 @@ from djlodging.application_services.users import UserService
 
 
 class UserSingUpAPIView(APIView):
+    authentication_classes = ()
+    permission_classes = ()
+
     def post(self, request):
+        """
+        is_user corresponds to "Do you plan to rent listed properties?"
+        is_partner corresponds to "Do you plan to list property for rent?"
+
+        """
         incoming_data = UserSignUpInputSerializer(data=request.data)
         incoming_data.is_valid(raise_exception=True)
         user = UserService.create(**incoming_data.validated_data, is_active=False)
@@ -24,6 +32,9 @@ class UserSingUpAPIView(APIView):
 
 
 class UserRegistrationConfirmAPIView(APIView):
+    authentication_classes = ()
+    permission_classes = ()
+
     def post(self, request):
         incoming_data = UserRegistrationConfirmInputSerializer(data=request.data)
         incoming_data.is_valid(raise_exception=True)

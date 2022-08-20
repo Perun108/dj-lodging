@@ -13,6 +13,6 @@ def password():
 
 @pytest.fixture
 def user(password):
-    email = "example@example.com"
+    email = "test_user@example.com"
     user = User.objects.create_user(email=email, password=password, username="TestUser")
     return user

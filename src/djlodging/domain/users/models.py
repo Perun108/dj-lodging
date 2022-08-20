@@ -15,6 +15,8 @@ class User(AbstractUser, BaseModel):
         female = "female", "Female"
         not_disclosed = "not_disclosed", "Not disclosed"
 
+    is_user = models.BooleanField(default=True)
+    is_partner = models.BooleanField(default=False)
     first_name = models.CharField(max_length=60, blank=True)
     last_name = models.CharField(max_length=60, blank=True)
     email = models.EmailField(validators=[EmailValidator()], unique=True)

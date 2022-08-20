@@ -28,6 +28,6 @@ Thumbs.db
 *.sqlite3
 
 .vscode/
-
-/src/djlodging/django_app/django_core/.env
+media/
+static/
 .env
