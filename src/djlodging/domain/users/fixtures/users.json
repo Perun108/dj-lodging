@@ -1,0 +1,56 @@
+[
+  {
+    "model": "users.user",
+    "pk": "20e5091d-79e8-412c-83d9-b43be4d1d087",
+    "fields": {
+      "password": "pbkdf2_sha256$320000$REyf6sfIBdhLXbOlcPHCzW$sTVkzA87zsmnmFZ0PbtdPQ4Gstf7YkZEwnCCqM0rFxs=",
+      "last_login": "2022-08-20T09:47:23.730Z",
+      "is_superuser": true,
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2022-08-20T09:28:25.040Z",
+      "created": "2022-08-20T09:28:25.268Z",
+      "updated": "2022-08-21T09:24:32.368Z",
+      "is_user": true,
+      "is_partner": true,
+      "first_name": "People",
+      "last_name": "Partner",
+      "email": "kosperun@gmail.com",
+      "phone_number": "+16471081081",
+      "username": "kosperun",
+      "date_of_birth": null,
+      "nationality": "",
+      "gender": "",
+      "registration_token": "8cf8501c-28b7-4d88-98e2-7cd079712f87",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": "d4b4bd34-cd37-4128-b4df-d05f6894b7b4",
+    "fields": {
+      "password": "pbkdf2_sha256$320000$Cr8iT8L4t8DhntIc7NVAk2$4O0DUxuW6EACIdh7XS3FAZ7ZrfIlkn9e1YoEoQTbgxQ=",
+      "last_login": null,
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": false,
+      "date_joined": "2022-08-20T12:12:10.079Z",
+      "created": "2022-08-20T12:12:10.312Z",
+      "updated": "2022-08-20T12:12:10.312Z",
+      "is_user": true,
+      "is_partner": false,
+      "first_name": "",
+      "last_name": "",
+      "email": "kosper@gmail.com",
+      "phone_number": "",
+      "username": "kosper@gmail.com",
+      "date_of_birth": null,
+      "nationality": "",
+      "gender": "",
+      "registration_token": "9f4b0262-8212-41a6-9838-0d466249a84d",
+      "groups": [],
+      "user_permissions": []
+    }
+  }
+]

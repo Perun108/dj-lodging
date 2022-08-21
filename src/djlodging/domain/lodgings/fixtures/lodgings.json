@@ -1,0 +1,42 @@
+[
+  {
+    "model": "lodgings.country",
+    "pk": "a032b90a-9e42-42b5-b072-a3cc8c3ce0ba",
+    "fields": {
+      "created": "2022-08-21T15:06:08.078Z",
+      "updated": "2022-08-21T15:06:08.079Z",
+      "name": "Ukraine"
+    }
+  },
+  {
+    "model": "lodgings.country",
+    "pk": "b41dfda8-2937-4441-8ff7-097330eb670a",
+    "fields": {
+      "created": "2022-08-21T15:06:18.323Z",
+      "updated": "2022-08-21T15:06:18.323Z",
+      "name": "United States of America"
+    }
+  },
+  {
+    "model": "lodgings.city",
+    "pk": "f09b91a1-225d-4a63-bbb5-28ea10dd342b",
+    "fields": {
+      "created": "2022-08-21T15:06:47.610Z",
+      "updated": "2022-08-21T15:06:47.610Z",
+      "country": "b41dfda8-2937-4441-8ff7-097330eb670a",
+      "name": "New York",
+      "region": ""
+    }
+  },
+  {
+    "model": "lodgings.city",
+    "pk": "f8e59e24-18ca-4efa-9908-f0ecca3d20eb",
+    "fields": {
+      "created": "2022-08-21T15:06:31.580Z",
+      "updated": "2022-08-21T15:06:31.580Z",
+      "country": "a032b90a-9e42-42b5-b072-a3cc8c3ce0ba",
+      "name": "Lviv",
+      "region": ""
+    }
+  }
+]

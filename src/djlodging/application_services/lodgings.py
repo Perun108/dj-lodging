@@ -1,10 +1,16 @@
+from typing import Optional
+from uuid import UUID
+
 from django.core.exceptions import PermissionDenied
 
 from djlodging.domain.lodgings.models import City, Country
-from djlodging.domain.lodgings.repositories import CityRepository, CountryRepository
+from djlodging.domain.lodgings.models.lodging import Lodging
+from djlodging.domain.lodgings.repositories import (
+    CityRepository,
+    CountryRepository,
+    LodgingRepository,
+)
 from djlodging.domain.users.models import User
-
-# from djlodging.domain.lodgings.models.lodging import Lodging
 
 
 class CountryService:
@@ -30,30 +36,39 @@ class CityService:
         return city
 
 
-# class LodgingService:
-#     @classmethod
-#     def create(
-#         cls,
-#         name: str,
-#         type: str,
-#         city_id: UUID,
-#         district: str,
-#         street: str,
-#         house_number: str,
-#         zip_code: str,
-#         phone_number: str,
-#         email: str,
-#         image_id: Optional[str] = None,
-#     ) -> Lodging:
-#         pass
-#         lodging = Lodging(
-#             name = name
-#             type = type
-#             city =
-#             district = (optional)
-#             street =
-#             house_number =
-#             zip_code =
-#             phone_number =
-#             email =
-#             image = )
+class LodgingService:
+    @classmethod
+    def create(
+        cls,
+        actor: User,
+        name: str,
+        type: str,
+        city_id: UUID,
+        street: str,
+        house_number: str,
+        zip_code: str,
+        email: Optional[str] = "",
+        phone_number: Optional[str] = "",
+        district: Optional[str] = "",
+    ) -> Lodging:
+
+        # Check permissions to prevent unauthorized actions that circumvents API level permissions
+        if not actor.is_partner:
+            raise PermissionDenied
+
+        city = CityRepository.get_by_id(city_id)
+
+        lodging = Lodging(
+            name=name,
+            type=type,
+            owner=actor,
+            city=city,
+            district=district,
+            street=street,
+            house_number=house_number,
+            zip_code=zip_code,
+            phone_number=phone_number,
+            email=email,
+        )
+        LodgingRepository.save(lodging)
+        return lodging

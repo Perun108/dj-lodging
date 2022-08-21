@@ -47,7 +47,7 @@ class TestUserService:
         assert "This password is too common." in ex.value
 
     def test_make_user_partner_by_the_same_user_succeeds(self):
-        user = UserFactory(is_active=True)
+        user = UserFactory()
         assert user.is_partner is False
 
         first_name = fake.first_name()
@@ -72,8 +72,8 @@ class TestUserService:
         assert user.phone_number == phone_number
 
     def test_make_user_partner_by_another_user_fails(self):
-        actor = UserFactory(is_active=True)
-        user = UserFactory(is_active=True)
+        actor = UserFactory()
+        user = UserFactory()
         assert user.is_partner is False
 
         first_name = fake.first_name()

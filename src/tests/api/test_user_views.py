@@ -8,6 +8,7 @@ from rest_framework.status import (
     HTTP_201_CREATED,
     HTTP_400_BAD_REQUEST,
     HTTP_401_UNAUTHORIZED,
+    HTTP_403_FORBIDDEN,
 )
 from rest_framework.test import APIClient
 
@@ -281,3 +282,54 @@ class TestUserViewSet:
         assert user.first_name == first_name
         assert user.last_name == last_name
         assert user.phone_number == phone_number
+
+    def test_partner_by_another_user_fails(self, user_api_client_pytest_fixture):
+        user = UserFactory()
+
+        first_name = fake.first_name()
+        last_name = fake.last_name()
+        phone_number = "+16478081020"
+
+        assert user.is_partner is False
+        assert user.first_name != first_name
+        assert user.last_name != last_name
+        assert user.phone_number != phone_number
+
+        payload = {
+            "first_name": first_name,
+            "last_name": last_name,
+            "phone_number": phone_number,
+        }
+        url = reverse("user-partner", args=[str(user.id)])
+        response = user_api_client_pytest_fixture.patch(url, payload)
+
+        assert response.status_code == HTTP_403_FORBIDDEN
+
+        user.refresh_from_db()
+        assert user.is_partner is False
+        assert user.first_name != first_name
+        assert user.last_name != last_name
+        assert user.phone_number != phone_number
+
+    def test_partner_by_same_user_without_required_arguments_fails(
+        self, user_api_client_pytest_fixture, user
+    ):
+
+        assert user.is_partner is False
+
+        payload = {}
+        url = reverse("user-partner", args=[str(user.id)])
+        response = user_api_client_pytest_fixture.patch(url, payload)
+
+        assert response.status_code == HTTP_400_BAD_REQUEST
+        assert "first_name" in response.data["detail"]
+        assert "last_name" in response.data["detail"]
+        assert "phone_number" in response.data["detail"]
+        assert (
+            str(response.data["detail"])
+            == "{'first_name': [ErrorDetail(string='This field is required.', code='required')], "
+            "'last_name': [ErrorDetail(string='This field is required.', code='required')], "
+            "'phone_number': [ErrorDetail(string='This field is required.', code='required')]}"
+        )
+        user.refresh_from_db()
+        assert user.is_partner is False

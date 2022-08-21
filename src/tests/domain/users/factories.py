@@ -13,6 +13,7 @@ class UserFactory(DjangoModelFactory):
     last_name = Faker("last_name")
     email = Faker("email")
     password = make_password(fake.password())
+    is_active = True
 
     class Meta:
         model = User
