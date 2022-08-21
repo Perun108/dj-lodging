@@ -9,7 +9,7 @@ class UserRepository:
         user.save()
 
     @classmethod
-    def get_by_id(cls, user_id):
+    def get_by_id(cls, user_id) -> User:
         try:
             return User.objects.get(id=user_id)
         except User.DoesNotExist:

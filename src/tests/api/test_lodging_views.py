@@ -19,23 +19,23 @@ fake = Faker()
 
 @pytest.mark.django_db
 class TestCountryViewSet:
-    def test_create_country_by_admin_succeeds(self, admin_api_client):
+    def test_create_country_by_admin_succeeds(self, admin_api_client_factory_boy):
         name = fake.country()
         payload = {"name": name}
         url = reverse("country-list")  # POST "/api/countries/"
 
-        response = admin_api_client.post(url, payload)
+        response = admin_api_client_factory_boy.post(url, payload)
         assert response.status_code == HTTP_201_CREATED
 
         country = Country.objects.first()
         assert country.name == name
 
-    def test_create_country_by_regular_user_fails(self, user_api_client):
+    def test_create_country_by_regular_user_fails(self, user_api_client_factory_boy):
         name = fake.country()
         payload = {"name": name}
         url = reverse("country-list")  # POST "/api/countries/"
 
-        response = user_api_client.post(url, payload)
+        response = user_api_client_factory_boy.post(url, payload)
         assert response.status_code == HTTP_403_FORBIDDEN
 
         country = Country.objects.first()
@@ -54,10 +54,10 @@ class TestCountryViewSet:
         country = Country.objects.first()
         assert country is None
 
-    def test_country_without_name_fails(self, admin_api_client):
+    def test_country_without_name_fails(self, admin_api_client_factory_boy):
         payload = {"name": ""}
         url = reverse("country-list")  # "/api/countries/country-list/"
-        response = admin_api_client.post(url, payload)
+        response = admin_api_client_factory_boy.post(url, payload)
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert (
             str(response.data["detail"])
@@ -67,14 +67,14 @@ class TestCountryViewSet:
 
 @pytest.mark.django_db
 class TestCityViewSet:
-    def test_create_city_succeeds(self, admin_api_client):
+    def test_create_city_succeeds(self, admin_api_client_factory_boy):
         country = CountryFactory()
         name = fake.city()
 
         payload = {"country_id": str(country.id), "name": name}
 
         url = reverse("city-list")  # POST "/api/cities/"
-        response = admin_api_client.post(url, payload)
+        response = admin_api_client_factory_boy.post(url, payload)
 
         assert response.status_code == HTTP_201_CREATED
 
@@ -82,27 +82,27 @@ class TestCityViewSet:
         assert city is not None
         assert city.name == name
 
-    def test_create_city_by_regular_user_fails(self, user_api_client):
+    def test_create_city_by_regular_user_fails(self, user_api_client_factory_boy):
         country = CountryFactory()
         name = fake.city()
 
         payload = {"country_id": str(country.id), "name": name}
 
         url = reverse("city-list")  # POST "/api/cities/"
-        response = user_api_client.post(url, payload)
+        response = user_api_client_factory_boy.post(url, payload)
 
         assert response.status_code == HTTP_403_FORBIDDEN
 
         city = City.objects.first()
         assert city is None
 
-    def test_create_city_without_country_fails(self, admin_api_client):
+    def test_create_city_without_country_fails(self, admin_api_client_factory_boy):
         name = fake.city()
 
         payload = {"country_id": "", "name": name}
 
         url = reverse("city-list")  # POST "/api/cities/"
-        response = admin_api_client.post(url, payload)
+        response = admin_api_client_factory_boy.post(url, payload)
 
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert (

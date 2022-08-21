@@ -1,4 +1,5 @@
 from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import PermissionDenied
 
 from djlodging.domain.users.repository import UserRepository
 
@@ -20,5 +21,17 @@ class UserService:
         user = UserRepository.get_by_registration_token(registration_token)
         user.is_active = True
         user.registration_token = ""
+        UserRepository.save(user)
+        return user
+
+    @classmethod
+    def make_user_partner(cls, actor, user_id, first_name, last_name, phone_number):
+        user = UserRepository.get_by_id(user_id)
+        if actor != user:
+            raise PermissionDenied
+        user.first_name = first_name
+        user.last_name = last_name
+        user.phone_number = phone_number
+        user.is_partner = True
         UserRepository.save(user)
         return user
