@@ -21,7 +21,20 @@ class UserSignUpInputSerializer(serializers.Serializer):
 
 
 class UserRegistrationConfirmInputSerializer(serializers.Serializer):
-    registration_token = serializers.UUIDField()
+    security_token = serializers.UUIDField()
+
+
+class PasswordChangeInputSerializer(serializers.Serializer):
+    old_password = serializers.CharField()
+    new_password = serializers.CharField()
+
+
+class ForgotPasswordInputSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class PasswordResetInputSerializer(serializers.Serializer):
+    security_token = serializers.UUIDField()
 
 
 class UserShortOutputSerializer(serializers.Serializer):
@@ -35,7 +48,17 @@ class PartnerCreateInputSerializer(serializers.Serializer):
     phone_number = serializers.CharField(required=True)
 
 
-class UserOutputSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = "__all__"
+class UserOutputSerializer(serializers.Serializer):
+    id = serializers.UUIDField()
+    email = serializers.EmailField()
+    username = serializers.CharField()
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    phone_number = serializers.CharField()
+    date_of_birth = serializers.DateField()
+    nationality = serializers.CharField()
+    gender = serializers.CharField()
+    is_superuser = serializers.BooleanField()
+    is_staff = serializers.BooleanField()
+    is_user = serializers.BooleanField()
+    is_partner = serializers.BooleanField()

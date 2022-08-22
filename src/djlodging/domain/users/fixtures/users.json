@@ -21,7 +21,7 @@
       "date_of_birth": null,
       "nationality": "",
       "gender": "",
-      "registration_token": "8cf8501c-28b7-4d88-98e2-7cd079712f87",
+      "security_token": "8cf8501c-28b7-4d88-98e2-7cd079712f87",
       "groups": [],
       "user_permissions": []
     }
@@ -48,7 +48,7 @@
       "date_of_birth": null,
       "nationality": "",
       "gender": "",
-      "registration_token": "9f4b0262-8212-41a6-9838-0d466249a84d",
+      "security_token": "9f4b0262-8212-41a6-9838-0d466249a84d",
       "groups": [],
       "user_permissions": []
     }

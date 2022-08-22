@@ -16,8 +16,22 @@ class UserRepository:
             raise ValidationError("user_id is invalid")
 
     @classmethod
-    def get_by_registration_token(cls, registration_token) -> User:
+    def get_by_security_token(cls, security_token) -> User:
         try:
-            return User.objects.get(registration_token=registration_token)
+            return User.objects.get(security_token=security_token)
         except User.DoesNotExist:
             raise ValidationError("Such user does not exist")
+
+    @classmethod
+    def update(cls, user: User, **kwargs) -> User:
+        for field, value in kwargs.items():
+            setattr(user, field, value)
+        cls.save(user)
+        return user
+
+    @classmethod
+    def get_by_email(cls, email: str) -> User:
+        try:
+            return User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise ValidationError("Wrong email!")

@@ -1,8 +1,10 @@
+from datetime import timedelta
 from uuid import uuid4
 
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import EmailValidator
 from django.db import models
+from django.utils import timezone
 
 from djlodging.domain.core.base_models import BaseModel
 
@@ -25,7 +27,10 @@ class User(AbstractUser, BaseModel):
     date_of_birth = models.DateField(null=True, blank=True)
     nationality = models.CharField(max_length=255, blank=True)
     gender = models.CharField(max_length=20, blank=True, choices=Gender.choices)
-    registration_token = models.CharField(max_length=100, blank=True, default=uuid4)
+    security_token = models.CharField(max_length=100, blank=True, default=uuid4)
+    security_token_expiration_time = models.DateTimeField(
+        blank=True, default=timezone.now() + timedelta(hours=1)
+    )
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]

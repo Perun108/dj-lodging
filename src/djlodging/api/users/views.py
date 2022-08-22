@@ -1,13 +1,16 @@
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
-from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED
+from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_202_ACCEPTED
 from rest_framework.views import APIView
 from rest_framework.viewsets import ViewSet
 from rest_framework_simplejwt.views import TokenViewBase
 
 from djlodging.api.users.serializers import (
+    ForgotPasswordInputSerializer,
     PartnerCreateInputSerializer,
+    PasswordChangeInputSerializer,
+    PasswordResetInputSerializer,
     UserLoginOutputSerializer,
     UserOutputSerializer,
     UserRegistrationConfirmInputSerializer,
@@ -50,6 +53,47 @@ class UserRegistrationConfirmAPIView(APIView):
 
 class UserLoginAPIView(TokenViewBase):
     serializer_class = UserLoginOutputSerializer
+
+
+class PasswordChangeAPIView(APIView):
+    def patch(self, request):
+        input_serializer = PasswordChangeInputSerializer(data=request.data)
+        input_serializer.is_valid(raise_exception=True)
+        UserService.change_password(user=request.user, **input_serializer.validated_data)
+        return Response(status=HTTP_200_OK)
+
+
+class ForgotPasswordAPIView(APIView):
+    permission_classes = ()
+    authentication_classes = ()
+
+    def post(self, request):
+        incoming_data = ForgotPasswordInputSerializer(data=request.data)
+        incoming_data.is_valid(raise_exception=True)
+        UserService.send_forgot_password_link(**incoming_data.validated_data)
+        return Response(status=HTTP_202_ACCEPTED)
+
+
+class PasswordResetAPIView(APIView):
+    """
+    API to confirm that there is such user with this security token.
+
+    This is the second step of 'forgot password' flow.
+    This API should be used after ForgotPasswordAPIView where a token is sent
+    to an email specified by user.
+
+    To complete resetting password in the 'forgot password' flow - use the third step
+    PasswordChangeAPIView (login user with the old_password and change it to the new_password)
+    """
+
+    permission_classes = ()
+    authentication_classes = ()
+
+    def post(self, request):
+        incoming_data = PasswordResetInputSerializer(data=request.data)
+        incoming_data.is_valid(raise_exception=True)
+        UserService.confirm_reset_password(**incoming_data.validated_data)
+        return Response(status=HTTP_200_OK)
 
 
 class UserViewSet(ViewSet):

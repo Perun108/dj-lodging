@@ -96,3 +96,59 @@ class TestUserService:
         assert user.first_name != first_name
         assert user.last_name != last_name
         assert user.phone_number != phone_number
+
+    @staticmethod
+    def test_change_password_succeeds():
+        old_password = fake.password()
+        user = UserFactory(password=old_password)
+        new_password = fake.password()
+        assert user.check_password(old_password) is True
+
+        changed_user = UserService.change_password(
+            user, old_password=old_password, new_password=new_password
+        )
+        assert changed_user.check_password(new_password) is True
+
+        user.refresh_from_db()
+        assert user.check_password(new_password) is True
+        assert user.check_password(old_password) is False
+        assert changed_user == user
+
+    @staticmethod
+    def test_change_password_with_wrong_old_password_fails():
+        old_password = fake.password()
+        user = UserFactory()
+        new_password = fake.password()
+        assert user.check_password(old_password) is False
+
+        with pytest.raises(ValidationError) as exc:
+            UserService.change_password(user, old_password=old_password, new_password=new_password)
+        assert str(exc.value) == "['Wrong password!']"
+
+        user.refresh_from_db()
+        assert user.check_password(new_password) is False
+        assert user.check_password(old_password) is False
+
+    @staticmethod
+    def test_send_forgot_password_link_succeeds():
+        user = UserFactory()
+        security_token = user.security_token
+
+        UserService.send_forgot_password_link(email=user.email)
+
+        user.refresh_from_db()
+        assert user.security_token != security_token
+
+    @staticmethod
+    def test_send_forgot_password_link_with_wrong_email_fails():
+        user = UserFactory()
+        wrong_email = fake.email()
+
+        security_token = user.security_token
+
+        with pytest.raises(ValidationError) as exc:
+            UserService.send_forgot_password_link(email=wrong_email)
+        assert str(exc.value) == "['Wrong email!']"
+
+        user.refresh_from_db()
+        assert user.security_token == security_token

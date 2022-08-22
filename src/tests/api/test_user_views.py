@@ -6,6 +6,7 @@ from rest_framework.reverse import reverse
 from rest_framework.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
+    HTTP_202_ACCEPTED,
     HTTP_400_BAD_REQUEST,
     HTTP_401_UNAUTHORIZED,
     HTTP_403_FORBIDDEN,
@@ -144,45 +145,45 @@ class TestUserRegistrationConfirmAPIView:
         api_client = APIClient()
         user = UserFactory(is_active=False)
         assert user.is_active is False
-        assert user.registration_token != ""
+        assert user.security_token != ""
 
         url = reverse("users:registration")
-        payload = {"registration_token": user.registration_token}
+        payload = {"security_token": user.security_token}
 
         response = api_client.post(url, payload)
         assert response.status_code == HTTP_200_OK
 
         user.refresh_from_db()
         assert user.is_active is True
-        assert user.registration_token == ""
+        assert user.security_token == ""
         assert response.data["id"] == str(user.id)
         assert response.data["email"] == user.email
 
-    def test_confirm_registration_without_registration_token_fails(self):
+    def test_confirm_registration_without_security_token_fails(self):
         api_client = APIClient()
         user = UserFactory(is_active=False)
-        assert user.registration_token != ""
+        assert user.security_token != ""
         assert user.is_active is False
 
         url = reverse("users:registration")
-        payload = {"registration_token": ""}
+        payload = {"security_token": ""}
 
         response = api_client.post(url, payload)
         assert response.status_code == HTTP_400_BAD_REQUEST
 
         user.refresh_from_db()
         assert user.is_active is False
-        assert user.registration_token != ""
+        assert user.security_token != ""
 
-    def test_confirm_registration_with_wrong_registration_token_fails(self):
+    def test_confirm_registration_with_wrong_security_token_fails(self):
         api_client = APIClient()
         user = UserFactory(is_active=False)
         wrong_token = uuid4()
-        assert user.registration_token != wrong_token
+        assert user.security_token != wrong_token
         assert user.is_active is False
 
         url = reverse("users:registration")
-        payload = {"registration_token": wrong_token}
+        payload = {"security_token": wrong_token}
 
         response = api_client.post(url, payload)
         assert response.status_code == HTTP_400_BAD_REQUEST
@@ -193,7 +194,7 @@ class TestUserRegistrationConfirmAPIView:
         )
         user.refresh_from_db()
         assert user.is_active is False
-        assert user.registration_token != ""
+        assert user.security_token != ""
 
 
 @pytest.mark.django_db
@@ -311,25 +312,59 @@ class TestUserViewSet:
         assert user.last_name != last_name
         assert user.phone_number != phone_number
 
-    def test_partner_by_same_user_without_required_arguments_fails(
-        self, user_api_client_pytest_fixture, user
-    ):
 
-        assert user.is_partner is False
+@pytest.mark.django_db
+class TestPasswordChangeAPIView:
+    def test_password_change_succeeds(self, user_api_client_pytest_fixture, user, password):
+        new_password = fake.password()
+        assert user.check_password(password) is True
 
-        payload = {}
-        url = reverse("user-partner", args=[str(user.id)])
+        payload = {"old_password": password, "new_password": new_password}
+
+        url = reverse("users:change-password")
         response = user_api_client_pytest_fixture.patch(url, payload)
 
+        assert response.status_code == HTTP_201_CREATED
+
+        user.refresh_from_db()
+        assert user.check_password(password) is False
+        assert user.check_password(new_password) is True
+        # assert
+
+    def test_password_change_with_wrong_old_password_fails(
+        self, user_api_client_pytest_fixture, user
+    ):
+        old_password = fake.password()
+        new_password = fake.password()
+        assert user.check_password(old_password) is False
+
+        payload = {"old_password": old_password, "new_password": new_password}
+
+        url = reverse("users:change-password")
+        response = user_api_client_pytest_fixture.patch(url, payload)
         assert response.status_code == HTTP_400_BAD_REQUEST
-        assert "first_name" in response.data["detail"]
-        assert "last_name" in response.data["detail"]
-        assert "phone_number" in response.data["detail"]
+        print(response.data)
         assert (
             str(response.data["detail"])
-            == "{'first_name': [ErrorDetail(string='This field is required.', code='required')], "
-            "'last_name': [ErrorDetail(string='This field is required.', code='required')], "
-            "'phone_number': [ErrorDetail(string='This field is required.', code='required')]}"
+            == "{'non_field_errors': [ErrorDetail(string='Wrong password!', code='invalid')]}"
         )
         user.refresh_from_db()
-        assert user.is_partner is False
+        assert user.check_password(new_password) is False
+
+
+@pytest.mark.django_db
+class TestForgotPasswordAPIView:
+    def test_forgot_password_succeeds(self):
+        api_client = APIClient()
+        user = UserFactory()
+
+        security_token = user.security_token
+
+        payload = {"email": user.email}
+
+        url = reverse("users:forgot-password")
+        response = api_client.post(url, payload)
+        assert response.status_code == HTTP_202_ACCEPTED
+
+        user.refresh_from_db()
+        assert user.security_token != security_token
