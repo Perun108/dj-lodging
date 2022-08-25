@@ -63,7 +63,7 @@ THIRD_PARTY_APPS = [
     "silk",
 ]
 
-LOCAL_APPS = ["djlodging.domain.users", "djlodging.domain.lodgings"]
+LOCAL_APPS = ["djlodging.domain.users", "djlodging.domain.lodgings", "djlodging.domain.bookings"]
 
 INSTALLED_APPS = DJANGO_CORE_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 

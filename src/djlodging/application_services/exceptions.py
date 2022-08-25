@@ -5,3 +5,5 @@
 #     def __init__(self, code=None, params=None) -> None:
 #         message = "A user with this email already exists"
 #         super().__init__(message=message, code=code, params=params)
+
+# class DatesAlreadyBookedError(ValidationError)

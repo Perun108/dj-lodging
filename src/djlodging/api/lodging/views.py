@@ -1,15 +1,19 @@
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.status import HTTP_201_CREATED
+from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED
 from rest_framework.viewsets import ViewSet
 
+from djlodging.api.helpers import validate_required_query_params_with_any
 from djlodging.api.lodging.serializers import (
+    AvailableLodgingListInputSerializer,
+    AvailableLodgingListOutputSerializer,
     CityCreateInputSerializer,
     CityCreateOutputSerializer,
     CountryCreateInputSerializer,
     CountryCreateOutputSerializer,
     LodgingCreateInputSerializer,
-    LodgingCreateOutputSerializer,
+    LodgingOutputSerializer,
 )
 from djlodging.api.permissions import IsPartner
 from djlodging.application_services.lodgings import (
@@ -17,6 +21,7 @@ from djlodging.application_services.lodgings import (
     CountryService,
     LodgingService,
 )
+from djlodging.domain.lodgings.repositories import LodgingRepository
 
 
 class CountryViewSet(ViewSet):
@@ -43,7 +48,7 @@ class CityViewSet(ViewSet):
 
 class LodgingViewSet(ViewSet):
     def get_permissions(self):
-        if self.action in ["list", "retrieve"]:
+        if self.action in ["list", "retrieve", "list_available"]:
             self.permission_classes = (IsAuthenticated,)
         else:
             self.permission_classes = (IsPartner,)
@@ -53,5 +58,19 @@ class LodgingViewSet(ViewSet):
         input_serializer = LodgingCreateInputSerializer(data=request.data)
         input_serializer.is_valid(raise_exception=True)
         lodging = LodgingService.create(actor=request.user, **input_serializer.validated_data)
-        output_serializer = LodgingCreateOutputSerializer(lodging)
+        output_serializer = LodgingOutputSerializer(lodging)
         return Response(data=output_serializer.data, status=HTTP_201_CREATED)
+
+    @action(detail=False, url_path="available")
+    def list_available(self, request):
+        validate_required_query_params_with_any(
+            required_params=["country", "city"],
+            query_params=request.query_params,
+        )
+        input_serializer = AvailableLodgingListInputSerializer(data=request.query_params)
+        input_serializer.is_valid(raise_exception=True)
+        available_lodging = LodgingRepository.get_available_at_destination_for_dates(
+            **input_serializer.validated_data
+        )
+        output_serializer = AvailableLodgingListOutputSerializer(available_lodging, many=True)
+        return Response(data=output_serializer.data, status=HTTP_200_OK)

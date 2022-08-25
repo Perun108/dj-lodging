@@ -47,6 +47,7 @@ class LodgingService:
         street: str,
         house_number: str,
         zip_code: str,
+        price: int,
         email: Optional[str] = "",
         phone_number: Optional[str] = "",
         district: Optional[str] = "",
@@ -69,6 +70,7 @@ class LodgingService:
             zip_code=zip_code,
             phone_number=phone_number,
             email=email,
+            price=price,
         )
         LodgingRepository.save(lodging)
         return lodging

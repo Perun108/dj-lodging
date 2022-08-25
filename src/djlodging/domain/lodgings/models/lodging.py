@@ -25,9 +25,12 @@ class Lodging(BaseModel):
     zip_code = models.CharField(max_length=15)
     phone_number = models.CharField(max_length=255, blank=True)
     email = models.EmailField(max_length=255, blank=True)
+    number_of_people = models.PositiveSmallIntegerField(default=1)
+    number_of_rooms = models.PositiveSmallIntegerField(default=1)
+    price = models.DecimalField(max_digits=7, decimal_places=2)
 
     def __str__(self):
-        return f"{self.city} {self.street} {self.house_number}"
+        return f"{self.name} in {self.city}"
 
 
 def images_folder(instance, filename):

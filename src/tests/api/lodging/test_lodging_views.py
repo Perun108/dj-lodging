@@ -1,15 +1,14 @@
 import random
 
 import pytest
+from django.utils import timezone
 from faker import Faker
 from rest_framework.reverse import reverse
-from rest_framework.status import (  # HTTP_200_OK,; HTTP_400_BAD_REQUEST,; HTTP_401_UNAUTHORIZED,
-    HTTP_201_CREATED,
-    HTTP_403_FORBIDDEN,
-)
+from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_403_FORBIDDEN
 
 from djlodging.domain.lodgings.models.lodging import Lodging
-from tests.domain.lodgings.factories import CityFactory
+from tests.domain.bookings.factories import BookingFactory
+from tests.domain.lodgings.factories import CityFactory, LodgingFactory
 
 fake = Faker()
 
@@ -36,6 +35,7 @@ class TestLodgingViewSet:
             "zip_code": zip_code,
             "email": email,
             "phone_number": phone_number,
+            "price": 10,
         }
 
         url = reverse("lodging-list")  # POST "/api/lodgings/"
@@ -54,6 +54,7 @@ class TestLodgingViewSet:
         assert lodging.zip_code == zip_code
         assert lodging.email == email
         assert lodging.phone_number == phone_number
+        assert lodging.price == 10
 
     def test_create_lodging_by_non_partner_fails(self, user_api_client_pytest_fixture):
         city = CityFactory()
@@ -75,6 +76,7 @@ class TestLodgingViewSet:
             "zip_code": zip_code,
             "email": email,
             "phone_number": phone_number,
+            "price": 10,
         }
 
         url = reverse("lodging-list")  # POST "/api/lodgings/"
@@ -82,3 +84,120 @@ class TestLodgingViewSet:
         response = user_api_client_pytest_fixture.post(url, payload)
 
         assert response.status_code == HTTP_403_FORBIDDEN
+
+    def test_list_available_succeeds(self, user_api_client_pytest_fixture):
+        city = CityFactory()
+
+        lodging1 = LodgingFactory(city=city, number_of_people=1, number_of_rooms=1)
+        lodging2 = LodgingFactory(city=city, number_of_people=1, number_of_rooms=1)
+        lodging3 = LodgingFactory(city=city, number_of_people=1, number_of_rooms=1)  # noqa
+
+        date_from1 = timezone.now().date()
+        date_to1 = date_from1 + timezone.timedelta(days=1)
+
+        date_from2 = timezone.now().date() + timezone.timedelta(days=1)
+        date_to2 = date_from2 + timezone.timedelta(days=2)
+
+        booking1 = BookingFactory(lodging=lodging1, date_from=date_from1, date_to=date_to1)  # noqa
+        booking2 = BookingFactory(lodging=lodging2, date_from=date_from2, date_to=date_to2)  # noqa
+
+        query_params = {
+            "city": city,
+            "number_of_people": 1,
+            "number_of_rooms": 1,
+            "date_from": date_from1,
+            "date_to": date_from1 + timezone.timedelta(days=7),
+        }
+        url = reverse("lodging-list-available")
+        response = user_api_client_pytest_fixture.get(url, query_params)
+
+        assert response.status_code == HTTP_200_OK
+        assert len(response.data) == 1
+
+    def test_list_available_succeeds_2(self, user_api_client_pytest_fixture):
+        city = CityFactory()
+
+        lodging1 = LodgingFactory(city=city, number_of_people=1, number_of_rooms=1)
+        lodging2 = LodgingFactory(city=city, number_of_people=1, number_of_rooms=1)
+        lodging3 = LodgingFactory(city=city, number_of_people=1, number_of_rooms=1)  # noqa
+
+        date_from1 = timezone.now().date()
+        date_to1 = date_from1 + timezone.timedelta(days=1)
+
+        date_from2 = timezone.now().date() + timezone.timedelta(days=1)
+        date_to2 = date_from2 + timezone.timedelta(days=2)
+
+        booking1 = BookingFactory(lodging=lodging1, date_from=date_from1, date_to=date_to1)  # noqa
+        booking2 = BookingFactory(lodging=lodging2, date_from=date_from2, date_to=date_to2)  # noqa
+
+        query_params = {
+            "city": city,
+            "number_of_people": 1,
+            "number_of_rooms": 1,
+            "date_from": date_from1 + timezone.timedelta(days=4),
+            "date_to": date_from1 + timezone.timedelta(days=7),
+        }
+        url = reverse("lodging-list-available")
+        response = user_api_client_pytest_fixture.get(url, query_params)
+
+        assert response.status_code == HTTP_200_OK
+        assert len(response.data) == 3
+
+    def test_list_available_succeeds_3(self, user_api_client_pytest_fixture):
+        city = CityFactory()
+
+        lodging1 = LodgingFactory(city=city, number_of_people=1, number_of_rooms=1)
+        lodging2 = LodgingFactory(city=city, number_of_people=1, number_of_rooms=1)
+        lodging3 = LodgingFactory(city=city, number_of_people=1, number_of_rooms=1)  # noqa
+
+        date_from1 = timezone.now().date()
+        date_to1 = date_from1 + timezone.timedelta(days=1)
+
+        date_from2 = timezone.now().date() + timezone.timedelta(days=1)
+        date_to2 = date_from2 + timezone.timedelta(days=2)
+
+        booking1 = BookingFactory(lodging=lodging1, date_from=date_from1, date_to=date_to1)  # noqa
+        booking2 = BookingFactory(lodging=lodging2, date_from=date_from2, date_to=date_to2)  # noqa
+
+        query_params = {
+            "city": city,
+            "number_of_people": 1,
+            "number_of_rooms": 1,
+            "date_from": date_from1,
+            "date_to": date_from1 + timezone.timedelta(days=1),
+        }
+        url = reverse("lodging-list-available")
+        response = user_api_client_pytest_fixture.get(url, query_params)
+
+        assert response.status_code == HTTP_200_OK
+        assert len(response.data) == 2
+
+    def test_list_available_succeeds_4(self, user_api_client_pytest_fixture):
+        city = CityFactory()
+
+        lodging1 = LodgingFactory(city=city, number_of_people=1, number_of_rooms=1)
+        lodging2 = LodgingFactory(city=city, number_of_people=1, number_of_rooms=1)
+        lodging3 = LodgingFactory(city=city, number_of_people=1, number_of_rooms=1)
+
+        date_from1 = timezone.now().date()
+        date_to1 = date_from1 + timezone.timedelta(days=1)
+
+        date_from2 = timezone.now().date() + timezone.timedelta(days=1)
+        date_to2 = date_from2 + timezone.timedelta(days=2)  # noqa
+
+        booking1 = BookingFactory(lodging=lodging1, date_from=date_from1, date_to=date_to1)  # noqa
+        booking2 = BookingFactory(lodging=lodging2, date_from=date_from1, date_to=date_to1)  # noqa
+        booking2 = BookingFactory(lodging=lodging3, date_from=date_from1, date_to=date_to1)  # noqa
+
+        query_params = {
+            "city": city,
+            "number_of_people": 1,
+            "number_of_rooms": 1,
+            "date_from": date_from1,
+            "date_to": date_from1 + timezone.timedelta(days=1),
+        }
+        url = reverse("lodging-list-available")
+        response = user_api_client_pytest_fixture.get(url, query_params)
+
+        assert response.status_code == HTTP_200_OK
+        assert len(response.data) == 0
