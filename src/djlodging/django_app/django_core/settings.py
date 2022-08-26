@@ -61,9 +61,10 @@ THIRD_PARTY_APPS = [
     "rest_framework_simplejwt",
     "drf_spectacular",
     "silk",
+    "djstripe",
 ]
 
-LOCAL_APPS = ["djlodging.domain.users", "djlodging.domain.lodgings", "djlodging.domain.bookings"]
+LOCAL_APPS = ["djlodging.domain.lodgings", "djlodging.domain.bookings", "djlodging.domain.users"]
 
 INSTALLED_APPS = DJANGO_CORE_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
@@ -203,3 +204,15 @@ EMAIL_PROVIDER = {
     "DEFAULT_FROM_EMAIL": env.str("DEFAULT_FROM_EMAIL", default="example@example.com"),
 }
 DOMAIN = "https://dj-lodging.com"
+
+# PAYMENT PROVIDER
+PAYMENT_PROVIDER = "djlodging.infrastructure.providers.payments.StripePaymentProvider"
+STRIPE_LIVE_SECRET_KEY = env.str("STRIPE_LIVE_SECRET_KEY", "<your secret key>")
+STRIPE_TEST_SECRET_KEY = env.str("STRIPE_TEST_SECRET_KEY", "<your secret key>")
+STRIPE_API_KEY = STRIPE_TEST_SECRET_KEY if DEBUG else STRIPE_LIVE_SECRET_KEY
+STRIPE_LIVE_MODE = False  # Change to True in production
+DJSTRIPE_WEBHOOK_SECRET = env.str(
+    "DJSTRIPE_WEBHOOK_SECRET"
+)  # Get it from the section in the Stripe dashboard where you added the webhook endpoint
+DJSTRIPE_USE_NATIVE_JSONFIELD = True  # We recommend setting to True for new installations
+DJSTRIPE_FOREIGN_KEY_TO_FIELD = "id"

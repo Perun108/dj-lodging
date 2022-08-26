@@ -37,3 +37,9 @@ class BookingService:
         booking = Booking(lodging=lodging, user=user, date_from=date_from, date_to=date_to)
         BookingRepository.save(booking)
         return booking
+
+    @classmethod
+    def confirm_booking(cls, metadata):
+        booking = BookingRepository.get_by_id(metadata["booking_id"])
+        booking.status = Booking.Status.PAID
+        BookingRepository.save(booking)

@@ -10,13 +10,17 @@ class BookingCreateInputSerializer(serializers.Serializer):
 
 
 class BookingCreateOutputSerializer(serializers.Serializer):
-    lodging_id = serializers.UUIDField()
+    id = serializers.UUIDField()
+    lodging = LodgingOutputSerializer()
     user_id = serializers.UUIDField()
     date_from = serializers.DateField()
     date_to = serializers.DateField()
+    status = serializers.CharField()
 
 
 class BookingListOutputSerializer(serializers.Serializer):
+    id = serializers.UUIDField()
     lodging = LodgingOutputSerializer()
     date_from = serializers.DateField()
     date_to = serializers.DateField()
+    status = serializers.CharField()

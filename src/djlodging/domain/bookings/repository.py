@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db.models import QuerySet
 
 from djlodging.domain.bookings.models import Booking
@@ -12,3 +13,10 @@ class BookingRepository:
     @classmethod
     def get_list(cls, user: User) -> QuerySet[Booking]:
         return Booking.objects.filter(user=user)
+
+    @classmethod
+    def get_by_id(cls, booking_id):
+        try:
+            return Booking.objects.get(id=booking_id)
+        except Booking.DoesNotExist:
+            raise ValidationError("Wrong booking_id")

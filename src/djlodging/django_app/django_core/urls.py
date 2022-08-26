@@ -48,6 +48,9 @@ urlpatterns = [
         name="redoc",
     ),
     path("silk/", include("silk.urls", namespace="silk")),
+    path("stripe/", include("djstripe.urls", namespace="djstripe")),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# print(urlpatterns)

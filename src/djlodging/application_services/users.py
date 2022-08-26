@@ -4,9 +4,13 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import PermissionDenied, ValidationError
 
 from djlodging.application_services.email import EmailService
-from djlodging.domain.users.repository import UserRepository
+from djlodging.domain.users.repository import (
+    PaymentProviderUserRepository,
+    UserRepository,
+)
+from djlodging.infrastructure.providers.payments import payment_provider
 
-from ..domain.users.models import User
+from ..domain.users.models import PaymentProviderUser, User
 
 
 class UserService:
@@ -25,6 +29,9 @@ class UserService:
         user.is_active = True
         user.security_token = ""
         UserRepository.save(user)
+        PaymentProviderUserService.create(
+            user,
+        )
         return user
 
     @classmethod
@@ -59,3 +66,12 @@ class UserService:
         user = UserRepository.get_by_security_token(token)
         user.security_token = ""
         UserRepository.save(user)
+
+
+class PaymentProviderUserService:
+    @classmethod
+    def create(cls, user: User) -> PaymentProviderUser:
+        customer = payment_provider.create_payment_user(email=user.email)
+        payment_provider_user = PaymentProviderUser(user=user, customer_id=customer.id)
+        PaymentProviderUserRepository.save(payment_provider_user)
+        return payment_provider_user

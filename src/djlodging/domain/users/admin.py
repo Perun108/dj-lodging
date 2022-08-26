@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.models import Group
 
-from djlodging.domain.users.models import User
+from djlodging.domain.users.models import PaymentProviderUser, User
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -13,4 +13,5 @@ class UserAdmin(admin.ModelAdmin):
 
 
 admin.site.register(User, UserAdmin)
+admin.site.register(PaymentProviderUser)
 admin.site.unregister(Group)

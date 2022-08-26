@@ -59,6 +59,7 @@ class LodgingOwnerOutputSerializer(serializers.Serializer):
 
 
 class LodgingOutputSerializer(serializers.Serializer):
+    id = serializers.UUIDField()
     name = serializers.CharField()
     type = serializers.CharField()
     owner = LodgingOwnerOutputSerializer()

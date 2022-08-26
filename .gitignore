@@ -30,4 +30,6 @@ Thumbs.db
 .vscode/
 media/
 static/
+*.coverage
+htmlcov/
 .env

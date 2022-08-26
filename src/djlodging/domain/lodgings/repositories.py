@@ -78,6 +78,7 @@ class LodgingRepository:
 
         lodging_ids_list = Lodging.objects.filter(lodging_filter).values_list("id", flat=True)
 
+        # TODO: Filter for Bookings status!
         available = (
             Lodging.objects.filter(
                 ~Q(booking__lodging__id__in=lodging_ids_list)

@@ -35,3 +35,9 @@ class UserRepository:
             return User.objects.get(email=email)
         except User.DoesNotExist:
             raise ValidationError("Wrong email!")
+
+
+class PaymentProviderUserRepository:
+    @classmethod
+    def save(cls, payment_provider_user):
+        payment_provider_user.save()
