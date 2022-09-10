@@ -1,3 +1,5 @@
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
@@ -25,6 +27,13 @@ class UserSingUpAPIView(APIView):
     authentication_classes = ()
     permission_classes = ()
 
+    @extend_schema(
+        request=UserSignUpInputSerializer,
+        responses={
+            201: UserShortOutputSerializer,
+            400: OpenApiResponse(description="Bad request"),
+        },
+    )
     def post(self, request):
         """
         is_user corresponds to "Do you plan to rent listed properties?"
@@ -43,6 +52,13 @@ class UserRegistrationConfirmAPIView(APIView):
     authentication_classes = ()
     permission_classes = ()
 
+    @extend_schema(
+        request=UserRegistrationConfirmInputSerializer,
+        responses={
+            200: UserShortOutputSerializer,
+            400: OpenApiResponse(description="Bad request"),
+        },
+    )
     def post(self, request):
         incoming_data = UserRegistrationConfirmInputSerializer(data=request.data)
         incoming_data.is_valid(raise_exception=True)
@@ -56,6 +72,13 @@ class UserLoginAPIView(TokenViewBase):
 
 
 class PasswordChangeAPIView(APIView):
+    @extend_schema(
+        request=PasswordChangeInputSerializer,
+        responses={
+            200: None,
+            400: OpenApiResponse(description="Bad request"),
+        },
+    )
     def patch(self, request):
         input_serializer = PasswordChangeInputSerializer(data=request.data)
         input_serializer.is_valid(raise_exception=True)
@@ -67,6 +90,13 @@ class ForgotPasswordAPIView(APIView):
     permission_classes = ()
     authentication_classes = ()
 
+    @extend_schema(
+        request=ForgotPasswordInputSerializer,
+        responses={
+            202: None,
+            400: OpenApiResponse(description="Bad request"),
+        },
+    )
     def post(self, request):
         incoming_data = ForgotPasswordInputSerializer(data=request.data)
         incoming_data.is_valid(raise_exception=True)
@@ -89,6 +119,13 @@ class PasswordResetAPIView(APIView):
     permission_classes = ()
     authentication_classes = ()
 
+    @extend_schema(
+        request=PasswordResetInputSerializer,
+        responses={
+            200: None,
+            400: OpenApiResponse(description="Bad request"),
+        },
+    )
     def post(self, request):
         incoming_data = PasswordResetInputSerializer(data=request.data)
         incoming_data.is_valid(raise_exception=True)
@@ -103,7 +140,16 @@ class UserViewSet(ViewSet):
     # UserService.update(**incoming_data.validated_data)
     # return Response(status=HTTP_201_CREATED)
     # pass
-
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(name="id", type=OpenApiTypes.UUID, location=OpenApiParameter.PATH)
+        ],
+        request=PartnerCreateInputSerializer,
+        responses={
+            200: UserOutputSerializer,
+            400: OpenApiResponse(description="Bad request"),
+        },
+    )
     @action(methods=["patch"], detail=True)
     def partner(self, request, pk):
         if str(request.user.id) != pk:

@@ -1,3 +1,4 @@
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED
@@ -11,6 +12,13 @@ from djlodging.application_services.payments import PaymentService
 
 
 class PaymentViewSet(ViewSet):
+    @extend_schema(
+        request=PaymentIntentCreateInputSerializer,
+        responses={
+            201: PaymentIntentCreateOutputSerializer,
+            400: OpenApiResponse(description="Bad request"),
+        },
+    )
     @action(detail=False, methods=["post"])
     def pay(self, request):
         input_serializer = PaymentIntentCreateInputSerializer(data=request.data)

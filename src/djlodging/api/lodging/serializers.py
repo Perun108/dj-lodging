@@ -34,7 +34,7 @@ class LodgingCreateInputSerializer(serializers.Serializer):
     email = serializers.EmailField(required=False)
     phone_number = serializers.CharField(required=False)
     district = serializers.CharField(required=False)
-    price = serializers.DecimalField(max_digits=7, decimal_places=2)
+    price = serializers.DecimalField(max_digits=7, decimal_places=2, min_value=0)
 
 
 class LodgingCountryOutputSerializer(serializers.Serializer):
