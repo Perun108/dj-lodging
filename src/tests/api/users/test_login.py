@@ -44,6 +44,11 @@ class TestUserLoginAPIView:
         response = api_client.post(url, payload)
 
         assert response.status_code == HTTP_401_UNAUTHORIZED
+        assert (
+            str(response.data)
+            == "{'detail': ErrorDetail(string='No active account found with the given "
+            "credentials', code='no_active_account')}"
+        )
 
     def test_user_login_with_wrong_password_fails(self):
         api_client = APIClient()
@@ -54,6 +59,11 @@ class TestUserLoginAPIView:
         response = api_client.post(url, payload)
 
         assert response.status_code == HTTP_401_UNAUTHORIZED
+        assert (
+            str(response.data)
+            == "{'detail': ErrorDetail(string='No active account found with the given "
+            "credentials', code='no_active_account')}"
+        )
 
     def test_inactive_user_login_fails(self):
         api_client = APIClient()
@@ -65,3 +75,8 @@ class TestUserLoginAPIView:
         response = api_client.post(url, payload)
 
         assert response.status_code == HTTP_401_UNAUTHORIZED
+        assert (
+            str(response.data)
+            == "{'detail': ErrorDetail(string='No active account found with the given "
+            "credentials', code='no_active_account')}"
+        )

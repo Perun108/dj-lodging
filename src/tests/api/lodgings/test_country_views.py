@@ -51,6 +51,11 @@ class TestCountryViewSet:
 
         response = api_client.post(url, payload)
         assert response.status_code == HTTP_401_UNAUTHORIZED
+        assert (
+            str(response.data)
+            == "{'detail': ErrorDetail(string='Authentication credentials were not provided.', "
+            "code='not_authenticated')}"
+        )
 
         country = Country.objects.first()
         assert country is None
