@@ -20,6 +20,12 @@ class SendgridEmailProvider(BaseEmailProvider):
         self.change_password_link_template_id = settings.EMAIL_PROVIDER[
             "CHANGE_PASSWORD_LINK_TEMPLATE_ID"
         ]
+        self.change_password_link_template_id = settings.EMAIL_PROVIDER[
+            "CHANGE_PASSWORD_LINK_TEMPLATE_ID"
+        ]
+        self.change_email_link_template_id = settings.EMAIL_PROVIDER[
+            "CHANGE_EMAIL_LINK_TEMPLATE_ID"
+        ]
 
     def send_confirmation_link(
         self,
@@ -74,5 +80,18 @@ class SendgridEmailProvider(BaseEmailProvider):
             ],
             "from": {"email": self.from_email},
             "template_id": self.forgot_password_template_id,
+        }
+        return self.sendgrid_api.client.mail.send.post(request_body=data)
+
+    def send_change_email_link(self, *, email: str, link: str) -> dict:
+        data = {
+            "personalizations": [
+                {
+                    "to": [{"email": email}],
+                    "dynamic_template_data": {"user_email": email, "link": link},
+                }
+            ],
+            "from": {"email": self.from_email},
+            "template_id": self.change_email_link_template_id,
         }
         return self.sendgrid_api.client.mail.send.post(request_body=data)

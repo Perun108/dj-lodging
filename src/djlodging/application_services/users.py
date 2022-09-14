@@ -24,14 +24,12 @@ class UserService:
         return user
 
     @classmethod
-    def confirm_registration(cls, security_token):
-        user = UserRepository.get_by_security_token(security_token)
-        user.is_active = True
+    def confirm_registration(cls, user_id: UUID, security_token: UUID) -> User:
+        user = UserRepository.get_user_by_id_and_security_token(user_id, security_token)
         user.security_token = ""
+        user.is_active = True
         UserRepository.save(user)
-        PaymentProviderUserService.create(
-            user,
-        )
+        PaymentProviderUserService.create(user)
         return user
 
     @classmethod
@@ -62,8 +60,22 @@ class UserService:
         EmailService.send_change_password_link(user.email, security_token)
 
     @classmethod
-    def confirm_reset_password(cls, token: UUID) -> None:
-        user = UserRepository.get_by_security_token(token)
+    def confirm_reset_password(cls, token: UUID, email: str, new_password: str) -> None:
+        user = UserRepository.get_user_by_security_token_and_email(token, email)
+        user.security_token = ""
+        user.set_password(new_password)
+        UserRepository.save(user)
+
+    @classmethod
+    def send_change_email_link(cls, user: User, new_email: str) -> None:
+        security_token = uuid4()
+        UserRepository.update(user, security_token=security_token)
+        EmailService.send_change_email_link(new_email, security_token)
+
+    @classmethod
+    def change_email(cls, security_token: UUID, new_email: str) -> None:
+        user = UserRepository.get_user_by_security_token(security_token)
+        user.email = new_email
         user.security_token = ""
         UserRepository.save(user)
 

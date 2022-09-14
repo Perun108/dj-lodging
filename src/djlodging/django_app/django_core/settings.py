@@ -201,6 +201,7 @@ EMAIL_PROVIDER = {
     "API_KEY": env.str("EMAIL_PROVIDER_API_KEY", default="SET_YOUR_API_KEY"),
     "CONFIRMATION_LINK_TEMPLATE_ID": "d-118c70b3aa884c74af9d3c14403aa4f5",
     "CHANGE_PASSWORD_LINK_TEMPLATE_ID": "d-788fb445f4b24970abf871901cf43d96",
+    "CHANGE_EMAIL_LINK_TEMPLATE_ID": "d-27e74abd0a49487ca6bd59cd95081d27",
     "DEFAULT_FROM_EMAIL": env.str("DEFAULT_FROM_EMAIL", default="example@example.com"),
 }
 DOMAIN = "https://dj-lodging.com"

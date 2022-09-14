@@ -21,6 +21,7 @@ class UserSignUpInputSerializer(serializers.Serializer):
 
 
 class UserRegistrationConfirmInputSerializer(serializers.Serializer):
+    user_id = serializers.UUIDField()
     security_token = serializers.UUIDField()
 
 
@@ -29,12 +30,23 @@ class PasswordChangeInputSerializer(serializers.Serializer):
     new_password = serializers.CharField()
 
 
-class ForgotPasswordInputSerializer(serializers.Serializer):
+class SendForgotPasswordInputSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
 
-class PasswordResetInputSerializer(serializers.Serializer):
+class PasswordResetConfirmInputSerializer(serializers.Serializer):
     security_token = serializers.UUIDField()
+    email = serializers.EmailField()
+    new_password = serializers.CharField()
+
+
+class EmailChangeRequestInputSerializer(serializers.Serializer):
+    new_email = serializers.EmailField()
+
+
+class EmailChangeConfirmInputSerializer(serializers.Serializer):
+    security_token = serializers.UUIDField()
+    new_email = serializers.EmailField()
 
 
 class UserShortOutputSerializer(serializers.Serializer):

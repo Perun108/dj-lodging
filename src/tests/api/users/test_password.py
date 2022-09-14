@@ -48,7 +48,7 @@ class TestPasswordChangeAPIView:
 
 
 @pytest.mark.django_db
-class TestForgotPasswordAPIView:
+class TestSendForgotPasswordLinkAPIView:
     def test_forgot_password_succeeds(self):
         api_client = APIClient()
         user = UserFactory()

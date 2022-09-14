@@ -1,5 +1,11 @@
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
+from drf_spectacular.utils import (
+    OpenApiParameter,
+    OpenApiResponse,
+    extend_schema,
+    inline_serializer,
+)
+from rest_framework import serializers
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
@@ -9,10 +15,12 @@ from rest_framework.viewsets import ViewSet
 from rest_framework_simplejwt.views import TokenViewBase
 
 from djlodging.api.users.serializers import (
-    ForgotPasswordInputSerializer,
+    EmailChangeConfirmInputSerializer,
+    EmailChangeRequestInputSerializer,
     PartnerCreateInputSerializer,
     PasswordChangeInputSerializer,
-    PasswordResetInputSerializer,
+    PasswordResetConfirmInputSerializer,
+    SendForgotPasswordInputSerializer,
     UserLoginOutputSerializer,
     UserOutputSerializer,
     UserRegistrationConfirmInputSerializer,
@@ -21,6 +29,7 @@ from djlodging.api.users.serializers import (
 )
 from djlodging.application_services.email import EmailService
 from djlodging.application_services.users import UserService
+from djlodging.domain.users.repository import UserRepository
 
 
 class UserSingUpAPIView(APIView):
@@ -43,9 +52,46 @@ class UserSingUpAPIView(APIView):
         incoming_data = UserSignUpInputSerializer(data=request.data)
         incoming_data.is_valid(raise_exception=True)
         user = UserService.create(**incoming_data.validated_data, is_active=False)
-        EmailService.send_confirmation_link(user.id)
+        EmailService.send_confirmation_link(user.email, user.security_token)
         output_serializer = UserShortOutputSerializer(user)
         return Response(output_serializer.data, status=HTTP_201_CREATED)
+
+
+class UserGetByTokenAndEmailAPIView(APIView):
+    """
+    API to check if a user with such security token and email exists.
+
+    This is an intermediate API just for FE side verifications
+    before registration-confirm, password-forget-reset or email-change flows.
+
+    If a token/email is wrong - just display an error to a user and no need to collect their
+    password/email to change.
+
+    If a user exists - proceed further to confirm registration or collect
+    their email/password to change.
+    """
+
+    permission_classes = ()
+    authentication_classes = ()
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter("token", type=OpenApiTypes.UUID, location=OpenApiParameter.QUERY),
+            OpenApiParameter("email", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY),
+        ],
+        responses={
+            200: inline_serializer(
+                name="Retrieve user_id",
+                fields={"user_id": serializers.UUIDField()},
+            ),
+            400: OpenApiResponse(description="Bad request"),
+        },
+    )
+    def get(self, request):
+        token = request.query_params.get("token")
+        email = request.query_params.get("email")
+        user = UserRepository.get_user_by_security_token_and_email(token, email)
+        return Response({"user_id": user.id}, status=HTTP_200_OK)
 
 
 class UserRegistrationConfirmAPIView(APIView):
@@ -55,16 +101,15 @@ class UserRegistrationConfirmAPIView(APIView):
     @extend_schema(
         request=UserRegistrationConfirmInputSerializer,
         responses={
-            200: UserShortOutputSerializer,
+            200: None,
             400: OpenApiResponse(description="Bad request"),
         },
     )
     def post(self, request):
         incoming_data = UserRegistrationConfirmInputSerializer(data=request.data)
         incoming_data.is_valid(raise_exception=True)
-        user = UserService.confirm_registration(**incoming_data.validated_data)
-        outgoing_data = UserShortOutputSerializer(user)
-        return Response(data=outgoing_data.data, status=HTTP_200_OK)
+        UserService.confirm_registration(**incoming_data.validated_data)
+        return Response(status=HTTP_200_OK)
 
 
 class UserLoginAPIView(TokenViewBase):
@@ -86,50 +131,68 @@ class PasswordChangeAPIView(APIView):
         return Response(status=HTTP_200_OK)
 
 
-class ForgotPasswordAPIView(APIView):
+class SendForgotPasswordLinkAPIView(APIView):
     permission_classes = ()
     authentication_classes = ()
 
     @extend_schema(
-        request=ForgotPasswordInputSerializer,
+        request=SendForgotPasswordInputSerializer,
         responses={
             202: None,
             400: OpenApiResponse(description="Bad request"),
         },
     )
     def post(self, request):
-        incoming_data = ForgotPasswordInputSerializer(data=request.data)
+        incoming_data = SendForgotPasswordInputSerializer(data=request.data)
         incoming_data.is_valid(raise_exception=True)
         UserService.send_forgot_password_link(**incoming_data.validated_data)
         return Response(status=HTTP_202_ACCEPTED)
 
 
-class PasswordResetAPIView(APIView):
+class PasswordResetConfirmAPIView(APIView):
     """
-    API to confirm that there is such user with this security token.
-
     This is the second step of 'forgot password' flow.
-    This API should be used after ForgotPasswordAPIView where a token is sent
+    This API should be used after SendForgotPasswordLinkAPIView where a token is sent
     to an email specified by user.
 
-    To complete resetting password in the 'forgot password' flow - use the third step
-    PasswordChangeAPIView (login user with the old_password and change it to the new_password)
+    After a user resets his/her password via this API they should be logged in via UserLoginAPI.
     """
 
     permission_classes = ()
     authentication_classes = ()
 
     @extend_schema(
-        request=PasswordResetInputSerializer,
+        request=PasswordResetConfirmInputSerializer,
         responses={
             200: None,
             400: OpenApiResponse(description="Bad request"),
         },
     )
     def post(self, request):
-        incoming_data = PasswordResetInputSerializer(data=request.data)
+        incoming_data = PasswordResetConfirmInputSerializer(data=request.data)
         incoming_data.is_valid(raise_exception=True)
         UserService.confirm_reset_password(**incoming_data.validated_data)
+        return Response(status=HTTP_200_OK)
+
+
+class EmailChangeRequestAPIView(APIView):
+    @extend_schema(request=EmailChangeRequestInputSerializer, responses={202: None})
+    def post(self, request):
+        input_serializer = EmailChangeRequestInputSerializer(data=request.data)
+        input_serializer.is_valid(raise_exception=True)
+        UserService.send_change_email_link(user=request.user, **input_serializer.validated_data)
+        return Response(status=HTTP_202_ACCEPTED)
+
+
+class EmailChangeConfirmAPIView(APIView):
+    permission_classes = ()
+    authentication_classes = ()
+
+    @extend_schema(request=EmailChangeConfirmInputSerializer, responses={200: None})
+    def post(self, request):
+        input_serializer = EmailChangeConfirmInputSerializer(data=request.data)
+        input_serializer.is_valid(raise_exception=True)
+        UserService.change_email(**input_serializer.validated_data)
         return Response(status=HTTP_200_OK)
 
 

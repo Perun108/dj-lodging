@@ -17,13 +17,13 @@ class TestUserRegistrationConfirmAPIView:
     def test_confirm_registration_succeeds(self):
         api_client = APIClient()
         user = UserFactory(is_active=False)
+
         assert user.is_active is False
         assert user.security_token != ""
-
         assert PaymentProviderUser.objects.first() is None
 
         url = reverse("users:registration")
-        payload = {"security_token": user.security_token}
+        payload = {"user_id": user.id, "security_token": user.security_token}
 
         response = api_client.post(url, payload)
         assert response.status_code == HTTP_200_OK
@@ -31,8 +31,7 @@ class TestUserRegistrationConfirmAPIView:
         user.refresh_from_db()
         assert user.is_active is True
         assert user.security_token == ""
-        assert response.data["id"] == str(user.id)
-        assert response.data["email"] == user.email
+        assert response.data is None
 
         payment_user = PaymentProviderUser.objects.first()
 
@@ -50,6 +49,12 @@ class TestUserRegistrationConfirmAPIView:
 
         response = api_client.post(url, payload)
         assert response.status_code == HTTP_400_BAD_REQUEST
+        assert (
+            str(response.data)
+            == "{'detail': {'user_id': [ErrorDetail(string='This field is required.', "
+            "code='required')], 'security_token': [ErrorDetail(string='Must be a valid UUID.', "
+            "code='invalid')]}}"
+        )
 
         user.refresh_from_db()
         assert user.is_active is False
@@ -63,13 +68,13 @@ class TestUserRegistrationConfirmAPIView:
         assert user.is_active is False
 
         url = reverse("users:registration")
-        payload = {"security_token": wrong_token}
+        payload = {"user_id": user.id, "security_token": wrong_token}
 
         response = api_client.post(url, payload)
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert (
             str(response.data)
-            == "{'detail': {'non_field_errors': [ErrorDetail(string='Such user does not exist', "
+            == "{'detail': {'non_field_errors': [ErrorDetail(string='User does not exist', "
             "code='invalid')]}}"
         )
         user.refresh_from_db()

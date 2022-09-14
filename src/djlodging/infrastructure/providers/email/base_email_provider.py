@@ -21,3 +21,7 @@ class BaseEmailProvider(ABC):
     @abstractmethod
     def send_forgot_password_email(self, *, email: str, username: str, link: str):
         pass
+
+    @abstractmethod
+    def send_change_email_link(self, *, email: str, link: str):
+        pass

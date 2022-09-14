@@ -1,8 +1,11 @@
 from django.urls import path
 
 from djlodging.api.users.views import (
-    ForgotPasswordAPIView,
+    EmailChangeConfirmAPIView,
+    EmailChangeRequestAPIView,
     PasswordChangeAPIView,
+    SendForgotPasswordLinkAPIView,
+    UserGetByTokenAndEmailAPIView,
     UserLoginAPIView,
     UserRegistrationConfirmAPIView,
     UserSingUpAPIView,
@@ -21,8 +24,22 @@ urlpatterns = [
     ),
     path(
         "password-forgot/",
-        ForgotPasswordAPIView.as_view(),
+        SendForgotPasswordLinkAPIView.as_view(),
         name="forgot-password",
     ),
-    # path("password-confirm/", PasswordChangeInitializeAPIView.as_view(), name="change-password"),
+    path(
+        "id/",
+        UserGetByTokenAndEmailAPIView.as_view(),
+        name="get-user-id",
+    ),
+    path(
+        "email-change-request/",
+        EmailChangeRequestAPIView.as_view(),
+        name="request-change-email",
+    ),
+    path(
+        "email-change-confirm/",
+        EmailChangeConfirmAPIView.as_view(),
+        name="request-change-email",
+    ),
 ]
