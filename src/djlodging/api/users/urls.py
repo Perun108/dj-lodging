@@ -4,6 +4,7 @@ from djlodging.api.users.views import (
     EmailChangeConfirmAPIView,
     EmailChangeRequestAPIView,
     PasswordChangeAPIView,
+    PasswordResetConfirmAPIView,
     SendForgotPasswordLinkAPIView,
     UserGetByTokenAndEmailAPIView,
     UserLoginAPIView,
@@ -28,6 +29,11 @@ urlpatterns = [
         name="forgot-password",
     ),
     path(
+        "password-reset-confirmation/",
+        PasswordResetConfirmAPIView.as_view(),
+        name="confirm-reset-password",
+    ),
+    path(
         "id/",
         UserGetByTokenAndEmailAPIView.as_view(),
         name="get-user-id",
@@ -40,6 +46,6 @@ urlpatterns = [
     path(
         "email-change-confirm/",
         EmailChangeConfirmAPIView.as_view(),
-        name="request-change-email",
+        name="confirm-change-email",
     ),
 ]

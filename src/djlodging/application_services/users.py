@@ -60,8 +60,8 @@ class UserService:
         EmailService.send_change_password_link(user.email, security_token)
 
     @classmethod
-    def confirm_reset_password(cls, token: UUID, email: str, new_password: str) -> None:
-        user = UserRepository.get_user_by_security_token_and_email(token, email)
+    def confirm_reset_password(cls, security_token: UUID, email: str, new_password: str) -> None:
+        user = UserRepository.get_user_by_security_token_and_email(security_token, email)
         user.security_token = ""
         user.set_password(new_password)
         UserRepository.save(user)

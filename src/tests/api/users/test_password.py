@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 import pytest
 from faker import Faker
 from rest_framework.reverse import reverse
@@ -38,7 +40,6 @@ class TestPasswordChangeAPIView:
         url = reverse("users:change-password")
         response = user_api_client_pytest_fixture.patch(url, payload)
         assert response.status_code == HTTP_400_BAD_REQUEST
-        print(response.data)
         assert (
             str(response.data["detail"])
             == "{'non_field_errors': [ErrorDetail(string='Wrong password!', code='invalid')]}"
@@ -63,3 +64,197 @@ class TestSendForgotPasswordLinkAPIView:
 
         user.refresh_from_db()
         assert user.security_token != security_token
+
+
+@pytest.mark.django_db
+class TestPasswordResetConfirmAPIView:
+    def test_reset_password_succeeds(self):
+        api_client = APIClient()
+        old_password = fake.password()
+        new_password = fake.password()
+        user = UserFactory(password=old_password)
+        security_token = user.security_token
+
+        payload = {
+            "security_token": security_token,
+            "email": user.email,
+            "new_password": new_password,
+        }
+
+        url = reverse("users:confirm-reset-password")
+        response = api_client.post(url, payload)
+        assert response.status_code == HTTP_200_OK
+
+        user.refresh_from_db()
+
+        assert user.check_password(old_password) is False
+        assert user.check_password(new_password) is True
+        assert user.security_token != security_token
+        assert user.security_token == ""
+
+    def test_reset_password_with_wrong_token_fails(self):
+        api_client = APIClient()
+        old_password = fake.password()
+        new_password = fake.password()
+        user = UserFactory(password=old_password)
+        security_token = user.security_token
+        wrong_security_token = uuid4()
+
+        payload = {
+            "security_token": wrong_security_token,
+            "email": user.email,
+            "new_password": new_password,
+        }
+
+        url = reverse("users:confirm-reset-password")
+        response = api_client.post(url, payload)
+        assert response.status_code == HTTP_400_BAD_REQUEST
+        assert (
+            str(response.data)
+            == "{'detail': {'non_field_errors': [ErrorDetail(string='Such user does not exist', "
+            "code='invalid')]}}"
+        )
+
+        user.refresh_from_db()
+
+        assert user.check_password(old_password) is True
+        assert user.check_password(new_password) is False
+        assert user.security_token == security_token
+
+    def test_reset_password_with_wrong_email_fails(self):
+        api_client = APIClient()
+        old_password = fake.password()
+        new_password = fake.password()
+        user = UserFactory(password=old_password)
+        security_token = user.security_token
+        wrong_email = fake.email()
+
+        payload = {
+            "security_token": security_token,
+            "email": wrong_email,
+            "new_password": new_password,
+        }
+
+        url = reverse("users:confirm-reset-password")
+        response = api_client.post(url, payload)
+        assert response.status_code == HTTP_400_BAD_REQUEST
+        assert (
+            str(response.data)
+            == "{'detail': {'non_field_errors': [ErrorDetail(string='Such user does not exist', "
+            "code='invalid')]}}"
+        )
+
+        user.refresh_from_db()
+
+        assert user.check_password(old_password) is True
+        assert user.check_password(new_password) is False
+        assert user.security_token == security_token
+
+    def test_reset_password_with_wrong_token_and_wrong_email_fails(self):
+        api_client = APIClient()
+        old_password = fake.password()
+        new_password = fake.password()
+        user = UserFactory(password=old_password)
+        security_token = user.security_token
+        wrong_security_token = uuid4()
+        wrong_email = fake.email()
+
+        payload = {
+            "security_token": wrong_security_token,
+            "email": wrong_email,
+            "new_password": new_password,
+        }
+
+        url = reverse("users:confirm-reset-password")
+        response = api_client.post(url, payload)
+        assert response.status_code == HTTP_400_BAD_REQUEST
+        assert (
+            str(response.data)
+            == "{'detail': {'non_field_errors': [ErrorDetail(string='Such user does not exist', "
+            "code='invalid')]}}"
+        )
+
+        user.refresh_from_db()
+
+        assert user.check_password(old_password) is True
+        assert user.check_password(new_password) is False
+        assert user.security_token == security_token
+
+    def test_reset_password_without_token_fails(self):
+        api_client = APIClient()
+        old_password = fake.password()
+        new_password = fake.password()
+        user = UserFactory(password=old_password)
+
+        payload = {
+            "email": user.email,
+            "new_password": new_password,
+        }
+
+        url = reverse("users:confirm-reset-password")
+        response = api_client.post(url, payload)
+        assert response.status_code == HTTP_400_BAD_REQUEST
+        assert (
+            str(response.data)
+            == "{'detail': {'security_token': [ErrorDetail(string='This field is required.', "
+            "code='required')]}}"
+        )
+
+        user.refresh_from_db()
+
+        assert user.check_password(old_password) is True
+        assert user.check_password(new_password) is False
+        assert user.security_token != ""
+
+    def test_reset_password_without_email_fails(self):
+        api_client = APIClient()
+        old_password = fake.password()
+        new_password = fake.password()
+        user = UserFactory(password=old_password)
+        security_token = user.security_token
+
+        payload = {
+            "security_token": security_token,
+            "new_password": new_password,
+        }
+
+        url = reverse("users:confirm-reset-password")
+        response = api_client.post(url, payload)
+        assert response.status_code == HTTP_400_BAD_REQUEST
+        assert (
+            str(response.data)
+            == "{'detail': {'email': [ErrorDetail(string='This field is required.', "
+            "code='required')]}}"
+        )
+
+        user.refresh_from_db()
+
+        assert user.check_password(old_password) is True
+        assert user.check_password(new_password) is False
+        assert user.security_token == security_token
+
+    def test_reset_password_without_token_and_without_email_fails(self):
+        api_client = APIClient()
+        old_password = fake.password()
+        new_password = fake.password()
+        user = UserFactory(password=old_password)
+
+        payload = {
+            "new_password": new_password,
+        }
+
+        url = reverse("users:confirm-reset-password")
+        response = api_client.post(url, payload)
+        assert response.status_code == HTTP_400_BAD_REQUEST
+        assert (
+            str(response.data)
+            == "{'detail': {'security_token': [ErrorDetail(string='This field is required.', "
+            "code='required')], 'email': [ErrorDetail(string='This field is required.', "
+            "code='required')]}}"
+        )
+
+        user.refresh_from_db()
+
+        assert user.check_password(old_password) is True
+        assert user.check_password(new_password) is False
+        assert user.security_token != ""
