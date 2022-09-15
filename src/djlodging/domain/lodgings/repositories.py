@@ -8,6 +8,7 @@ from django.db.models import Q, QuerySet
 from djlodging.domain.lodgings.models import Country
 from djlodging.domain.lodgings.models.city import City
 from djlodging.domain.lodgings.models.lodging import Lodging
+from djlodging.domain.lodgings.models.review import Review
 
 
 class CountryRepository:
@@ -90,3 +91,9 @@ class LodgingRepository:
         )
 
         return available
+
+
+class ReviewRepository:
+    @classmethod
+    def save(cls, review: Review) -> None:
+        review.save()

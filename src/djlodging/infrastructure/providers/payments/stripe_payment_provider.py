@@ -1,9 +1,12 @@
+from decimal import Decimal
+
 import stripe
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from djstripe import webhooks
 from djstripe.models import Customer
+from stripe.error import InvalidRequestError
 
-from djlodging.application_services.bookings import BookingService
 from djlodging.infrastructure.providers.payments.base_payment_provider import (
     BasePaymentProvider,
 )
@@ -34,11 +37,25 @@ class StripePaymentProvider(BasePaymentProvider):
     def get_payment_intent(self, payment_intent_id: str):
         return stripe.PaymentIntent.retrieve(id=payment_intent_id)
 
+    def create_refund(
+        self,
+        amount: Decimal,
+        payment_intent_id: str,
+        metadata: dict,
+    ):
+        amount_in_cents = int(amount * 100)
+        try:
+            return stripe.Refund.create(
+                payment_intent=payment_intent_id, amount=amount_in_cents, metadata=metadata
+            )
+        except InvalidRequestError as ex:
+            raise ValidationError(message=ex.user_message)
 
-@webhooks.handler("payment_intent")
+
+@webhooks.handler("payment_intent.succeeded")
 def confirm_payment(event, **kwargs):
     """Change booking status to 'PAID'"""
+    from djlodging.application_services.bookings import BookingService
 
-    if event.type == "payment_intent.succeeded":
-        payment_intent = event.data["object"]
-        BookingService.confirm_booking(payment_intent["metadata"])
+    payment_intent = event.data["object"]
+    BookingService.confirm(payment_intent["metadata"])

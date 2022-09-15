@@ -16,12 +16,15 @@ from djlodging.api.lodging.serializers import (
     CountryCreateOutputSerializer,
     LodgingCreateInputSerializer,
     LodgingOutputSerializer,
+    ReviewCreateInputSerializer,
+    ReviewCreateOutputSerializer,
 )
 from djlodging.api.permissions import IsPartner
 from djlodging.application_services.lodgings import (
     CityService,
     CountryService,
     LodgingService,
+    ReviewService,
 )
 from djlodging.domain.lodgings.repositories import LodgingRepository
 
@@ -119,3 +122,22 @@ class LodgingViewSet(ViewSet):
         )
         output_serializer = AvailableLodgingListOutputSerializer(available_lodging, many=True)
         return Response(data=output_serializer.data, status=HTTP_200_OK)
+
+
+class ReviewViewSet(ViewSet):
+    @extend_schema(
+        parameters=[
+            OpenApiParameter("lodging_id", type=OpenApiTypes.UUID, location=OpenApiParameter.PATH)
+        ],
+        request=ReviewCreateInputSerializer,
+        responses={
+            201: ReviewCreateOutputSerializer,
+            400: OpenApiResponse(description="Bad request"),
+        },
+    )
+    def create(self, request, lodging_pk):
+        input_serializer = ReviewCreateInputSerializer(data=request.data)
+        input_serializer.is_valid(raise_exception=True)
+        review = ReviewService.create(lodging_id=lodging_pk, **input_serializer.validated_data)
+        output_serializer = ReviewCreateOutputSerializer(review)
+        return Response(output_serializer.data, status=HTTP_201_CREATED)

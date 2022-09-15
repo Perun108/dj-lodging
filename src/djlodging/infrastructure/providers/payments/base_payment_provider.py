@@ -19,3 +19,7 @@ class BasePaymentProvider(ABC):
     @abstractmethod
     def get_payment_intent(self):
         pass
+
+    @abstractmethod
+    def create_refund(self):
+        pass

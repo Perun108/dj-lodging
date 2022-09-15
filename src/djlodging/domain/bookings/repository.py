@@ -20,3 +20,9 @@ class BookingRepository:
             return Booking.objects.get(id=booking_id)
         except Booking.DoesNotExist:
             raise ValidationError("Wrong booking_id")
+
+    @classmethod
+    def change_status(cls, booking: Booking, new_status: str) -> Booking:
+        booking.status = new_status
+        cls.save(booking)
+        return booking

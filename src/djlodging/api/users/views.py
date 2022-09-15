@@ -81,7 +81,7 @@ class UserGetByTokenAndEmailAPIView(APIView):
         ],
         responses={
             200: inline_serializer(
-                name="Retrieve user_id",
+                name="retrieve_user_id",
                 fields={"user_id": serializers.UUIDField()},
             ),
             400: OpenApiResponse(description="Bad request"),

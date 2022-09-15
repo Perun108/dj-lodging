@@ -5,10 +5,12 @@ from django.core.exceptions import PermissionDenied
 
 from djlodging.domain.lodgings.models import City, Country
 from djlodging.domain.lodgings.models.lodging import Lodging
+from djlodging.domain.lodgings.models.review import Review
 from djlodging.domain.lodgings.repositories import (
     CityRepository,
     CountryRepository,
     LodgingRepository,
+    ReviewRepository,
 )
 from djlodging.domain.users.models import User
 
@@ -74,3 +76,12 @@ class LodgingService:
         )
         LodgingRepository.save(lodging)
         return lodging
+
+
+class ReviewService:
+    @classmethod
+    def create(cls, lodging_id: UUID, text: str, score: int) -> Review:
+        lodging = LodgingRepository.get_by_id(lodging_id)
+        review = Review(lodging=lodging, text=text, score=score)
+        ReviewRepository.save(review)
+        return review

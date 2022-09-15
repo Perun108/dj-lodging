@@ -1,10 +1,11 @@
 import pytest
-from django.core.exceptions import ValidationError
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.utils import timezone
 from faker import Faker
 
 from djlodging.application_services.bookings import BookingService
 from djlodging.domain.bookings.models import Booking
+from tests.domain.bookings.factories import BookingFactory
 from tests.domain.lodgings.factories import LodgingFactory
 from tests.domain.users.factories import UserFactory
 
@@ -89,3 +90,71 @@ class TestBookingService:
 
         booking = Booking.objects.first()
         assert booking is None
+
+    def test_pay_succeeds(self, mocker):
+        user = UserFactory()
+        booking = BookingFactory(user=user)
+
+        assert booking.status == Booking.Status.PAYMENT_PENDING
+
+        mock_payment_intent = mocker.patch(
+            "djlodging.application_services.payments.PaymentService.create_payment"
+        )
+
+        mock_id = fake.word()
+        mock_client_secret = fake.word()
+        mock_payment_intent.return_value.id = mock_id
+        mock_payment_intent.return_value.client_secret = mock_client_secret
+
+        client_secret = BookingService.pay(actor=user, booking_id=booking.id)
+        assert client_secret == mock_client_secret
+
+        booking.refresh_from_db()
+
+        assert booking.payment_intent_id == mock_id
+        # NOTE:
+        # We can't test for booking.status == Booking.Status.PAID as that requires a webhook event.
+
+    def test_cancel_succeeds(self, mocker):
+        user = UserFactory()
+        booking = BookingFactory(user=user, status=Booking.Status.PAID)
+
+        mocker.patch(
+            "djlodging.application_services.payments.PaymentService.create_refund",
+            return_value=None,
+        )
+
+        canceled_booking = BookingService.cancel(actor=user, booking_id=booking.id)
+
+        assert canceled_booking.status == Booking.Status.CANCELED
+
+    def test_cancel_booking_with_wrong_status_fails(self, mocker):
+        user = UserFactory()
+        booking = BookingFactory(user=user, status=Booking.Status.PAYMENT_PENDING)
+
+        mocker.patch(
+            "djlodging.application_services.payments.PaymentService.create_refund",
+            return_value=None,
+        )
+
+        with pytest.raises(ValidationError) as exc:
+            BookingService.cancel(actor=user, booking_id=booking.id)
+
+        assert str(exc.value) == "['This booking cannot be canceled!']"
+
+    def test_cancel_booking_with_wrong_user_fails(self, mocker):
+        user = UserFactory()
+        wrong_user = UserFactory()
+        booking = BookingFactory(user=user, status=Booking.Status.PAID)
+
+        mocker.patch(
+            "djlodging.application_services.payments.PaymentService.create_refund",
+            return_value=None,
+        )
+
+        with pytest.raises(PermissionDenied):
+            BookingService.cancel(actor=wrong_user, booking_id=booking.id)
+
+        booking.refresh_from_db()
+
+        assert booking.status == Booking.Status.PAID

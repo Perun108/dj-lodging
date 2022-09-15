@@ -90,3 +90,14 @@ class AvailableLodgingListOutputSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lodging
         fields = "__all__"
+
+
+class ReviewCreateInputSerializer(serializers.Serializer):
+    text = serializers.CharField()
+    score = serializers.IntegerField()
+
+
+class ReviewCreateOutputSerializer(serializers.Serializer):
+    id = serializers.UUIDField()
+    lodging = LodgingOutputSerializer()
+    score = serializers.IntegerField()

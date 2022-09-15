@@ -22,6 +22,7 @@ class Booking(BaseModel):
     status = models.CharField(
         max_length=50, choices=Status.choices, default=Status.PAYMENT_PENDING
     )
+    payment_intent_id = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
         return (
