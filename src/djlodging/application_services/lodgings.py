@@ -80,8 +80,8 @@ class LodgingService:
 
 class ReviewService:
     @classmethod
-    def create(cls, lodging_id: UUID, text: str, score: int) -> Review:
+    def create(cls, lodging_id: UUID, user: User, text: str, score: int) -> Review:
         lodging = LodgingRepository.get_by_id(lodging_id)
-        review = Review(lodging=lodging, text=text, score=score)
+        review = Review(lodging=lodging, user=user, text=text, score=score)
         ReviewRepository.save(review)
         return review

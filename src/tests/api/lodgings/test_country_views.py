@@ -23,7 +23,7 @@ class TestCountryViewSet:
     def test_create_country_by_admin_succeeds(self, admin_api_client_factory_boy):
         name = fake.country()
         payload = {"name": name}
-        url = reverse("country-list")  # POST "/api/countries/"
+        url = reverse("countries-list")  # POST "/api/countries/"
 
         response = admin_api_client_factory_boy.post(url, payload)
         assert response.status_code == HTTP_201_CREATED
@@ -34,7 +34,7 @@ class TestCountryViewSet:
     def test_create_country_by_regular_user_fails(self, user_api_client_factory_boy):
         name = fake.country()
         payload = {"name": name}
-        url = reverse("country-list")  # POST "/api/countries/"
+        url = reverse("countries-list")  # POST "/api/countries/"
 
         response = user_api_client_factory_boy.post(url, payload)
         assert response.status_code == HTTP_403_FORBIDDEN
@@ -47,7 +47,7 @@ class TestCountryViewSet:
 
         name = fake.country()
         payload = {"name": name}
-        url = reverse("country-list")  # POST "/api/countries/"
+        url = reverse("countries-list")  # POST "/api/countries/"
 
         response = api_client.post(url, payload)
         assert response.status_code == HTTP_401_UNAUTHORIZED
@@ -62,7 +62,7 @@ class TestCountryViewSet:
 
     def test_country_without_name_fails(self, admin_api_client_factory_boy):
         payload = {"name": ""}
-        url = reverse("country-list")  # "/api/countries/country-list/"
+        url = reverse("countries-list")  # "/api/countries/country-list/"
         response = admin_api_client_factory_boy.post(url, payload)
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert (

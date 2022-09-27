@@ -38,7 +38,7 @@ class TestLodgingViewSet:
             "price": 10,
         }
 
-        url = reverse("lodging-list")  # POST "/api/lodgings/"
+        url = reverse("lodgings-list")  # POST "/api/lodgings/"
 
         response = partner_api_client_pytest_fixture.post(url, payload)
 
@@ -79,7 +79,7 @@ class TestLodgingViewSet:
             "price": 10,
         }
 
-        url = reverse("lodging-list")  # POST "/api/lodgings/"
+        url = reverse("lodgings-list")  # POST "/api/lodgings/"
 
         response = user_api_client_pytest_fixture.post(url, payload)
 
@@ -108,7 +108,7 @@ class TestLodgingViewSet:
             "date_from": date_from1,
             "date_to": date_from1 + timezone.timedelta(days=7),
         }
-        url = reverse("lodging-list-available")
+        url = reverse("lodgings-list-available")
         response = user_api_client_pytest_fixture.get(url, query_params)
 
         assert response.status_code == HTTP_200_OK
@@ -137,7 +137,7 @@ class TestLodgingViewSet:
             "date_from": date_from1 + timezone.timedelta(days=4),
             "date_to": date_from1 + timezone.timedelta(days=7),
         }
-        url = reverse("lodging-list-available")
+        url = reverse("lodgings-list-available")
         response = user_api_client_pytest_fixture.get(url, query_params)
 
         assert response.status_code == HTTP_200_OK
@@ -166,7 +166,7 @@ class TestLodgingViewSet:
             "date_from": date_from1,
             "date_to": date_from1 + timezone.timedelta(days=1),
         }
-        url = reverse("lodging-list-available")
+        url = reverse("lodgings-list-available")
         response = user_api_client_pytest_fixture.get(url, query_params)
 
         assert response.status_code == HTTP_200_OK
@@ -196,7 +196,7 @@ class TestLodgingViewSet:
             "date_from": date_from1,
             "date_to": date_from1 + timezone.timedelta(days=1),
         }
-        url = reverse("lodging-list-available")
+        url = reverse("lodgings-list-available")
         response = user_api_client_pytest_fixture.get(url, query_params)
 
         assert response.status_code == HTTP_200_OK

@@ -25,7 +25,7 @@ class TestUserViewSet:
             "last_name": last_name,
             "phone_number": phone_number,
         }
-        url = reverse("user-partner", args=[str(user.id)])
+        url = reverse("users-partner", args=[str(user.id)])
         response = user_api_client_pytest_fixture.patch(url, payload)
 
         assert response.status_code == HTTP_200_OK
@@ -54,7 +54,7 @@ class TestUserViewSet:
             "last_name": last_name,
             "phone_number": phone_number,
         }
-        url = reverse("user-partner", args=[str(user.id)])
+        url = reverse("users-partner", args=[str(user.id)])
         response = user_api_client_pytest_fixture.patch(url, payload)
 
         assert response.status_code == HTTP_403_FORBIDDEN

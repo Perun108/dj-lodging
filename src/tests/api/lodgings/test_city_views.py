@@ -25,7 +25,7 @@ class TestCityViewSet:
 
         payload = {"country_id": str(country.id), "name": name}
 
-        url = reverse("city-list")  # POST "/api/cities/"
+        url = reverse("cities-list")  # POST "/api/cities/"
         response = admin_api_client_factory_boy.post(url, payload)
 
         assert response.status_code == HTTP_201_CREATED
@@ -38,9 +38,9 @@ class TestCityViewSet:
         country = CountryFactory()
         name = fake.city()
 
-        payload = {"country_id": str(country.id), "name": name}
+        payload = {"countries_id": str(country.id), "name": name}
 
-        url = reverse("city-list")  # POST "/api/cities/"
+        url = reverse("cities-list")  # POST "/api/cities/"
         response = user_api_client_factory_boy.post(url, payload)
 
         assert response.status_code == HTTP_403_FORBIDDEN
@@ -53,7 +53,7 @@ class TestCityViewSet:
 
         payload = {"country_id": "", "name": name}
 
-        url = reverse("city-list")  # POST "/api/cities/"
+        url = reverse("cities-list")  # POST "/api/cities/"
         response = admin_api_client_factory_boy.post(url, payload)
 
         assert response.status_code == HTTP_400_BAD_REQUEST
@@ -73,7 +73,7 @@ class TestCityViewSet:
 
         payload = {"country_id": str(country.id), "name": name}
 
-        url = reverse("city-list")  # POST "/api/cities/"
+        url = reverse("cities-list")  # POST "/api/cities/"
         response = api_client.post(url, payload)
 
         assert response.status_code == HTTP_401_UNAUTHORIZED

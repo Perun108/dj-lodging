@@ -30,7 +30,7 @@ class TestBookingViewSet:
             "date_from": date_from,
             "date_to": date_to,
         }
-        url = reverse("booking-list")
+        url = reverse("bookings-list")
         response = user_api_client_pytest_fixture.post(url, payload)
 
         assert response.status_code == HTTP_201_CREATED
@@ -52,7 +52,7 @@ class TestBookingViewSet:
             "date_from": date_from,
             "date_to": date_to,
         }
-        url = reverse("booking-list")
+        url = reverse("bookings-list")
         response = user_api_client_pytest_fixture.post(url, payload)
 
         assert response.status_code == HTTP_400_BAD_REQUEST
@@ -74,7 +74,7 @@ class TestBookingViewSet:
             "date_from": date_from,
             "date_to": date_to,
         }
-        url = reverse("booking-list")
+        url = reverse("bookings-list")
         response = user_api_client_pytest_fixture.post(url, payload)
 
         assert response.status_code == HTTP_400_BAD_REQUEST
@@ -96,7 +96,7 @@ class TestBookingViewSet:
             "date_from": date_from,
             "date_to": date_to,
         }
-        url = reverse("booking-list")
+        url = reverse("bookings-list")
         response = user_api_client_pytest_fixture.post(url, payload)
 
         assert response.status_code == HTTP_400_BAD_REQUEST
@@ -120,7 +120,7 @@ class TestBookingViewSet:
             "date_from": date_from,
             "date_to": date_to,
         }
-        url = reverse("booking-list")
+        url = reverse("bookings-list")
         response = user_api_client_pytest_fixture.post(url, payload)
 
         assert response.status_code == HTTP_400_BAD_REQUEST
@@ -137,7 +137,7 @@ class TestBookingViewSet:
         assert Booking.objects.count() == 0
 
         bookings = BookingFactory.create_batch(size=count, user=user)
-        url = reverse("booking-list")
+        url = reverse("bookings-list")
         response = user_api_client_pytest_fixture.get(url)
 
         assert response.status_code == HTTP_200_OK
@@ -148,7 +148,7 @@ class TestBookingViewSet:
     def test_pay_succeeds(self, user_api_client_pytest_fixture, user):
         booking = BookingFactory(user=user)
         payload = {}
-        url = reverse("booking-pay", args=[str(booking.id)])
+        url = reverse("bookings-pay", args=[str(booking.id)])
         response = user_api_client_pytest_fixture.post(url, payload, format="json")
 
         assert response.status_code == HTTP_201_CREATED
@@ -173,7 +173,7 @@ class TestBookingViewSet:
         booking = BookingFactory()
 
         payload = {}
-        url = reverse("booking-pay", args=[str(booking.id)])
+        url = reverse("bookings-pay", args=[str(booking.id)])
         response = user_api_client_pytest_fixture.post(url, payload, format="json")
 
         assert response.status_code == HTTP_403_FORBIDDEN

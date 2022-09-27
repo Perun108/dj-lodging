@@ -11,7 +11,8 @@ User = get_user_model()
 
 class Review(BaseModel):
     lodging = models.ForeignKey(Lodging, on_delete=models.CASCADE, related_name="reviews")
-
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="reviews")
+    text = models.TextField()
     score = models.PositiveSmallIntegerField(validators=[MaxValueValidator(10)])
 
     def __str__(self):

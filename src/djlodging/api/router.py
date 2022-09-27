@@ -24,4 +24,5 @@ urlpatterns = [
     path("", include(router.urls)),
     path("", include(reviews_router.urls)),
 ]
+# print(reviews_router.urls)
 # print(router.urls)

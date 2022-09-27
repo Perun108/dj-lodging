@@ -138,6 +138,8 @@ class ReviewViewSet(ViewSet):
     def create(self, request, lodging_pk):
         input_serializer = ReviewCreateInputSerializer(data=request.data)
         input_serializer.is_valid(raise_exception=True)
-        review = ReviewService.create(lodging_id=lodging_pk, **input_serializer.validated_data)
+        review = ReviewService.create(
+            lodging_id=lodging_pk, user=request.user, **input_serializer.validated_data
+        )
         output_serializer = ReviewCreateOutputSerializer(review)
         return Response(output_serializer.data, status=HTTP_201_CREATED)
