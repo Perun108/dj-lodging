@@ -33,3 +33,5 @@ static/
 *.coverage
 htmlcov/
 .env
+
+.github/
