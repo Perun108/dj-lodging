@@ -1,10 +1,10 @@
 import pytest
 from faker import Faker
 from rest_framework.reverse import reverse
-from rest_framework.status import HTTP_201_CREATED
+from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED
 
 from djlodging.domain.lodgings.models.review import Review
-from tests.domain.lodgings.factories import LodgingFactory
+from tests.domain.lodgings.factories import LodgingFactory, ReviewFactory
 
 fake = Faker()
 
@@ -32,31 +32,26 @@ class TestReviewViewSet:
         assert review.text == text
         assert review.score == score
 
-    # def test_create_lodging_by_non_partner_fails(self, user_api_client_pytest_fixture):
-    #     city = CityFactory()
+    def test_list_reviews_succeeds(self, user_api_client_pytest_fixture):
 
-    #     name = fake.word()
-    #     type = random.choice(Lodging.Type.choices)
-    #     street = fake.street_name()
-    #     house_number = fake.building_number()
-    #     zip_code = fake.postcode()
-    #     email = fake.email()
-    #     phone_number = fake.phone_number()
+        tested_lodging = LodgingFactory()
+        tested_lodging_reviews_count = 5
+        another_lodging = LodgingFactory()
+        another_lodging_reviews_count = 3
 
-    #     payload = {
-    #         "name": name,
-    #         "type": type,
-    #         "city_id": str(city.id),
-    #         "street": street,
-    #         "house_number": house_number,
-    #         "zip_code": zip_code,
-    #         "email": email,
-    #         "phone_number": phone_number,
-    #         "price": 10,
-    #     }
+        # Create tested reviews
+        ReviewFactory.create_batch(size=tested_lodging_reviews_count, lodging=tested_lodging)
+        # Create other (not tested) reviews
+        ReviewFactory.create_batch(size=another_lodging_reviews_count, lodging=another_lodging)
 
-    #     url = reverse("lodging-list")  # POST "/api/lodgings/"
+        total_reviews_count = Review.objects.count()
+        assert total_reviews_count == tested_lodging_reviews_count + another_lodging_reviews_count
 
-    #     response = user_api_client_pytest_fixture.post(url, payload)
+        url = reverse(
+            "reviews-list", args=[str(tested_lodging.id)]
+        )  # GET "/api/lodgings/{lodging_id}/reviews/"
 
-    #     assert response.status_code == HTTP_403_FORBIDDEN
+        response = user_api_client_pytest_fixture.get(url)
+
+        assert response.status_code == HTTP_200_OK
+        assert len(response.data) == tested_lodging_reviews_count

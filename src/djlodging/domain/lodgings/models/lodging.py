@@ -16,7 +16,7 @@ class Lodging(BaseModel):
         other = "other", "Other"
 
     name = models.CharField(max_length=100)
-    type = models.CharField(max_length=50, choices=Type.choices)
+    kind = models.CharField(max_length=50, choices=Type.choices)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="lodging")
     city = models.ForeignKey(City, on_delete=models.CASCADE)
     district = models.CharField(max_length=255, blank=True)

@@ -3,7 +3,7 @@ from typing import Optional
 from uuid import UUID
 
 from django.core.exceptions import ValidationError
-from django.db.models import Q, QuerySet
+from django.db.models import Case, Q, QuerySet, Value, When
 
 from djlodging.domain.lodgings.models import Country
 from djlodging.domain.lodgings.models.city import City
@@ -50,7 +50,7 @@ class LodgingRepository:
         lodging.save()
 
     @classmethod
-    def get_available_at_destination_for_dates(
+    def get_list(
         cls,
         date_from: date,
         date_to: date,
@@ -58,7 +58,8 @@ class LodgingRepository:
         number_of_rooms: int,
         country: Optional[str] = "",
         city: Optional[str] = "",
-        type: Optional[str] = "",
+        kind: Optional[str] = "",
+        available_only: bool = False,
         order: Optional[str] = "-price",
     ) -> QuerySet:
 
@@ -74,26 +75,38 @@ class LodgingRepository:
         else:
             raise ValidationError("You must specify either city or country")
 
-        if type:
-            lodging_filter |= Q(type__exact=type)
+        if kind:
+            lodging_filter |= Q(kind__exact=kind)
 
-        lodging_ids_list = Lodging.objects.filter(lodging_filter).values_list("id", flat=True)
-
-        # TODO: Filter for Bookings status!
-        available = (
-            Lodging.objects.filter(
-                ~Q(booking__lodging__id__in=lodging_ids_list)
-                | Q(id__in=lodging_ids_list) & Q(booking__date_to__lte=date_from)
-                | Q(id__in=lodging_ids_list) & Q(booking__date_from__gte=date_to)
-            )
-            .distinct()
-            .order_by(order)
+        filtered_lodgings = Lodging.objects.filter(lodging_filter)
+        filtered_lodgings_ids_list = filtered_lodgings.values_list("id", flat=True)
+        query_expression = (
+            ~Q(booking__lodging__id__in=filtered_lodgings_ids_list)
+            | Q(id__in=filtered_lodgings_ids_list) & Q(booking__date_to__lte=date_from)
+            | Q(id__in=filtered_lodgings_ids_list) & Q(booking__date_from__gte=date_to)
         )
 
-        return available
+        if available_only:
+            # TODO: Filter for Bookings status!
+            filtered_lodgings = Lodging.objects.filter(query_expression)
+        else:
+            filtered_lodgings = Lodging.objects.annotate(
+                available=Case(
+                    When(
+                        query_expression,
+                        then=Value(True),
+                    ),
+                    default=Value(False),
+                )
+            )
+        return filtered_lodgings.distinct().order_by(order)
 
 
 class ReviewRepository:
     @classmethod
     def save(cls, review: Review) -> None:
         review.save()
+
+    @classmethod
+    def get_list(cls, lodging_id: UUID) -> QuerySet:
+        return Review.objects.filter(lodging__id=lodging_id)

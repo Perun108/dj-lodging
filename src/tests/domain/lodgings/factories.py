@@ -6,6 +6,7 @@ from factory.django import DjangoModelFactory
 from faker import Faker as Fake
 
 from djlodging.domain.lodgings.models import City, Country, Lodging
+from djlodging.domain.lodgings.models.review import Review
 from tests.domain.users.factories import UserFactory
 
 User = get_user_model()
@@ -29,7 +30,7 @@ class CityFactory(DjangoModelFactory):
 
 class LodgingFactory(DjangoModelFactory):
     name = Faker("word")
-    type = random.choice(Lodging.Type.choices)
+    kind = random.choice(Lodging.Type.choices)
     owner = SubFactory(UserFactory)
     city = SubFactory(CityFactory)
     street = Faker("street_name")
@@ -41,3 +42,12 @@ class LodgingFactory(DjangoModelFactory):
 
     class Meta:
         model = Lodging
+
+
+class ReviewFactory(DjangoModelFactory):
+    lodging = SubFactory(LodgingFactory)
+    text = fake.paragraph()
+    score = int(fake.numerify("#"))
+
+    class Meta:
+        model = Review

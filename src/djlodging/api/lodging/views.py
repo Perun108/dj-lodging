@@ -1,6 +1,5 @@
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
-from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED
@@ -8,16 +7,16 @@ from rest_framework.viewsets import ViewSet
 
 from djlodging.api.helpers import validate_required_query_params_with_any
 from djlodging.api.lodging.serializers import (
-    AvailableLodgingListInputSerializer,
-    AvailableLodgingListOutputSerializer,
     CityCreateInputSerializer,
-    CityCreateOutputSerializer,
+    CityOutputSerializer,
     CountryCreateInputSerializer,
     CountryCreateOutputSerializer,
     LodgingCreateInputSerializer,
+    LodgingListInputSerializer,
+    LodgingListOutputSerializer,
     LodgingOutputSerializer,
     ReviewCreateInputSerializer,
-    ReviewCreateOutputSerializer,
+    ReviewOutputSerializer,
 )
 from djlodging.api.permissions import IsPartner
 from djlodging.application_services.lodgings import (
@@ -26,7 +25,7 @@ from djlodging.application_services.lodgings import (
     LodgingService,
     ReviewService,
 )
-from djlodging.domain.lodgings.repositories import LodgingRepository
+from djlodging.domain.lodgings.repositories import LodgingRepository, ReviewRepository
 
 
 class CountryViewSet(ViewSet):
@@ -53,7 +52,7 @@ class CityViewSet(ViewSet):
     @extend_schema(
         request=CityCreateInputSerializer,
         responses={
-            201: CityCreateOutputSerializer,
+            201: CityOutputSerializer,
             400: OpenApiResponse(description="Bad request"),
         },
     )
@@ -61,13 +60,13 @@ class CityViewSet(ViewSet):
         incoming_data = CityCreateInputSerializer(data=request.data)
         incoming_data.is_valid(raise_exception=True)
         city = CityService.create(actor=request.user, **incoming_data.validated_data)
-        output_serializer = CityCreateOutputSerializer(city)
+        output_serializer = CityOutputSerializer(city)
         return Response(data=output_serializer.data, status=HTTP_201_CREATED)
 
 
 class LodgingViewSet(ViewSet):
     def get_permissions(self):
-        if self.action in ["list", "retrieve", "list_available"]:
+        if self.action in ["list", "retrieve"]:
             self.permission_classes = (IsAuthenticated,)
         else:
             self.permission_classes = (IsPartner,)
@@ -103,24 +102,21 @@ class LodgingViewSet(ViewSet):
                 location=OpenApiParameter.QUERY,
             ),
         ],
-        request=AvailableLodgingListInputSerializer,
+        request=LodgingListInputSerializer,
         responses={
-            200: AvailableLodgingListOutputSerializer,
+            200: LodgingListOutputSerializer,
             400: OpenApiResponse(description="Bad request"),
         },
     )
-    @action(detail=False, url_path="available")
-    def list_available(self, request):
+    def list(self, request):
         validate_required_query_params_with_any(
             required_params=["country", "city"],
             query_params=request.query_params,
         )
-        input_serializer = AvailableLodgingListInputSerializer(data=request.query_params)
+        input_serializer = LodgingListInputSerializer(data=request.query_params)
         input_serializer.is_valid(raise_exception=True)
-        available_lodging = LodgingRepository.get_available_at_destination_for_dates(
-            **input_serializer.validated_data
-        )
-        output_serializer = AvailableLodgingListOutputSerializer(available_lodging, many=True)
+        lodgings = LodgingRepository.get_list(**input_serializer.validated_data)
+        output_serializer = LodgingListOutputSerializer(lodgings, many=True)
         return Response(data=output_serializer.data, status=HTTP_200_OK)
 
 
@@ -131,7 +127,7 @@ class ReviewViewSet(ViewSet):
         ],
         request=ReviewCreateInputSerializer,
         responses={
-            201: ReviewCreateOutputSerializer,
+            201: ReviewOutputSerializer,
             400: OpenApiResponse(description="Bad request"),
         },
     )
@@ -141,5 +137,20 @@ class ReviewViewSet(ViewSet):
         review = ReviewService.create(
             lodging_id=lodging_pk, user=request.user, **input_serializer.validated_data
         )
-        output_serializer = ReviewCreateOutputSerializer(review)
+        output_serializer = ReviewOutputSerializer(review)
         return Response(output_serializer.data, status=HTTP_201_CREATED)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter("lodging_id", type=OpenApiTypes.UUID, location=OpenApiParameter.PATH)
+        ],
+        request=None,
+        responses={
+            200: ReviewOutputSerializer(many=True),
+            400: OpenApiResponse(description="Bad request"),
+        },
+    )
+    def list(self, request, lodging_pk):
+        reviews = ReviewRepository.get_list(lodging_id=lodging_pk)
+        output_serializer = ReviewOutputSerializer(reviews, many=True)
+        return Response(output_serializer.data, status=HTTP_200_OK)

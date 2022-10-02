@@ -18,7 +18,7 @@ class CityAdmin(admin.ModelAdmin):
 
 
 class LodgingAdmin(admin.ModelAdmin):
-    list_display = ["id", "name", "city", "type", "number_of_rooms", "price"]
+    list_display = ["id", "name", "city", "kind", "number_of_rooms", "price"]
 
 
 class ReviewAdmin(admin.ModelAdmin):

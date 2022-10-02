@@ -74,3 +74,12 @@ class UserOutputSerializer(serializers.Serializer):
     is_staff = serializers.BooleanField()
     is_user = serializers.BooleanField()
     is_partner = serializers.BooleanField()
+
+
+class LodgingUserOutputSerializer(serializers.Serializer):
+    id = serializers.UUIDField()
+    email = serializers.EmailField()
+    username = serializers.CharField()
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    phone_number = serializers.CharField()

@@ -44,7 +44,7 @@ class LodgingService:
         cls,
         actor: User,
         name: str,
-        type: str,
+        kind: str,
         city_id: UUID,
         street: str,
         house_number: str,
@@ -63,7 +63,7 @@ class LodgingService:
 
         lodging = Lodging(
             name=name,
-            type=type,
+            kind=kind,
             owner=actor,
             city=city,
             district=district,
