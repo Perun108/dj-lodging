@@ -112,8 +112,8 @@ class LodgingListOutputSerializer(serializers.Serializer):
     number_of_people = serializers.IntegerField()
     number_of_rooms = serializers.IntegerField()
     price = serializers.DecimalField(max_digits=7, decimal_places=2)
-    average_rating = serializers.FloatField()
     available = serializers.BooleanField(required=False)
+    average_rating = serializers.FloatField(required=False)
 
 
 class ReviewCreateInputSerializer(serializers.Serializer):

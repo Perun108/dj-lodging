@@ -3,7 +3,8 @@ from typing import Optional
 from uuid import UUID
 
 from django.core.exceptions import ValidationError
-from django.db.models import Case, Q, QuerySet, Value, When
+from django.db.models import Avg, Case, Q, QuerySet, Value, When
+from django.db.models.functions import Round
 
 from djlodging.domain.lodgings.models import Country
 from djlodging.domain.lodgings.models.city import City
@@ -80,6 +81,7 @@ class LodgingRepository:
 
         filtered_lodgings = Lodging.objects.filter(lodging_filter)
         filtered_lodgings_ids_list = filtered_lodgings.values_list("id", flat=True)
+
         query_expression = (
             ~Q(booking__lodging__id__in=filtered_lodgings_ids_list)
             | Q(id__in=filtered_lodgings_ids_list) & Q(booking__date_to__lte=date_from)
@@ -99,7 +101,11 @@ class LodgingRepository:
                     default=Value(False),
                 )
             )
-        return filtered_lodgings.distinct().order_by(order)
+        # Add average_rating to each lodging
+        result = filtered_lodgings.annotate(
+            average_rating=Round(Avg("reviews__score"), precision=1)
+        )
+        return result.distinct().order_by(order)
 
 
 class ReviewRepository:

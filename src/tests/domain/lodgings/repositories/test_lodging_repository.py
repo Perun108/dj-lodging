@@ -1,11 +1,13 @@
 import pytest
+from django.db.models import Avg
 from django.utils import timezone
 from faker import Faker
 from pytest_django.asserts import assertQuerysetEqual
 
+from djlodging.domain.lodgings.models.review import Review
 from djlodging.domain.lodgings.repositories import LodgingRepository
 from tests.domain.bookings.factories import BookingFactory
-from tests.domain.lodgings.factories import CityFactory, LodgingFactory
+from tests.domain.lodgings.factories import CityFactory, LodgingFactory, ReviewFactory
 
 fake = Faker()
 
@@ -34,11 +36,18 @@ def test_get_list_with_available_and_unavailable_for_same_dates_succeeds():
     for i in range(number_of_bookings):
         BookingFactory(lodging=lodgings[i], date_from=dates_from_list[i])
 
+    # Create reviews for one of the lodgings to get average_rating
+    number_of_reviews = 4
+    ReviewFactory.create_batch(size=number_of_reviews, lodging=lodgings[0])
+    average_reviews_rating = Review.objects.aggregate(average_rating=Avg("score"))[
+        "average_rating"
+    ]
+
     # Get list of all lodgings for a range from today till the last booked date.
     date_from = timezone.now().date()
     date_to = date_from + timezone.timedelta(days=number_of_bookings)
 
-    lodgings = LodgingRepository.get_list(
+    result = LodgingRepository.get_list(
         date_from=date_from,
         date_to=date_to,
         number_of_people=number_of_people,
@@ -47,9 +56,17 @@ def test_get_list_with_available_and_unavailable_for_same_dates_succeeds():
         available_only=available_only,
     )
 
-    assert lodgings.count() == number_of_lodgings
-    assert lodgings.filter(available=False).count() == number_of_bookings
-    assert lodgings.filter(available=True).count() == number_of_lodgings - number_of_bookings
+    assert result.count() == number_of_lodgings
+    assert result.filter(available=False).count() == number_of_bookings
+    assert result.filter(available=True).count() == number_of_lodgings - number_of_bookings
+
+    # Get the reviewed lodging and assert for its average_rating
+    reviewed_lodging = result.get(id=lodgings[0].id)
+    assert reviewed_lodging.average_rating == average_reviews_rating
+
+    # Assert that other (not reviewed) lodgings have no average_rating
+    for lodging in result.exclude(id=lodgings[0].id):
+        assert lodging.average_rating is None
 
 
 @pytest.mark.django_db
