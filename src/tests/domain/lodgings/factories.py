@@ -47,7 +47,7 @@ class LodgingFactory(DjangoModelFactory):
 class ReviewFactory(DjangoModelFactory):
     lodging = SubFactory(LodgingFactory)
     text = fake.paragraph()
-    score = int(fake.numerify("#"))
+    score = Faker("pyint", min_value=0, max_value=9)
 
     class Meta:
         model = Review

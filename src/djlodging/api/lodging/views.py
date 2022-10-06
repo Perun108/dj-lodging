@@ -12,6 +12,7 @@ from djlodging.api.lodging.serializers import (
     CountryCreateInputSerializer,
     CountryCreateOutputSerializer,
     LodgingCreateInputSerializer,
+    LodgingCreateOutputSerializer,
     LodgingListInputSerializer,
     LodgingListOutputSerializer,
     LodgingOutputSerializer,
@@ -75,7 +76,7 @@ class LodgingViewSet(ViewSet):
     @extend_schema(
         request=LodgingCreateInputSerializer,
         responses={
-            201: LodgingOutputSerializer,
+            201: LodgingCreateOutputSerializer,
             400: OpenApiResponse(description="Bad request"),
         },
     )
@@ -83,7 +84,7 @@ class LodgingViewSet(ViewSet):
         input_serializer = LodgingCreateInputSerializer(data=request.data)
         input_serializer.is_valid(raise_exception=True)
         lodging = LodgingService.create(actor=request.user, **input_serializer.validated_data)
-        output_serializer = LodgingOutputSerializer(lodging)
+        output_serializer = LodgingCreateOutputSerializer(lodging)
         return Response(data=output_serializer.data, status=HTTP_201_CREATED)
 
     @extend_schema(
@@ -117,6 +118,26 @@ class LodgingViewSet(ViewSet):
         input_serializer.is_valid(raise_exception=True)
         lodgings = LodgingRepository.get_list(**input_serializer.validated_data)
         output_serializer = LodgingListOutputSerializer(lodgings, many=True)
+        return Response(data=output_serializer.data, status=HTTP_200_OK)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="id",
+                description="Lodging id",
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.PATH,
+            ),
+        ],
+        request=None,
+        responses={
+            200: LodgingOutputSerializer,
+            400: OpenApiResponse(description="Bad request"),
+        },
+    )
+    def retrieve(self, request, pk):
+        lodging = LodgingRepository.retrieve_lodging_with_average_rating(pk)
+        output_serializer = LodgingOutputSerializer(lodging)
         return Response(data=output_serializer.data, status=HTTP_200_OK)
 
 

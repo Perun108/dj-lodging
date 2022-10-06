@@ -4,11 +4,18 @@ import pytest
 from django.utils import timezone
 from faker import Faker
 from rest_framework.reverse import reverse
-from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_403_FORBIDDEN
+from rest_framework.status import (
+    HTTP_200_OK,
+    HTTP_201_CREATED,
+    HTTP_401_UNAUTHORIZED,
+    HTTP_403_FORBIDDEN,
+)
+from rest_framework.test import APIClient
 
 from djlodging.domain.lodgings.models.lodging import Lodging
+from djlodging.domain.lodgings.repositories import LodgingRepository
 from tests.domain.bookings.factories import BookingFactory
-from tests.domain.lodgings.factories import CityFactory, LodgingFactory
+from tests.domain.lodgings.factories import CityFactory, LodgingFactory, ReviewFactory
 
 fake = Faker()
 
@@ -233,3 +240,52 @@ class TestLodgingViewSet:
 
         assert response.status_code == HTTP_200_OK
         assert len(response.data) == size
+
+    def test_retrieve_succeeds(self, user_api_client_pytest_fixture):
+        lodging = LodgingFactory()
+
+        url = reverse("lodgings-detail", args=[str(lodging.id)])
+        response = user_api_client_pytest_fixture.get(url)
+
+        assert response.status_code == HTTP_200_OK
+        assert response.data["id"] == str(lodging.id)
+
+    def test_retrieve_by_unauthorized_user_fails(self):
+        lodging = LodgingFactory()
+
+        api_client = APIClient()
+
+        url = reverse("lodgings-detail", args=[str(lodging.id)])
+        response = api_client.get(url)
+
+        assert response.status_code == HTTP_401_UNAUTHORIZED
+
+    def test_average_rating_is_updated_after_new_review(self, user_api_client_pytest_fixture):
+        lodging = LodgingFactory()
+
+        # Assert that the newly created lodging has no rating since it has not reviews yet
+        annotated_lodging = LodgingRepository.retrieve_lodging_with_average_rating(
+            lodging_id=lodging.id
+        )
+
+        assert annotated_lodging.average_rating is None
+
+        # Create reviews
+        number_of_reviews = 3
+        reviews = ReviewFactory.create_batch(lodging=lodging, size=number_of_reviews)
+
+        # Calculate average rating for the lodging
+        average_rating = sum([review.score for review in reviews]) / number_of_reviews
+
+        url = reverse("lodgings-detail", args=[str(lodging.id)])
+        response = user_api_client_pytest_fixture.get(url)
+
+        # Response should contain 'average_rating' annotation equal to the one above
+        assert response.data["average_rating"] == round(average_rating, ndigits=1)
+
+        # Once again retrieve the lodging but this time it should have an 'average_rating'
+        annotated_lodging = LodgingRepository.retrieve_lodging_with_average_rating(
+            lodging_id=lodging.id
+        )
+
+        assert annotated_lodging.average_rating == round(average_rating, ndigits=1)

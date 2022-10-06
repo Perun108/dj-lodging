@@ -102,10 +102,17 @@ class LodgingRepository:
                 )
             )
         # Add average_rating to each lodging
-        result = filtered_lodgings.annotate(
-            average_rating=Round(Avg("reviews__score"), precision=1)
-        )
+        result = cls._annotate_lodgings_with_average_ratings(filtered_lodgings)
         return result.distinct().order_by(order)
+
+    @classmethod
+    def _annotate_lodgings_with_average_ratings(cls, filtered_lodgings: QuerySet):
+        return filtered_lodgings.annotate(average_rating=Round(Avg("reviews__score"), precision=1))
+
+    @classmethod
+    def retrieve_lodging_with_average_rating(cls, lodging_id: UUID):
+        lodging = Lodging.objects.filter(id=lodging_id)
+        return cls._annotate_lodgings_with_average_ratings(lodging).first()
 
 
 class ReviewRepository:

@@ -59,12 +59,12 @@ class LodgingOwnerOutputSerializer(serializers.Serializer):
     phone_number = serializers.CharField()
 
 
-class LodgingOutputSerializer(serializers.Serializer):
+class LodgingCreateOutputSerializer(serializers.Serializer):
     id = serializers.UUIDField()
     name = serializers.CharField()
     kind = serializers.CharField()
-    owner = LodgingOwnerOutputSerializer()
-    city = LodgingCityOutputSerializer()
+    owner = LodgingUserOutputSerializer()
+    city = CityOutputSerializer()
     district = serializers.CharField()
     street = serializers.CharField()
     house_number = serializers.CharField()
@@ -74,6 +74,14 @@ class LodgingOutputSerializer(serializers.Serializer):
     number_of_people = serializers.IntegerField()
     number_of_rooms = serializers.IntegerField()
     price = serializers.DecimalField(max_digits=7, decimal_places=2)
+
+
+class LodgingOutputSerializer(LodgingCreateOutputSerializer):
+    average_rating = serializers.FloatField(required=False)
+
+
+class LodgingListOutputSerializer(LodgingOutputSerializer):
+    available = serializers.BooleanField(required=False)
 
 
 class LodgingListInputSerializer(serializers.ModelSerializer):
@@ -96,24 +104,6 @@ class LodgingListInputSerializer(serializers.ModelSerializer):
             "date_to",
             "available_only",
         ]
-
-
-class LodgingListOutputSerializer(serializers.Serializer):
-    name = serializers.CharField()
-    kind = serializers.CharField()
-    owner = LodgingUserOutputSerializer()
-    city = CityOutputSerializer()
-    district = serializers.CharField()
-    street = serializers.CharField()
-    house_number = serializers.CharField()
-    zip_code = serializers.CharField()
-    phone_number = serializers.CharField()
-    email = serializers.EmailField()
-    number_of_people = serializers.IntegerField()
-    number_of_rooms = serializers.IntegerField()
-    price = serializers.DecimalField(max_digits=7, decimal_places=2)
-    available = serializers.BooleanField(required=False)
-    average_rating = serializers.FloatField(required=False)
 
 
 class ReviewCreateInputSerializer(serializers.Serializer):
