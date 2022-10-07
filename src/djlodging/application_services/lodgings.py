@@ -2,6 +2,7 @@ from typing import Optional
 from uuid import UUID
 
 from django.core.exceptions import PermissionDenied
+from django.db.models import QuerySet
 
 from djlodging.domain.lodgings.models import City, Country
 from djlodging.domain.lodgings.models.lodging import Lodging
@@ -24,6 +25,39 @@ class CountryService:
         country = Country(name=name)
         CountryRepository.save(country)
         return country
+
+    @classmethod
+    def retrieve(cls, *, actor, country_id: UUID) -> Country:
+        # Check permissions to prevent unauthorized actions that circumvents API level permissions
+        if not actor.is_staff:
+            raise PermissionDenied
+        return CountryRepository.get_by_id(country_id=country_id)
+
+    @classmethod
+    def get_list(cls, *, actor) -> QuerySet[Country]:
+        # Check permissions to prevent unauthorized actions that circumvents API level permissions
+        if not actor.is_staff:
+            raise PermissionDenied
+        return CountryRepository.get_all()
+
+    @classmethod
+    def update(cls, *, actor, country_id: UUID, **kwargs) -> Country:
+        # Check permissions to prevent unauthorized actions that circumvents API level permissions
+        if not actor.is_staff:
+            raise PermissionDenied
+
+        country = CountryRepository.get_by_id(country_id=country_id)
+        for field, value in kwargs.items():
+            setattr(country, field, value)
+        CountryRepository.save(country)
+        return country
+
+    @classmethod
+    def delete(cls, *, actor, country_id: UUID) -> tuple:
+        # Check permissions to prevent unauthorized actions that circumvents API level permissions
+        if not actor.is_staff:
+            raise PermissionDenied
+        return CountryRepository.delete(country_id)
 
 
 class CityService:

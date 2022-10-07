@@ -18,6 +18,7 @@ class CountryFactory(DjangoModelFactory):
 
     class Meta:
         model = Country
+        django_get_or_create = ("name",)
 
 
 class CityFactory(DjangoModelFactory):

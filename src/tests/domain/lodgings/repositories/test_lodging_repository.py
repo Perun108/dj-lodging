@@ -1,5 +1,6 @@
 import pytest
 from django.db.models import Avg
+from django.db.models.functions import Round
 from django.utils import timezone
 from faker import Faker
 from pytest_django.asserts import assertQuerysetEqual
@@ -39,9 +40,9 @@ def test_get_list_with_available_and_unavailable_for_same_dates_succeeds():
     # Create reviews for one of the lodgings to get average_rating
     number_of_reviews = 4
     ReviewFactory.create_batch(size=number_of_reviews, lodging=lodgings[0])
-    average_reviews_rating = Review.objects.aggregate(average_rating=Avg("score"))[
-        "average_rating"
-    ]
+    average_reviews_rating = Review.objects.aggregate(
+        average_rating=Round(Avg("score"), precision=1)
+    )["average_rating"]
 
     # Get list of all lodgings for a range from today till the last booked date.
     date_from = timezone.now().date()
@@ -96,9 +97,9 @@ def test_get_list_with_available_and_unavailable_for_different_dates_succeeds():
     # Create reviews for one of the lodgings to get average_rating
     number_of_reviews = 4
     ReviewFactory.create_batch(size=number_of_reviews, lodging=lodgings[0])
-    average_reviews_rating = Review.objects.aggregate(average_rating=Avg("score"))[
-        "average_rating"
-    ]
+    average_reviews_rating = Review.objects.aggregate(
+        average_rating=Round(Avg("score"), precision=1)
+    )["average_rating"]
 
     # Get list of all lodgings for a range completely different from the booked dates.
     date_from = timezone.now().date() + timezone.timedelta(days=30)
@@ -154,9 +155,9 @@ def test_get_list_with_only_available_for_same_dates_succeeds():
     # since booked lodgings should not be returned in this method call under test.
     number_of_reviews = 4
     ReviewFactory.create_batch(size=number_of_reviews, lodging=lodgings[number_of_bookings])
-    average_reviews_rating = Review.objects.aggregate(average_rating=Avg("score"))[
-        "average_rating"
-    ]
+    average_reviews_rating = Review.objects.aggregate(
+        average_rating=Round(Avg("score"), precision=1)
+    )["average_rating"]
 
     # Get list of all lodgings for a range from today till the last booked date.
     date_from = timezone.now().date()
@@ -209,9 +210,9 @@ def test_get_list_with_only_available_for_different_dates_succeeds():
     # Create reviews for one of the lodgings to get average_rating
     number_of_reviews = 4
     ReviewFactory.create_batch(size=number_of_reviews, lodging=lodgings[0])
-    average_reviews_rating = Review.objects.aggregate(average_rating=Avg("score"))[
-        "average_rating"
-    ]
+    average_reviews_rating = Review.objects.aggregate(
+        average_rating=Round(Avg("score"), precision=1)
+    )["average_rating"]
 
     # Get list of all lodgings for a range completely different from the booked dates.
     date_from = timezone.now().date() + timezone.timedelta(days=30)

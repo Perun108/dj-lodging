@@ -18,11 +18,20 @@ class CountryRepository:
         country.save()
 
     @classmethod
-    def get_by_id(cls, country_id: UUID) -> None:
+    def get_by_id(cls, country_id: UUID) -> Country:
         try:
             return Country.objects.get(id=country_id)
         except Country.DoesNotExist:
             raise ValidationError("There is no country with this id")
+
+    @classmethod
+    def get_all(cls) -> QuerySet[Country]:
+        return Country.objects.all()
+
+    @classmethod
+    def delete(cls, country_id: UUID) -> tuple:
+        country = cls.get_by_id(country_id)
+        return country.delete()
 
 
 class CityRepository:

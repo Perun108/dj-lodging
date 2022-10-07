@@ -8,8 +8,12 @@ class CountryCreateInputSerializer(serializers.Serializer):
     name = serializers.CharField()
 
 
-class CountryCreateOutputSerializer(serializers.Serializer):
+class CountryOutputSerializer(serializers.Serializer):
     id = serializers.UUIDField()
+    name = serializers.CharField()
+
+
+class CountryUpdateInputSerializer(serializers.Serializer):
     name = serializers.CharField()
 
 
