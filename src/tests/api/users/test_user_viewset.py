@@ -58,6 +58,7 @@ class TestUserViewSet:
         response = user_api_client_pytest_fixture.patch(url, payload)
 
         assert response.status_code == HTTP_403_FORBIDDEN
+        assert str(response.data["detail"]) == "You do not have permission to perform this action."
 
         user.refresh_from_db()
         assert user.is_partner is False

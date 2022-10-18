@@ -18,12 +18,17 @@ class CountryUpdateInputSerializer(serializers.Serializer):
 
 
 class CityCreateInputSerializer(serializers.Serializer):
-    country_id = serializers.UUIDField()
     name = serializers.CharField()
     region = serializers.CharField(required=False)
 
 
+class CityUpdateInputSerializer(serializers.Serializer):
+    name = serializers.CharField(required=False)
+    region = serializers.CharField(required=False)
+
+
 class CityOutputSerializer(serializers.Serializer):
+    id = serializers.UUIDField()
     country_id = serializers.UUIDField()
     name = serializers.CharField()
     region = serializers.CharField(required=False)

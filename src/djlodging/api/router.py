@@ -14,14 +14,18 @@ router = routers.SimpleRouter()
 
 router.register(r"users", UserViewSet, basename="users")
 router.register(r"countries", CountryViewSet, basename="countries")
-router.register(r"cities", CityViewSet, basename="cities")
 router.register(r"lodgings", LodgingViewSet, basename="lodgings")
 router.register(r"bookings", BookingViewSet, basename="bookings")
 
+cities_router = routers.NestedSimpleRouter(router, r"countries", lookup="country")
+cities_router.register(r"cities", CityViewSet, basename="cities")
+
 reviews_router = routers.NestedSimpleRouter(router, r"lodgings", lookup="lodging")
 reviews_router.register(r"reviews", ReviewViewSet, basename="reviews")
+
 urlpatterns = [
     path("", include(router.urls)),
+    path("", include(cities_router.urls)),
     path("", include(reviews_router.urls)),
 ]
 # print(reviews_router.urls)

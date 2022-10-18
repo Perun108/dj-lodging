@@ -87,11 +87,7 @@ class TestEmailChangeRequestAPIView:
         response = client.post(url, payload)
 
         assert response.status_code == HTTP_401_UNAUTHORIZED
-        assert (
-            str(response.data)
-            == "{'detail': ErrorDetail(string='Authentication credentials were not provided.', "
-            "code='not_authenticated')}"
-        )
+        assert str(response.data["detail"]) == "Authentication credentials were not provided."
         user.refresh_from_db()
         assert user.email == old_email
 

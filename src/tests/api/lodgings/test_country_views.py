@@ -43,6 +43,7 @@ class TestCountryViewSet:
 
         response = user_api_client_factory_boy.post(url, payload)
         assert response.status_code == HTTP_403_FORBIDDEN
+        assert str(response.data["detail"]) == "You do not have permission to perform this action."
 
         country = Country.objects.first()
         assert country is None
@@ -56,11 +57,7 @@ class TestCountryViewSet:
 
         response = api_client.post(url, payload)
         assert response.status_code == HTTP_401_UNAUTHORIZED
-        assert (
-            str(response.data)
-            == "{'detail': ErrorDetail(string='Authentication credentials were not provided.', "
-            "code='not_authenticated')}"
-        )
+        assert str(response.data["detail"]) == "Authentication credentials were not provided."
 
         country = Country.objects.first()
         assert country is None
@@ -97,6 +94,7 @@ class TestCountryViewSet:
 
         response = user_api_client_factory_boy.post(url)
         assert response.status_code == HTTP_403_FORBIDDEN
+        assert str(response.data["detail"]) == "You do not have permission to perform this action."
 
     def test_retrieve_country_by_unauthenticated_admin_fails(self):
         api_client = APIClient()
@@ -108,11 +106,7 @@ class TestCountryViewSet:
 
         response = api_client.post(url)
         assert response.status_code == HTTP_401_UNAUTHORIZED
-        assert (
-            str(response.data)
-            == "{'detail': ErrorDetail(string='Authentication credentials were not provided.', "
-            "code='not_authenticated')}"
-        )
+        assert str(response.data["detail"]) == "Authentication credentials were not provided."
 
     def test_retrieve_country_with_wrong_id_fails(self, admin_api_client_factory_boy):
         correct_id = uuid4()
@@ -150,6 +144,7 @@ class TestCountryViewSet:
         response = user_api_client_factory_boy.post(url)
 
         assert response.status_code == HTTP_403_FORBIDDEN
+        assert str(response.data["detail"]) == "You do not have permission to perform this action."
 
     def test_list_countries_by_unauthenticated_admin_fails(self):
         api_client = APIClient()
@@ -160,11 +155,7 @@ class TestCountryViewSet:
 
         response = api_client.post(url)
         assert response.status_code == HTTP_401_UNAUTHORIZED
-        assert (
-            str(response.data)
-            == "{'detail': ErrorDetail(string='Authentication credentials were not provided.', "
-            "code='not_authenticated')}"
-        )
+        assert str(response.data["detail"]) == "Authentication credentials were not provided."
 
     def test_update_country_by_admin_succeeds(self, admin_api_client_factory_boy):
         old_name = fake.country()
@@ -210,6 +201,7 @@ class TestCountryViewSet:
         response = user_api_client_factory_boy.put(url, payload)
 
         assert response.status_code == HTTP_403_FORBIDDEN
+        assert str(response.data["detail"]) == "You do not have permission to perform this action."
 
     def test_update_country_with_wrong_id_fails(self, admin_api_client_factory_boy):
         old_name = fake.country()
@@ -267,6 +259,7 @@ class TestCountryViewSet:
         response = user_api_client_factory_boy.delete(url)
 
         assert response.status_code == HTTP_403_FORBIDDEN
+        assert str(response.data["detail"]) == "You do not have permission to perform this action."
 
     def test_delete_country_with_wrong_id_fails(self, admin_api_client_factory_boy):
         correct_id = uuid4()

@@ -46,6 +46,15 @@ class CityRepository:
         except City.DoesNotExist:
             raise ValidationError("There is no city with this id")
 
+    @classmethod
+    def get_list_by_country(cls, country_id: UUID) -> QuerySet[City]:
+        return City.objects.filter(country__id=country_id)
+
+    @classmethod
+    def delete(cls, city_id: UUID) -> tuple:
+        city = cls.get_by_id(city_id)
+        return city.delete()
+
 
 class LodgingRepository:
     @classmethod

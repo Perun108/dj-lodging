@@ -62,7 +62,7 @@ class CountryService:
 
 class CityService:
     @classmethod
-    def create(cls, actor: User, country_id, name: str, region: str = "") -> City:
+    def create(cls, actor: User, country_id: UUID, name: str, region: str = "") -> City:
         # Check permissions to prevent unauthorized actions that circumvents API level permissions
         if not actor.is_staff:
             raise PermissionDenied
@@ -70,6 +70,40 @@ class CityService:
         city = City(country=country, name=name, region=region)
         CityRepository.save(city)
         return city
+
+    @classmethod
+    def retrieve(cls, actor: User, city_id: UUID) -> City:
+        # Check permissions to prevent unauthorized actions that circumvents API level permissions
+        if not actor.is_staff:
+            raise PermissionDenied
+        city = CityRepository.get_by_id(city_id)
+        return city
+
+    @classmethod
+    def update(cls, actor: User, city_id: UUID, **kwargs) -> City:
+        # Check permissions to prevent unauthorized actions that circumvents API level permissions
+        if not actor.is_staff:
+            raise PermissionDenied
+        city = CityRepository.get_by_id(city_id)
+        for field, value in kwargs.items():
+            setattr(city, field, value)
+        CityRepository.save(city)
+        return city
+
+    @classmethod
+    def get_list(cls, actor: User, country_id: UUID) -> QuerySet[City]:
+        # Check permissions to prevent unauthorized actions that circumvents API level permissions
+        if not actor.is_staff:
+            raise PermissionDenied
+        cities = CityRepository.get_list_by_country(country_id)
+        return cities
+
+    @classmethod
+    def delete(cls, actor: User, city_id: UUID) -> tuple:
+        # Check permissions to prevent unauthorized actions that circumvents API level permissions
+        if not actor.is_staff:
+            raise PermissionDenied
+        return CityRepository.delete(city_id)
 
 
 class LodgingService:

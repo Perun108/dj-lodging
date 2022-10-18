@@ -91,6 +91,7 @@ class TestLodgingViewSet:
         response = user_api_client_pytest_fixture.post(url, payload)
 
         assert response.status_code == HTTP_403_FORBIDDEN
+        assert str(response.data["detail"]) == "You do not have permission to perform this action."
 
     def test_list_available_succeeds_1(self, user_api_client_pytest_fixture):
         city = CityFactory()
