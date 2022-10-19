@@ -29,7 +29,7 @@ class CityUpdateInputSerializer(serializers.Serializer):
 
 class CityOutputSerializer(serializers.Serializer):
     id = serializers.UUIDField()
-    country_id = serializers.UUIDField()
+    country = CountryOutputSerializer()
     name = serializers.CharField()
     region = serializers.CharField(required=False)
 
@@ -89,6 +89,22 @@ class LodgingOutputSerializer(LodgingCreateOutputSerializer):
     average_rating = serializers.FloatField(required=False)
 
 
+class LodgingShortOutputSerializer(serializers.Serializer):
+    id = serializers.UUIDField()
+    name = serializers.CharField()
+    kind = serializers.CharField()
+    city = CityOutputSerializer()
+    district = serializers.CharField()
+    street = serializers.CharField()
+    house_number = serializers.CharField()
+    zip_code = serializers.CharField()
+    phone_number = serializers.CharField()
+    email = serializers.EmailField()
+    number_of_people = serializers.IntegerField()
+    number_of_rooms = serializers.IntegerField()
+    price = serializers.DecimalField(max_digits=7, decimal_places=2)
+
+
 class LodgingListOutputSerializer(LodgingOutputSerializer):
     available = serializers.BooleanField(required=False)
 
@@ -120,7 +136,28 @@ class ReviewCreateInputSerializer(serializers.Serializer):
     score = serializers.IntegerField()
 
 
+class UserReviewOutputSerializer(serializers.Serializer):
+    id = serializers.UUIDField()
+    first_name = serializers.CharField()
+    nationality = serializers.CharField()
+
+
 class ReviewOutputSerializer(serializers.Serializer):
     id = serializers.UUIDField()
-    lodging = LodgingOutputSerializer()
+    user = UserReviewOutputSerializer()
+    date_time = serializers.DateTimeField(source="created")
+    text = serializers.CharField()
+    score = serializers.IntegerField()
+
+
+class ReviewUpdateInputSerializer(serializers.Serializer):
+    text = serializers.CharField()
+    score = serializers.IntegerField()
+
+
+class MyReviewsListOutputSerializer(serializers.Serializer):
+    id = serializers.UUIDField()
+    lodging = LodgingShortOutputSerializer()
+    date_time = serializers.DateTimeField(source="created")
+    text = serializers.CharField()
     score = serializers.IntegerField()

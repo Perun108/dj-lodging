@@ -10,6 +10,7 @@ from djlodging.domain.lodgings.models import Country
 from djlodging.domain.lodgings.models.city import City
 from djlodging.domain.lodgings.models.lodging import Lodging
 from djlodging.domain.lodgings.models.review import Review
+from djlodging.domain.users.models import User
 
 
 class CountryRepository:
@@ -139,5 +140,20 @@ class ReviewRepository:
         review.save()
 
     @classmethod
-    def get_list(cls, lodging_id: UUID) -> QuerySet:
+    def get_by_id(cls, review_id: UUID) -> Review:
+        try:
+            return Review.objects.get(id=review_id)
+        except Review.DoesNotExist:
+            raise ValidationError("Such review does not exist")
+
+    @classmethod
+    def get_list(cls, lodging_id: UUID) -> QuerySet[Review]:
         return Review.objects.filter(lodging__id=lodging_id)
+
+    @classmethod
+    def delete(cls, review: Review) -> tuple:
+        return review.delete()
+
+    @classmethod
+    def get_my_list(cls, user: User) -> QuerySet[Review]:
+        return Review.objects.filter(user=user)

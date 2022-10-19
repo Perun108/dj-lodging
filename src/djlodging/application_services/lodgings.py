@@ -153,3 +153,23 @@ class ReviewService:
         review = Review(lodging=lodging, user=user, text=text, score=score)
         ReviewRepository.save(review)
         return review
+
+    @classmethod
+    def update(cls, actor: User, review_id: UUID, **kwargs) -> Review:
+        review = cls._verify_review_user_permissions(actor, review_id)
+        for field, value in kwargs.items():
+            setattr(review, field, value)
+        ReviewRepository.save(review)
+        return review
+
+    @classmethod
+    def delete(cls, actor: User, review_id: UUID) -> tuple:
+        review = cls._verify_review_user_permissions(actor, review_id)
+        return ReviewRepository.delete(review)
+
+    @classmethod
+    def _verify_review_user_permissions(cls, actor: User, review_id: UUID) -> Review:
+        review = ReviewRepository.get_by_id(review_id=review_id)
+        if review.user != actor:
+            raise PermissionDenied
+        return review
