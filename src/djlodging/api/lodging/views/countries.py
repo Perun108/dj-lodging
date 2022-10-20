@@ -22,6 +22,7 @@ class CountryViewSet(ViewSet):
             201: CountryOutputSerializer,
             400: OpenApiResponse(description="Bad request"),
         },
+        summary="Add a country to the DB by admin",
     )
     def create(self, request):
         incoming_data = CountryCreateInputSerializer(data=request.data)
@@ -43,6 +44,7 @@ class CountryViewSet(ViewSet):
             200: CountryOutputSerializer,
             400: OpenApiResponse(description="Bad request"),
         },
+        summary="Get country's details by admin",
     )
     def retrieve(self, request, pk):
         country = CountryService.retrieve(actor=request.user, country_id=pk)
@@ -54,6 +56,7 @@ class CountryViewSet(ViewSet):
         responses={
             200: CountryOutputSerializer(many=True),
         },
+        summary="List all available countries by admin",
     )
     def list(self, request):
         countries = CountryService.get_list(actor=request.user)
@@ -73,6 +76,7 @@ class CountryViewSet(ViewSet):
             200: CountryOutputSerializer,
             400: OpenApiResponse(description="Bad request"),
         },
+        summary="Edit country's details by admin",
     )
     def update(self, request, pk):
         incoming_data = CountryUpdateInputSerializer(data=request.data)
@@ -96,6 +100,7 @@ class CountryViewSet(ViewSet):
             204: None,
             400: OpenApiResponse(description="Bad request"),
         },
+        summary="Delete a country from the DB by admin",
     )
     def destroy(self, request, pk):
         CountryService.delete(actor=request.user, country_id=pk)

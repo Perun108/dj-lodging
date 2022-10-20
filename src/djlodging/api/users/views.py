@@ -7,7 +7,6 @@ from drf_spectacular.utils import (
 )
 from rest_framework import serializers
 from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_202_ACCEPTED
 from rest_framework.views import APIView
@@ -26,6 +25,7 @@ from djlodging.api.users.serializers import (
     UserRegistrationConfirmInputSerializer,
     UserShortOutputSerializer,
     UserSignUpInputSerializer,
+    UserUpdateInputSerializer,
 )
 from djlodging.application_services.email import EmailService
 from djlodging.application_services.users import UserService
@@ -42,6 +42,7 @@ class UserSingUpAPIView(APIView):
             201: UserShortOutputSerializer,
             400: OpenApiResponse(description="Bad request"),
         },
+        summary="Sign up",
     )
     def post(self, request):
         """
@@ -86,6 +87,7 @@ class UserGetByTokenAndEmailAPIView(APIView):
             ),
             400: OpenApiResponse(description="Bad request"),
         },
+        summary="Get user by security token and email",
     )
     def get(self, request):
         token = request.query_params.get("token")
@@ -104,6 +106,7 @@ class UserRegistrationConfirmAPIView(APIView):
             200: None,
             400: OpenApiResponse(description="Bad request"),
         },
+        summary="Confirm registration",
     )
     def post(self, request):
         incoming_data = UserRegistrationConfirmInputSerializer(data=request.data)
@@ -123,6 +126,7 @@ class PasswordChangeAPIView(APIView):
             200: None,
             400: OpenApiResponse(description="Bad request"),
         },
+        summary="Change password",
     )
     def patch(self, request):
         input_serializer = PasswordChangeInputSerializer(data=request.data)
@@ -141,6 +145,7 @@ class SendForgotPasswordLinkAPIView(APIView):
             202: None,
             400: OpenApiResponse(description="Bad request"),
         },
+        summary="Send forgot password link",
     )
     def post(self, request):
         incoming_data = SendForgotPasswordInputSerializer(data=request.data)
@@ -167,6 +172,7 @@ class PasswordResetConfirmAPIView(APIView):
             200: None,
             400: OpenApiResponse(description="Bad request"),
         },
+        summary="Confirm resetting password after forgetting",
     )
     def post(self, request):
         incoming_data = PasswordResetConfirmInputSerializer(data=request.data)
@@ -176,7 +182,11 @@ class PasswordResetConfirmAPIView(APIView):
 
 
 class EmailChangeRequestAPIView(APIView):
-    @extend_schema(request=EmailChangeRequestInputSerializer, responses={202: None})
+    @extend_schema(
+        request=EmailChangeRequestInputSerializer,
+        responses={202: None},
+        summary="Send a link to new email",
+    )
     def post(self, request):
         input_serializer = EmailChangeRequestInputSerializer(data=request.data)
         input_serializer.is_valid(raise_exception=True)
@@ -188,7 +198,11 @@ class EmailChangeConfirmAPIView(APIView):
     permission_classes = ()
     authentication_classes = ()
 
-    @extend_schema(request=EmailChangeConfirmInputSerializer, responses={200: None})
+    @extend_schema(
+        request=EmailChangeConfirmInputSerializer,
+        responses={200: None},
+        summary="Confirm change email",
+    )
     def post(self, request):
         input_serializer = EmailChangeConfirmInputSerializer(data=request.data)
         input_serializer.is_valid(raise_exception=True)
@@ -197,30 +211,84 @@ class EmailChangeConfirmAPIView(APIView):
 
 
 class UserViewSet(ViewSet):
-    # def update(self, request):
-    # incoming_data = UserUpdateInputSerializer(data=request.data)
-    # incoming_data.is_valid(raise_exception=True)
-    # UserService.update(**incoming_data.validated_data)
-    # return Response(status=HTTP_201_CREATED)
-    # pass
     @extend_schema(
         parameters=[
-            OpenApiParameter(name="id", type=OpenApiTypes.UUID, location=OpenApiParameter.PATH)
+            OpenApiParameter(
+                name="user_id", type=OpenApiTypes.UUID, location=OpenApiParameter.PATH
+            )
         ],
+        request=UserUpdateInputSerializer,
+        responses={
+            200: UserOutputSerializer,
+            400: OpenApiResponse(description="Bad request"),
+        },
+        summary="Update user by admin",
+    )
+    def update(self, request, pk):
+        """
+        Update a user by admin. Different from the 'update_me' method.
+        """
+        incoming_data = UserUpdateInputSerializer(data=request.data)
+        incoming_data.is_valid(raise_exception=True)
+        user = UserService.update_by_admin(
+            actor=request.user, user_id=pk, **incoming_data.validated_data
+        )
+        output_serializer = UserOutputSerializer(user)
+        return Response(output_serializer.data, status=HTTP_200_OK)
+
+
+class MeViewSet(ViewSet):
+    @extend_schema(
         request=PartnerCreateInputSerializer,
         responses={
             200: UserOutputSerializer,
             400: OpenApiResponse(description="Bad request"),
         },
+        summary="Make me a partner",
     )
-    @action(methods=["patch"], detail=True)
-    def partner(self, request, pk):
-        if str(request.user.id) != pk:
-            raise PermissionDenied
+    @action(methods=["patch"], detail=False, url_path="me/partner")
+    def create_partner(self, request):
+        """
+        Update a user to make him/her a partner who can manage and rent lodgings out.
+        """
         input_serializer = PartnerCreateInputSerializer(data=request.data)
         input_serializer.is_valid(raise_exception=True)
-        partner = UserService.make_user_partner(
-            actor=request.user, user_id=pk, **input_serializer.validated_data
-        )
+        partner = UserService.update(user=request.user, **input_serializer.validated_data)
         output_serializer = UserOutputSerializer(partner)
         return Response(data=output_serializer.data, status=HTTP_200_OK)
+
+    @extend_schema(
+        request=None,
+        responses={
+            200: UserOutputSerializer,
+            400: OpenApiResponse(description="Bad request"),
+        },
+        methods=["GET"],
+        description="Retrieve a user by himself. Different from the plain 'retrieve' method.",
+        summary="Get my details",
+    )
+    @extend_schema(
+        request=UserUpdateInputSerializer,
+        responses={
+            200: UserOutputSerializer,
+            400: OpenApiResponse(description="Bad request"),
+        },
+        methods=["PUT"],
+        description="Update a user by himself. Different from the plain 'update' method.",
+        summary="Update my details",
+    )
+    @action(detail=False, methods=["get", "put"])
+    def me(self, request):
+        """
+        Retrieve/Update a user by himself. Different from the plain 'retrieve/update' method.
+        """
+        if request.method == "GET":
+            output_serializer = UserOutputSerializer(request.user)
+            return Response(output_serializer.data, status=HTTP_200_OK)
+
+        elif request.method == "PUT":
+            incoming_data = UserUpdateInputSerializer(data=request.data)
+            incoming_data.is_valid(raise_exception=True)
+            user = UserService.update(user=request.user, **incoming_data.validated_data)
+            output_serializer = UserOutputSerializer(user)
+            return Response(output_serializer.data, status=HTTP_200_OK)

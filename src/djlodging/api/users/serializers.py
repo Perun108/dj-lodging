@@ -83,3 +83,13 @@ class LodgingUserOutputSerializer(serializers.Serializer):
     first_name = serializers.CharField()
     last_name = serializers.CharField()
     phone_number = serializers.CharField()
+
+
+class UserUpdateInputSerializer(serializers.Serializer):
+    username = serializers.CharField(required=False)
+    first_name = serializers.CharField(required=False)
+    last_name = serializers.CharField(required=False)
+    phone_number = serializers.CharField(required=False)
+    date_of_birth = serializers.DateField(required=False)
+    nationality = serializers.CharField(required=False)
+    gender = serializers.CharField(required=False)

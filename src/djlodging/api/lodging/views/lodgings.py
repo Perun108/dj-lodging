@@ -34,6 +34,7 @@ class LodgingViewSet(ViewSet):
             201: LodgingCreateOutputSerializer,
             400: OpenApiResponse(description="Bad request"),
         },
+        summary="Add a lodging by partner",
     )
     def create(self, request):
         input_serializer = LodgingCreateInputSerializer(data=request.data)
@@ -63,6 +64,7 @@ class LodgingViewSet(ViewSet):
             200: LodgingListOutputSerializer,
             400: OpenApiResponse(description="Bad request"),
         },
+        summary="List lodgings in a city available for given dates",
     )
     def list(self, request):
         validate_required_query_params_with_any(
@@ -89,6 +91,7 @@ class LodgingViewSet(ViewSet):
             200: LodgingOutputSerializer,
             400: OpenApiResponse(description="Bad request"),
         },
+        summary="Get lodging's details",
     )
     def retrieve(self, request, pk):
         lodging = LodgingRepository.retrieve_lodging_with_average_rating(pk)
@@ -104,6 +107,7 @@ class LodgingViewSet(ViewSet):
             200: MyReviewsListOutputSerializer(many=True),
             400: OpenApiResponse(description="Bad request"),
         },
+        summary="List my reviews for all my booked lodgings",
     )
     @action(detail=False, methods=["get"], url_path="my-reviews")
     def my_reviews(self, request):
@@ -111,6 +115,7 @@ class LodgingViewSet(ViewSet):
         This method must be here and not in the ReviewViewSet where it may seem to belong
         because there shouldn't be {lodging_id} in the URL path ('my reviews' is for ALL lodgings).
         """
+        # TODO move this to MeViewSet!!!
         my_reviews = ReviewRepository.get_my_list(user=request.user)
         output_serializer = MyReviewsListOutputSerializer(my_reviews, many=True)
         return Response(output_serializer.data, status=HTTP_200_OK)

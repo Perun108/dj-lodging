@@ -27,6 +27,7 @@ class CityViewSet(ViewSet):
             201: CityOutputSerializer,
             400: OpenApiResponse(description="Bad request"),
         },
+        summary="Add a city by admin",
     )
     def create(self, request, country_pk):
         incoming_data = CityCreateInputSerializer(data=request.data)
@@ -51,6 +52,7 @@ class CityViewSet(ViewSet):
             200: CityOutputSerializer,
             400: OpenApiResponse(description="Bad request"),
         },
+        summary="Get city's details by admin",
     )
     def retrieve(self, request, country_pk, pk):
         city = CityService.retrieve(actor=request.user, city_id=pk)
@@ -71,6 +73,7 @@ class CityViewSet(ViewSet):
             200: CityOutputSerializer,
             400: OpenApiResponse(description="Bad request"),
         },
+        summary="Edit city's details by admin",
     )
     def update(self, request, country_pk, pk):
         incoming_data = CityUpdateInputSerializer(data=request.data)
@@ -93,6 +96,7 @@ class CityViewSet(ViewSet):
             200: CityOutputSerializer,
             400: OpenApiResponse(description="Bad request"),
         },
+        summary="List all available cities in a country by admin",
     )
     def list(self, request, country_pk):
         cities = CityService.get_list(actor=request.user, country_id=country_pk)
@@ -113,6 +117,7 @@ class CityViewSet(ViewSet):
             204: None,
             400: OpenApiResponse(description="Bad request"),
         },
+        summary="Delete a city from the DB by admin",
     )
     def destroy(self, request, country_pk, pk):
         incoming_data = CityUpdateInputSerializer(data=request.data)

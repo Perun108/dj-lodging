@@ -23,6 +23,7 @@ class ReviewViewSet(ViewSet):
             201: ReviewOutputSerializer,
             400: OpenApiResponse(description="Bad request"),
         },
+        summary="Add a review for lodging",
     )
     def create(self, request, lodging_pk):
         input_serializer = ReviewCreateInputSerializer(data=request.data)
@@ -42,6 +43,7 @@ class ReviewViewSet(ViewSet):
             200: ReviewOutputSerializer(many=True),
             400: OpenApiResponse(description="Bad request"),
         },
+        summary="List all reviews of lodging",
     )
     def list(self, request, lodging_pk):
         reviews = ReviewRepository.get_list(lodging_id=lodging_pk)
@@ -58,6 +60,7 @@ class ReviewViewSet(ViewSet):
             200: ReviewOutputSerializer,
             400: OpenApiResponse(description="Bad request"),
         },
+        summary="Get a review's details",
     )
     def retrieve(self, request, lodging_pk, pk):
         review = ReviewRepository.get_by_id(review_id=pk)
@@ -74,6 +77,7 @@ class ReviewViewSet(ViewSet):
             200: ReviewOutputSerializer,
             400: OpenApiResponse(description="Bad request"),
         },
+        summary="Edit a review by its author",
     )
     def update(self, request, lodging_pk, pk):
         input_serializer = ReviewUpdateInputSerializer(data=request.data)
@@ -94,6 +98,7 @@ class ReviewViewSet(ViewSet):
             204: None,
             400: OpenApiResponse(description="Bad request"),
         },
+        summary="Delete a review by its author",
     )
     def destroy(self, request, lodging_pk, pk):
         ReviewService.delete(actor=request.user, review_id=pk)

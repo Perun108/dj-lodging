@@ -33,10 +33,7 @@ class UserService:
         return user
 
     @classmethod
-    def make_user_partner(cls, actor, user_id, first_name, last_name, phone_number):
-        user = UserRepository.get_by_id(user_id)
-        if actor != user:
-            raise PermissionDenied
+    def make_user_partner(cls, user, first_name, last_name, phone_number):
         user.first_name = first_name
         user.last_name = last_name
         user.phone_number = phone_number
@@ -78,6 +75,21 @@ class UserService:
         user.email = new_email
         user.security_token = ""
         UserRepository.save(user)
+
+    @classmethod
+    def update_by_admin(cls, actor: User, user_id: UUID, **kwargs) -> User:
+        if not actor.is_staff:
+            raise PermissionDenied
+
+        user = UserRepository.get_by_id(user_id)
+        return cls.update(user, **kwargs)
+
+    @classmethod
+    def update(cls, user: User, **kwargs) -> User:
+        for field, value in kwargs.items():
+            setattr(user, field, value)
+        UserRepository.save(user)
+        return user
 
 
 class PaymentProviderUserService:

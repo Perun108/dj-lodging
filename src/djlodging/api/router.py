@@ -8,11 +8,12 @@ from djlodging.api.lodging.views import (
     LodgingViewSet,
     ReviewViewSet,
 )
-from djlodging.api.users.views import UserViewSet
+from djlodging.api.users.views import MeViewSet, UserViewSet
 
 router = routers.SimpleRouter()
 
 router.register(r"users", UserViewSet, basename="users")
+router.register(r"users", MeViewSet, basename="me")
 router.register(r"countries", CountryViewSet, basename="countries")
 router.register(r"lodgings", LodgingViewSet, basename="lodgings")
 router.register(r"bookings", BookingViewSet, basename="bookings")

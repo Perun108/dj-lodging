@@ -28,6 +28,7 @@ class BookingViewSet(ViewSet):
             201: BookingOutputSerializer,
             400: OpenApiResponse(description="Bad request"),
         },
+        summary="Book a lodging",
     )
     def create(self, request):
         input_serializer = BookingCreateInputSerializer(data=request.data)
@@ -39,8 +40,10 @@ class BookingViewSet(ViewSet):
     @extend_schema(
         request=None,
         responses={200: BookingListOutputSerializer},
+        summary="List my bookings",
     )
     def list(self, request):
+        # TODO Move this method to MeViewSet - this is list *my* bookings!
         bookings = BookingRepository.get_list(user=request.user)
         output_serializer = BookingListOutputSerializer(bookings, many=True)
         return Response(data=output_serializer.data, status=HTTP_200_OK)
@@ -56,6 +59,7 @@ class BookingViewSet(ViewSet):
             ),
             400: OpenApiResponse(description="Bad request"),
         },
+        summary="Pay for booking",
     )
     @action(detail=True, methods=["post"])
     def pay(self, request, pk):
@@ -75,6 +79,7 @@ class BookingViewSet(ViewSet):
             200: BookingOutputSerializer,
             400: OpenApiResponse(description="Bad request"),
         },
+        summary="Cancel a booking",
     )
     @action(detail=True, methods=["post"])
     def cancel(self, request, pk):
