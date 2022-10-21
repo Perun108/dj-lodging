@@ -26,7 +26,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from djlodging.api.router import urlpatterns as api_urlpatterns
 
-api_urlpatterns += [path("users/", include("djlodging.api.users.urls"))]
+# api_urlpatterns += [path("users/", include("djlodging.api.users.urls"))]
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -53,4 +53,4 @@ urlpatterns = [
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-# print(urlpatterns)
+print(urlpatterns)

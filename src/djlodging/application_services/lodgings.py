@@ -173,3 +173,7 @@ class ReviewService:
         if review.user != actor:
             raise PermissionDenied
         return review
+
+    @classmethod
+    def retrieve_my(cls, actor: User, review_id: UUID) -> Review:
+        return cls._verify_review_user_permissions(actor, review_id)

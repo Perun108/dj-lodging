@@ -40,6 +40,12 @@ class BookingService:
         return booking
 
     @classmethod
+    def retrieve(cls, actor: User, booking_id: UUID) -> Booking:
+        if not actor.is_staff:
+            raise PermissionDenied
+        return BookingRepository.get_by_id(booking_id)
+
+    @classmethod
     def pay(cls, actor, booking_id: UUID, currency="usd", capture_method="automatic"):
         booking = BookingRepository.get_by_id(booking_id)
 

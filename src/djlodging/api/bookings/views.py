@@ -23,6 +23,36 @@ from djlodging.domain.bookings.repository import BookingRepository
 
 class BookingViewSet(ViewSet):
     @extend_schema(
+        request=None,
+        responses={200: BookingListOutputSerializer},
+        summary="List all bookings by admin (filtered)",
+    )
+    def list(self, request):
+        # TODO Add filtering to this API!
+        # TODO Complete this method!
+        bookings = BookingRepository.get_list(actor=request.user)
+        output_serializer = BookingListOutputSerializer(bookings, many=True)
+        return Response(data=output_serializer.data, status=HTTP_200_OK)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(name="id", type=OpenApiTypes.UUID, location=OpenApiParameter.PATH)
+        ],
+        request=None,
+        responses={
+            200: BookingOutputSerializer,
+            400: OpenApiResponse(description="Bad request"),
+        },
+        summary="Retrieve a booking details by admin",
+    )
+    def retrieve(self, request, pk):
+        booking = BookingService.retrieve(actor=request.user, booking_id=pk)
+        output_serializer = BookingOutputSerializer(booking)
+        return Response(data=output_serializer.data, status=HTTP_200_OK)
+
+
+class MyBookingViewSet(ViewSet):
+    @extend_schema(
         request=BookingCreateInputSerializer,
         responses={
             201: BookingOutputSerializer,
@@ -43,7 +73,10 @@ class BookingViewSet(ViewSet):
         summary="List my bookings",
     )
     def list(self, request):
-        # TODO Move this method to MeViewSet - this is list *my* bookings!
+        """
+        List my bookings.
+        """
+        # TODO Complete this method!
         bookings = BookingRepository.get_list(user=request.user)
         output_serializer = BookingListOutputSerializer(bookings, many=True)
         return Response(data=output_serializer.data, status=HTTP_200_OK)

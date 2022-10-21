@@ -5,6 +5,7 @@ from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CON
 from rest_framework.viewsets import ViewSet
 
 from djlodging.api.lodging.serializers import (
+    MyReviewsListOutputSerializer,
     ReviewCreateInputSerializer,
     ReviewOutputSerializer,
     ReviewUpdateInputSerializer,
@@ -18,32 +19,12 @@ class ReviewViewSet(ViewSet):
         parameters=[
             OpenApiParameter("lodging_id", type=OpenApiTypes.UUID, location=OpenApiParameter.PATH)
         ],
-        request=ReviewCreateInputSerializer,
-        responses={
-            201: ReviewOutputSerializer,
-            400: OpenApiResponse(description="Bad request"),
-        },
-        summary="Add a review for lodging",
-    )
-    def create(self, request, lodging_pk):
-        input_serializer = ReviewCreateInputSerializer(data=request.data)
-        input_serializer.is_valid(raise_exception=True)
-        review = ReviewService.create(
-            lodging_id=lodging_pk, user=request.user, **input_serializer.validated_data
-        )
-        output_serializer = ReviewOutputSerializer(review)
-        return Response(output_serializer.data, status=HTTP_201_CREATED)
-
-    @extend_schema(
-        parameters=[
-            OpenApiParameter("lodging_id", type=OpenApiTypes.UUID, location=OpenApiParameter.PATH)
-        ],
         request=None,
         responses={
             200: ReviewOutputSerializer(many=True),
             400: OpenApiResponse(description="Bad request"),
         },
-        summary="List all reviews of lodging",
+        summary="List all lodging's reviews by any user",
     )
     def list(self, request, lodging_pk):
         reviews = ReviewRepository.get_list(lodging_id=lodging_pk)
@@ -60,16 +41,62 @@ class ReviewViewSet(ViewSet):
             200: ReviewOutputSerializer,
             400: OpenApiResponse(description="Bad request"),
         },
-        summary="Get a review's details",
+        summary="Get a review's details by any user",
     )
     def retrieve(self, request, lodging_pk, pk):
         review = ReviewRepository.get_by_id(review_id=pk)
         output_serializer = ReviewOutputSerializer(review)
         return Response(output_serializer.data, status=HTTP_200_OK)
 
+
+class MyReviewViewSet(ViewSet):
+    @extend_schema(
+        request=ReviewCreateInputSerializer,
+        responses={
+            201: ReviewOutputSerializer,
+            400: OpenApiResponse(description="Bad request"),
+        },
+        summary="Add a review for lodging",
+    )
+    def create(self, request):
+        # TODO Add check for user's actually staying in this lodging (add booking number or PIN)
+        input_serializer = ReviewCreateInputSerializer(data=request.data)
+        input_serializer.is_valid(raise_exception=True)
+        review = ReviewService.create(user=request.user, **input_serializer.validated_data)
+        output_serializer = ReviewOutputSerializer(review)
+        return Response(output_serializer.data, status=HTTP_201_CREATED)
+
+    @extend_schema(
+        request=None,
+        responses={
+            200: MyReviewsListOutputSerializer(many=True),
+            400: OpenApiResponse(description="Bad request"),
+        },
+        summary="List my reviews for all my booked lodgings",
+    )
+    def list(self, request):
+        my_reviews = ReviewRepository.get_my_list(user=request.user)
+        output_serializer = MyReviewsListOutputSerializer(my_reviews, many=True)
+        return Response(output_serializer.data, status=HTTP_200_OK)
+
     @extend_schema(
         parameters=[
-            OpenApiParameter("lodging_id", type=OpenApiTypes.UUID, location=OpenApiParameter.PATH),
+            OpenApiParameter("review_id", type=OpenApiTypes.UUID, location=OpenApiParameter.PATH),
+        ],
+        request=None,
+        responses={
+            200: MyReviewsListOutputSerializer(many=True),
+            400: OpenApiResponse(description="Bad request"),
+        },
+        summary="Get my review's details",
+    )
+    def retrieve(self, request, pk):
+        review = ReviewService.retrieve_my(actor=request.user, review_id=pk)
+        output_serializer = MyReviewsListOutputSerializer(review)
+        return Response(output_serializer.data, status=HTTP_200_OK)
+
+    @extend_schema(
+        parameters=[
             OpenApiParameter("review_id", type=OpenApiTypes.UUID, location=OpenApiParameter.PATH),
         ],
         request=ReviewUpdateInputSerializer,
@@ -77,9 +104,9 @@ class ReviewViewSet(ViewSet):
             200: ReviewOutputSerializer,
             400: OpenApiResponse(description="Bad request"),
         },
-        summary="Edit a review by its author",
+        summary="Edit my review",
     )
-    def update(self, request, lodging_pk, pk):
+    def update(self, request, pk):
         input_serializer = ReviewUpdateInputSerializer(data=request.data)
         input_serializer.is_valid(raise_exception=True)
         review = ReviewService.update(
@@ -90,7 +117,6 @@ class ReviewViewSet(ViewSet):
 
     @extend_schema(
         parameters=[
-            OpenApiParameter("lodging_id", type=OpenApiTypes.UUID, location=OpenApiParameter.PATH),
             OpenApiParameter("review_id", type=OpenApiTypes.UUID, location=OpenApiParameter.PATH),
         ],
         request=None,
@@ -98,8 +124,8 @@ class ReviewViewSet(ViewSet):
             204: None,
             400: OpenApiResponse(description="Bad request"),
         },
-        summary="Delete a review by its author",
+        summary="Delete my review",
     )
-    def destroy(self, request, lodging_pk, pk):
+    def destroy(self, request, pk):
         ReviewService.delete(actor=request.user, review_id=pk)
         return Response(status=HTTP_204_NO_CONTENT)

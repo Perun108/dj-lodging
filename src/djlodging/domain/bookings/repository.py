@@ -11,7 +11,12 @@ class BookingRepository:
         booking.save()
 
     @classmethod
-    def get_list(cls, user: User) -> QuerySet[Booking]:
+    def get_list(cls, actor: User) -> QuerySet[Booking]:
+        # TODO Finish this method!
+        return Booking.objects.filter(user=actor)
+
+    @classmethod
+    def get_my_list(cls, user: User) -> QuerySet[Booking]:
         return Booking.objects.filter(user=user)
 
     @classmethod
