@@ -2,7 +2,12 @@ import pytest
 from faker import Faker
 from pytest_django.asserts import assertQuerysetEqual
 from rest_framework.reverse import reverse
-from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED
+from rest_framework.status import (
+    HTTP_200_OK,
+    HTTP_201_CREATED,
+    HTTP_204_NO_CONTENT,
+    HTTP_403_FORBIDDEN,
+)
 
 from djlodging.domain.lodgings.models.review import Review
 from tests.domain.lodgings.factories import LodgingFactory, ReviewFactory
@@ -158,3 +163,75 @@ class TestMyReviewViewSet:
 
         assert response.status_code == HTTP_200_OK
         assert response.data["id"] == review_id
+
+    def test_retrieve_my_by_another_user_fails(self, user_api_client_pytest_fixture, user):
+        me = UserFactory()
+        review = ReviewFactory(user=me)
+        review_id = str(review.id)
+
+        url = reverse(
+            "my-reviews-detail", args=[review_id]
+        )  # GET "/api/users/me/reviews/{review_id}/"
+        response = user_api_client_pytest_fixture.get(url)
+
+        assert response.status_code == HTTP_403_FORBIDDEN
+
+    def test_update_my_succeeds(self, user_api_client_pytest_fixture, user):
+        review = ReviewFactory(user=user)
+
+        new_text = fake.paragraph()
+        new_score = int(fake.numerify("#"))
+
+        review_id = str(review.id)
+
+        payload = {"text": new_text, "score": new_score}
+        url = reverse(
+            "my-reviews-detail", args=[review_id]
+        )  # GET "/api/users/me/reviews/{review_id}/"
+        response = user_api_client_pytest_fixture.put(url, payload)
+
+        assert response.status_code == HTTP_200_OK
+        assert response.data["id"] == review_id
+        assert response.data["text"] == new_text
+        assert response.data["score"] == new_score
+
+    def test_update_my_by_another_user_fails(self, user_api_client_pytest_fixture, user):
+        me = UserFactory()
+        review = ReviewFactory(user=me)
+        review_id = str(review.id)
+
+        new_text = fake.paragraph()
+        new_score = int(fake.numerify("#"))
+
+        payload = {"text": new_text, "score": new_score}
+        url = reverse(
+            "my-reviews-detail", args=[review_id]
+        )  # GET "/api/users/me/reviews/{review_id}/"
+        response = user_api_client_pytest_fixture.put(url, payload)
+
+        assert response.status_code == HTTP_403_FORBIDDEN
+
+    def test_delete_my_succeeds(self, user_api_client_pytest_fixture, user):
+        review = ReviewFactory(user=user)
+        assert Review.objects.first() == review
+
+        url = reverse(
+            "my-reviews-detail", args=[str(review.id)]
+        )  # DELETE "/api/users/me/reviews/{review_id}/"
+        response = user_api_client_pytest_fixture.delete(url)
+
+        assert response.status_code == HTTP_204_NO_CONTENT
+        assert Review.objects.first() is None
+
+    def test_delete_my_by_another_user_fails(self, user_api_client_pytest_fixture, user):
+        me = UserFactory()
+        review = ReviewFactory(user=me)
+        review_id = str(review.id)
+
+        url = reverse(
+            "my-reviews-detail", args=[review_id]
+        )  # DELETE "/api/users/me/reviews/{review_id}/"
+        response = user_api_client_pytest_fixture.delete(url)
+
+        assert response.status_code == HTTP_403_FORBIDDEN
+        assert Review.objects.first() == review
