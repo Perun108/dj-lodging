@@ -14,6 +14,7 @@ from djlodging.domain.bookings.models import Booking
 from djlodging.infrastructure.providers.payments import payment_provider
 from tests.domain.bookings.factories import BookingFactory
 from tests.domain.lodgings.factories import LodgingFactory
+from tests.domain.users.factories import UserFactory
 
 fake = Faker()
 
@@ -132,18 +133,108 @@ class TestMyBookingViewSet:
         booking = Booking.objects.first()
         assert booking is None
 
-    def test_list_succeeds(self, user_api_client_pytest_fixture, user):
-        count = 3
+    def test_list_for_multiple_lodgings_succeeds(self, user_api_client_pytest_fixture, user):
+        bookings_number_1 = 3
+        bookings_number_2 = 2
+
         assert Booking.objects.count() == 0
 
-        bookings = BookingFactory.create_batch(size=count, user=user)
+        lodging_1 = LodgingFactory()
+        lodging_2 = LodgingFactory()
+
+        bookings_for_lodging_1 = BookingFactory.create_batch(
+            size=bookings_number_1, user=user, lodging=lodging_1
+        )
+        bookings_for_lodging_2 = BookingFactory.create_batch(
+            size=bookings_number_2, user=user, lodging=lodging_2
+        )
+
         url = reverse("my-bookings-list")
         response = user_api_client_pytest_fixture.get(url)
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == count
-        assert Booking.objects.count() == count
+        assert len(response.data) == bookings_number_1 + bookings_number_2
+        assert Booking.objects.count() == bookings_number_1 + bookings_number_2
+        assertQuerysetEqual(
+            Booking.objects.all(), bookings_for_lodging_1 + bookings_for_lodging_2, ordered=False
+        )
+
+    def test_list_for_multiple_lodgings_with_other_users_reviews_succeeds(
+        self, user_api_client_pytest_fixture, user
+    ):
+        another_user = UserFactory()
+        another_user_bookings_number = 4
+
+        bookings_number_1 = 3
+        bookings_number_2 = 2
+
+        assert Booking.objects.count() == 0
+        lodging_1 = LodgingFactory()
+        lodging_2 = LodgingFactory()
+
+        BookingFactory.create_batch(size=bookings_number_1, user=user, lodging=lodging_1)
+        BookingFactory.create_batch(size=bookings_number_2, user=user, lodging=lodging_2)
+        BookingFactory.create_batch(
+            size=another_user_bookings_number, user=another_user, lodging=lodging_1
+        )
+
+        url = reverse("my-bookings-list")
+        response = user_api_client_pytest_fixture.get(url)
+
+        assert response.status_code == HTTP_200_OK
+        assert len(response.data) == bookings_number_1 + bookings_number_2
+        assert (
+            Booking.objects.count()
+            == bookings_number_1 + bookings_number_2 + another_user_bookings_number
+        )
+
+    def test_list_for_single_lodging_succeeds(self, user_api_client_pytest_fixture, user):
+        bookings_number = 3
+
+        assert Booking.objects.count() == 0
+
+        bookings = BookingFactory.create_batch(size=bookings_number, user=user)
+
+        url = reverse("my-bookings-list")
+        response = user_api_client_pytest_fixture.get(url)
+
+        assert response.status_code == HTTP_200_OK
+        assert len(response.data) == bookings_number
+        assert Booking.objects.count() == bookings_number
         assertQuerysetEqual(Booking.objects.all(), bookings, ordered=False)
+
+    def test_list_for_single_lodging_with_other_users_bookings_succeeds(
+        self, user_api_client_pytest_fixture, user
+    ):
+        another_user = UserFactory()
+        another_user_bookings_number = 4
+
+        bookings_number = 3
+
+        assert Booking.objects.count() == 0
+
+        BookingFactory.create_batch(size=bookings_number, user=user)
+        BookingFactory.create_batch(size=another_user_bookings_number, user=another_user)
+
+        url = reverse("my-bookings-list")
+        response = user_api_client_pytest_fixture.get(url)
+
+        assert response.status_code == HTTP_200_OK
+        assert len(response.data) == bookings_number
+        assert Booking.objects.count() == bookings_number + another_user_bookings_number
+
+    def test_list_without_my_bookings_succeeds(self, user_api_client_pytest_fixture, user):
+        another_user = UserFactory()
+        BookingFactory(user=another_user)
+
+        assert Booking.objects.count() == 1
+
+        url = reverse("my-bookings-list")
+        response = user_api_client_pytest_fixture.get(url)
+
+        assert response.status_code == HTTP_200_OK
+        assert len(response.data) == 0
+        assert Booking.objects.count() == 1
 
     def test_pay_succeeds(self, user_api_client_pytest_fixture, user):
         booking = BookingFactory(user=user)

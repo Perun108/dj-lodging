@@ -253,7 +253,9 @@ class MeViewSet(ViewSet):
         """
         input_serializer = PartnerCreateInputSerializer(data=request.data)
         input_serializer.is_valid(raise_exception=True)
-        partner = UserService.update(user=request.user, **input_serializer.validated_data)
+        partner = UserService.make_user_partner(
+            user=request.user, **input_serializer.validated_data
+        )
         output_serializer = UserOutputSerializer(partner)
         return Response(data=output_serializer.data, status=HTTP_200_OK)
 

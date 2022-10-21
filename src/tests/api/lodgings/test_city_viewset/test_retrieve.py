@@ -23,7 +23,7 @@ class TestRetrieveCity:
 
         assert response.status_code == HTTP_200_OK
 
-        assert response.data["country_id"] == country_id
+        assert response.data["country"]["id"] == country_id
         assert response.data["id"] == city_id
         assert response.data["name"] == city.name
 

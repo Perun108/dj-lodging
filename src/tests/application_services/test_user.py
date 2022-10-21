@@ -1,6 +1,6 @@
 import pytest
 from django.contrib.auth.hashers import check_password
-from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.exceptions import ValidationError
 from faker import Faker
 
 from djlodging.application_services.users import UserService
@@ -55,8 +55,7 @@ class TestUserService:
         # We use a hard-coded phone number because Faker generates very long phone numbers.
         phone_number = "+16478081020"
         partner = UserService.make_user_partner(
-            actor=user,
-            user_id=user.id,
+            user=user,
             first_name=first_name,
             last_name=last_name,
             phone_number=phone_number,
@@ -70,32 +69,6 @@ class TestUserService:
         assert user.first_name == first_name
         assert user.last_name == last_name
         assert user.phone_number == phone_number
-
-    def test_make_user_partner_by_another_user_fails(self):
-        actor = UserFactory()
-        user = UserFactory()
-        assert user.is_partner is False
-
-        first_name = fake.first_name()
-        last_name = fake.last_name()
-        # We use a hard-coded phone number because Faker generates very long phone numbers.
-        phone_number = "+16478081020"
-
-        with pytest.raises(PermissionDenied):
-            UserService.make_user_partner(
-                actor=actor,
-                user_id=user.id,
-                first_name=first_name,
-                last_name=last_name,
-                phone_number=phone_number,
-            )
-
-        user.refresh_from_db()
-
-        assert user.is_partner is False
-        assert user.first_name != first_name
-        assert user.last_name != last_name
-        assert user.phone_number != phone_number
 
     @staticmethod
     def test_change_password_succeeds():

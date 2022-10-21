@@ -16,10 +16,6 @@ from rest_framework.test import APIClient
 from djlodging.domain.lodgings.models import Country
 from tests.domain.lodgings.factories import CountryFactory
 
-# from tests.domain.lodgings.factories import CountryFactory
-
-# from tests.domain.users.factories import UserFactory
-
 fake = Faker()
 
 

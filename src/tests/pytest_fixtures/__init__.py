@@ -8,4 +8,4 @@ from .api_client import (
     user_api_client_pytest_fixture,
 )
 from .lodgings import country
-from .user import partner, password, payment_method, user
+from .user import admin, partner, password, payment_method, user

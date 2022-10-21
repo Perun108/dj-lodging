@@ -29,8 +29,7 @@ class BookingViewSet(ViewSet):
     )
     def list(self, request):
         # TODO Add filtering to this API!
-        # TODO Complete this method!
-        bookings = BookingRepository.get_list(actor=request.user)
+        bookings = BookingService.get_list(actor=request.user)
         output_serializer = BookingListOutputSerializer(bookings, many=True)
         return Response(data=output_serializer.data, status=HTTP_200_OK)
 
@@ -76,8 +75,7 @@ class MyBookingViewSet(ViewSet):
         """
         List my bookings.
         """
-        # TODO Complete this method!
-        bookings = BookingRepository.get_list(user=request.user)
+        bookings = BookingRepository.get_my_list(user=request.user)
         output_serializer = BookingListOutputSerializer(bookings, many=True)
         return Response(data=output_serializer.data, status=HTTP_200_OK)
 

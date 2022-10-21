@@ -2,6 +2,7 @@ from datetime import date
 from uuid import UUID
 
 from django.core.exceptions import PermissionDenied, ValidationError
+from django.db.models import QuerySet
 from django.utils import timezone
 
 from djlodging.application_services.payments import PaymentService
@@ -85,3 +86,9 @@ class BookingService:
         )
         booking = BookingRepository.change_status(booking, new_status=Booking.Status.CANCELED)
         return booking
+
+    @classmethod
+    def get_list(cls, actor: User) -> QuerySet[Booking]:
+        if not actor.is_staff:
+            raise PermissionDenied
+        return BookingRepository.get_list()

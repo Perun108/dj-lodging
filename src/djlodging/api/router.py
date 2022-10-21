@@ -33,6 +33,6 @@ urlpatterns = [
     path("", include(cities_router.urls)),
     path("", include(reviews_router.urls)),
 ]
-print(reviews_router.urls)
-print("\n")
-print(router.urls)
+# print(reviews_router.urls)
+# print("\n")
+# print(router.urls)

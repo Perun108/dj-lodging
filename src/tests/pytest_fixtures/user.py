@@ -51,3 +51,12 @@ def partner(password):
         email=email, password=password, username="TestPartner", is_partner=True
     )
     return user
+
+
+@pytest.fixture
+def admin(password):
+    email = "test_admin@example.com"
+    user = User.objects.create_user(
+        email=email, password=password, username="TestPartner", is_staff=True
+    )
+    return user
