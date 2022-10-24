@@ -19,6 +19,7 @@ stripe = "^4.1.0"
 dj-stripe = "^2.6.2"
 drf-nested-routers = "^0.93.4"
 coverage-badge = "^1.1.0"
+django-filter = "^22.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.2"

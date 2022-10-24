@@ -11,8 +11,7 @@ class BookingRepository:
         booking.save()
 
     @classmethod
-    def get_list(cls) -> QuerySet[Booking]:
-        # TODO Add filtering!!!
+    def get_all(cls) -> QuerySet[Booking]:
         return Booking.objects.all()
 
     @classmethod

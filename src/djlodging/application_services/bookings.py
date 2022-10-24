@@ -8,6 +8,7 @@ from django.utils import timezone
 from djlodging.application_services.payments import PaymentService
 from djlodging.domain.bookings.models import Booking
 from djlodging.domain.bookings.repository import BookingRepository
+from djlodging.domain.bookings.services import BookingService as DomainBookingService
 from djlodging.domain.lodgings.repositories import LodgingRepository
 from djlodging.domain.users.models import User
 
@@ -88,7 +89,7 @@ class BookingService:
         return booking
 
     @classmethod
-    def get_list(cls, actor: User) -> QuerySet[Booking]:
+    def get_filtered_list(cls, actor: User, query_params) -> QuerySet[Booking]:
         if not actor.is_staff:
             raise PermissionDenied
-        return BookingRepository.get_list()
+        return DomainBookingService.get_filtered_list(query_params)
