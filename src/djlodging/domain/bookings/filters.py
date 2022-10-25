@@ -14,8 +14,8 @@ class BookingFilterSet(filters.FilterSet):
     country_name = filters.CharFilter(
         field_name="lodging__city__country__name", lookup_expr="icontains"
     )
-    region_name = filters.CharFilter(
-        field_name="lodging__city__region__name", lookup_expr="icontains"
+    country_region = filters.CharFilter(
+        field_name="lodging__city__region", lookup_expr="icontains"
     )
     city_name = filters.CharFilter(field_name="lodging__city__name", lookup_expr="icontains")
     city_district = filters.CharFilter(field_name="lodging__district", lookup_expr="icontains")
