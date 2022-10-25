@@ -1,5 +1,4 @@
 import pytest
-from faker import Faker
 from pytest_django.asserts import assertQuerysetEqual
 from rest_framework.reverse import reverse
 from rest_framework.status import HTTP_200_OK, HTTP_403_FORBIDDEN
@@ -8,8 +7,6 @@ from djlodging.domain.bookings.models import Booking
 from tests.domain.bookings.factories import BookingFactory
 from tests.domain.lodgings.factories import LodgingFactory
 from tests.domain.users.factories import UserFactory
-
-fake = Faker()
 
 
 @pytest.mark.django_db

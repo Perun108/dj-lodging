@@ -15,8 +15,8 @@ fake = Fake()
 class BookingFactory(DjangoModelFactory):
     lodging = SubFactory(LodgingFactory)
     user = SubFactory(UserFactory)
-    date_from = timezone.now().date()
-    date_to = date_from + timezone.timedelta(days=3)
+    date_from = timezone.now().date() - timezone.timedelta(days=3)
+    date_to = timezone.now().date() + timezone.timedelta(days=3)
 
     class Meta:
         model = Booking

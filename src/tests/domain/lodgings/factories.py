@@ -31,7 +31,7 @@ class CityFactory(DjangoModelFactory):
 
 class LodgingFactory(DjangoModelFactory):
     name = Faker("word")
-    kind = random.choice(Lodging.Type.choices)
+    kind = random.choice(Lodging.Kind.choices)
     owner = SubFactory(UserFactory)
     city = SubFactory(CityFactory)
     street = Faker("street_name")

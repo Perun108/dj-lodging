@@ -26,7 +26,7 @@ class TestLodgingViewSet:
         city = CityFactory()
 
         name = fake.word()
-        kind = random.choice(Lodging.Type.choices)
+        kind = random.choice(Lodging.Kind.choices)
         street = fake.street_name()
         house_number = fake.building_number()
         zip_code = fake.postcode()
@@ -67,7 +67,7 @@ class TestLodgingViewSet:
         city = CityFactory()
 
         name = fake.word()
-        kind = random.choice(Lodging.Type.choices)
+        kind = random.choice(Lodging.Kind.choices)
         street = fake.street_name()
         house_number = fake.building_number()
         zip_code = fake.postcode()

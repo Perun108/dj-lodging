@@ -405,6 +405,17 @@ pycodestyle = ">=2.9.0,<2.10.0"
 pyflakes = ">=2.5.0,<2.6.0"
 
 [[package]]
+name = "flake8-django"
+version = "1.1.5"
+description = "Plugin to catch bad style specific to Django Projects."
+category = "dev"
+optional = false
+python-versions = ">=3.7,<4.0"
+
+[package.dependencies]
+flake8 = ">=3.8.4,<6"
+
+[[package]]
 name = "gprof2dot"
 version = "2022.7.29"
 description = "Generate a dot graph from the output of several profilers."
@@ -1170,7 +1181,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "2a574dca1c92af5680b33d4b3021530cd1d2a259677a1162d21058c580fa89e5"
+content-hash = "c0e6719d7f05121849d11829a70dd217b601230d975a7c318394a60f0301da1f"
 
 [metadata.files]
 appnope = [
@@ -1365,6 +1376,10 @@ filelock = [
 flake8 = [
     {file = "flake8-5.0.4-py2.py3-none-any.whl", hash = "sha256:7a1cf6b73744f5806ab95e526f6f0d8c01c66d7bbe349562d22dfca20610b248"},
     {file = "flake8-5.0.4.tar.gz", hash = "sha256:6fbe320aad8d6b95cec8b8e47bc933004678dc63095be98528b7bdd2a9f510db"},
+]
+flake8-django = [
+    {file = "flake8-django-1.1.5.tar.gz", hash = "sha256:d6c4b2b7eb5e4c3166d546c200bbb3d88667d985a0cfb1c097ccb9a125d6560d"},
+    {file = "flake8_django-1.1.5-py3-none-any.whl", hash = "sha256:df77ada19fa7838bf1894d98d92cf5cbe65e20337eb7be21d76781883c237c32"},
 ]
 gprof2dot = [
     {file = "gprof2dot-2022.7.29-py2.py3-none-any.whl", hash = "sha256:f165b3851d3c52ee4915eb1bd6cca571e5759823c2cd0f71a79bda93c2dc85d6"},

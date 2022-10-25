@@ -9,14 +9,14 @@ User = get_user_model()
 
 
 class Lodging(BaseModel):
-    class Type(models.TextChoices):
-        apartment = "apartment", "Apartment"
-        home = "home", "Home"
-        hotel = "hotel", "Hotel"
-        other = "other", "Other"
+    class Kind(models.TextChoices):
+        APARTMENT = "apartment", "Apartment"
+        HOME = "home", "Home"
+        HOTEL = "hotel", "Hotel"
+        OTHER = "other", "Other"
 
     name = models.CharField(max_length=100)
-    kind = models.CharField(max_length=50, choices=Type.choices)
+    kind = models.CharField(max_length=50, choices=Kind.choices)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="lodging")
     city = models.ForeignKey(City, on_delete=models.CASCADE)
     district = models.CharField(max_length=255, blank=True)
