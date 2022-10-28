@@ -572,8 +572,8 @@ class TestQueryParamsFilteredList:
         )
 
     def test_list_filtered_by_zip_code(self, admin_api_client_pytest_fixture):
-        zip_code_1 = fake.name()
-        zip_code_2 = fake.name()
+        zip_code_1 = fake.postcode()
+        zip_code_2 = fake.postcode()
         zip_code_1_lodging = LodgingFactory(zip_code=zip_code_1)
         zip_code_2_lodging = LodgingFactory(zip_code=zip_code_2)
 

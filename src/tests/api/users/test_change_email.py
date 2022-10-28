@@ -18,7 +18,7 @@ fake = Faker()
 
 @pytest.mark.django_db
 class TestEmailChangeRequestAPIView:
-    def test_request_email_change_succeeds(self, user_api_client_factory_boy):
+    def test_request_email_change_succeeds(self, user_api_client_factory_boy, mocker):
         old_email = fake.email()
         new_email = fake.email()
 
@@ -26,12 +26,18 @@ class TestEmailChangeRequestAPIView:
 
         assert user.email == old_email
 
+        mocker.patch(
+            "djlodging.application_services.email.EmailService.send_change_email_link",
+            return_value=None,
+        )
+
         payload = {"new_email": new_email}
         url = reverse("users:request-change-email")
         response = user_api_client_factory_boy.post(url, payload)
 
         assert response.status_code == HTTP_202_ACCEPTED
 
+        # Assert that the email has not been changed yet - only after the request is confirmed
         user.refresh_from_db()
         assert user.email == old_email
 

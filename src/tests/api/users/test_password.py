@@ -50,12 +50,14 @@ class TestPasswordChangeAPIView:
 
 @pytest.mark.django_db
 class TestSendForgotPasswordLinkAPIView:
-    def test_forgot_password_succeeds(self):
+    def test_forgot_password_succeeds(self, mocker):
         api_client = APIClient()
         user = UserFactory()
 
         security_token = user.security_token
-
+        mocker.patch(
+            "djlodging.application_services.email.EmailService.send_change_password_link",
+        )
         payload = {"email": user.email}
 
         url = reverse("users:forgot-password")

@@ -9,26 +9,26 @@ from djlodging.domain.users.models import User
 fake = Faker()
 
 
-# @pytest.mark.usefixtures("api_client")
 @pytest.mark.django_db
 class TestUserSingUpAPIView:
-    def test_user_sign_up_succeeds(self):
+    def test_user_sign_up_succeeds(self, mocker):
         api_client = APIClient()
-        # original_count = User.objects.count()
         email = fake.email()
         password = fake.password()
+
+        mocker.patch(
+            "djlodging.application_services.email.EmailService.send_confirmation_link",
+            return_value=None,
+        )
 
         url = reverse("users:sign-up")  # "/api/users/sign-up/"
         payload = {"email": email, "password": password}
         response = api_client.post(url, payload)
 
-        # count = User.objects.count()
-        # user = User.objects.filter(email=email).first()
         assert response.status_code == HTTP_201_CREATED
 
         user = User.objects.first()
         assert user is not None
-        # assert count == original_count + 1
         assert user.email == email
         assert user.is_active is False
         assert user.is_user is True

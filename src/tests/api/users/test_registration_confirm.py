@@ -14,13 +14,15 @@ fake = Faker()
 
 @pytest.mark.django_db
 class TestUserRegistrationConfirmAPIView:
-    def test_confirm_registration_succeeds(self):
+    def test_confirm_registration_succeeds(self, mocker):
         api_client = APIClient()
         user = UserFactory(is_active=False)
 
         assert user.is_active is False
         assert user.security_token != ""
         assert PaymentProviderUser.objects.first() is None
+
+        mocker.patch("djlodging.application_services.users.PaymentProviderUserService.create")
 
         url = reverse("users:registration")
         payload = {"user_id": user.id, "security_token": user.security_token}
@@ -33,10 +35,11 @@ class TestUserRegistrationConfirmAPIView:
         assert user.security_token == ""
         assert response.data is None
 
-        payment_user = PaymentProviderUser.objects.first()
+        # TODO Move these check to application_services tests
+        # payment_user = PaymentProviderUser.objects.first()
 
-        assert payment_user is not None
-        assert payment_user.user == user
+        # assert payment_user is not None
+        # assert payment_user.user == user
 
     def test_confirm_registration_without_security_token_fails(self):
         api_client = APIClient()

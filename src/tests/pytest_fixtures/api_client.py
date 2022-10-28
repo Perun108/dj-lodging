@@ -54,3 +54,12 @@ def admin_api_client_pytest_fixture(admin):
     refresh = RefreshToken.for_user(admin)
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {refresh.access_token}")
     return client
+
+
+# Fixtures for integration tests
+@pytest.fixture
+def user_with_payment_api_client_pytest_fixture(user_with_payment):
+    client = APIClient()
+    refresh = RefreshToken.for_user(user_with_payment)
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {refresh.access_token}")
+    return client

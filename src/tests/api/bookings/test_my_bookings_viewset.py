@@ -236,11 +236,11 @@ class TestMyBookingViewSet:
         assert len(response.data) == 0
         assert Booking.objects.count() == 1
 
-    def test_pay_succeeds(self, user_api_client_pytest_fixture, user):
-        booking = BookingFactory(user=user)
+    def test_pay_succeeds(self, user_with_payment_api_client_pytest_fixture, user_with_payment):
+        booking = BookingFactory(user=user_with_payment)
         payload = {}
         url = reverse("my-bookings-pay", args=[str(booking.id)])
-        response = user_api_client_pytest_fixture.post(url, payload, format="json")
+        response = user_with_payment_api_client_pytest_fixture.post(url, payload, format="json")
 
         assert response.status_code == HTTP_201_CREATED
         assert "client_secret" in response.data

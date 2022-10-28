@@ -103,10 +103,13 @@ class TestUserService:
         assert user.check_password(old_password) is False
 
     @staticmethod
-    def test_send_forgot_password_link_succeeds():
+    def test_send_forgot_password_link_succeeds(mocker):
         user = UserFactory()
         security_token = user.security_token
 
+        mocker.patch(
+            "djlodging.application_services.email.EmailService.send_change_password_link",
+        )
         UserService.send_forgot_password_link(email=user.email)
 
         user.refresh_from_db()
