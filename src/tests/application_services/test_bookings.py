@@ -107,6 +107,8 @@ class TestBookingService:
         mock_payment_intent.return_value.client_secret = mock_client_secret
 
         client_secret = BookingService.pay(actor=user, booking_id=booking.id)
+        mock_payment_intent.assert_called_once()
+
         assert client_secret == mock_client_secret
 
         booking.refresh_from_db()
@@ -119,23 +121,17 @@ class TestBookingService:
         user = UserFactory()
         booking = BookingFactory(user=user, status=Booking.Status.PAID)
 
-        mocker.patch(
+        mock = mocker.patch(
             "djlodging.application_services.payments.PaymentService.create_refund",
             return_value=None,
         )
-
         canceled_booking = BookingService.cancel(actor=user, booking_id=booking.id)
-
+        mock.assert_called_once()
         assert canceled_booking.status == Booking.Status.CANCELED
 
-    def test_cancel_booking_with_wrong_status_fails(self, mocker):
+    def test_cancel_booking_with_wrong_status_fails(self):
         user = UserFactory()
         booking = BookingFactory(user=user, status=Booking.Status.PAYMENT_PENDING)
-
-        mocker.patch(
-            "djlodging.application_services.payments.PaymentService.create_refund",
-            return_value=None,
-        )
 
         with pytest.raises(ValidationError) as exc:
             BookingService.cancel(actor=user, booking_id=booking.id)
@@ -146,11 +142,6 @@ class TestBookingService:
         user = UserFactory()
         wrong_user = UserFactory()
         booking = BookingFactory(user=user, status=Booking.Status.PAID)
-
-        mocker.patch(
-            "djlodging.application_services.payments.PaymentService.create_refund",
-            return_value=None,
-        )
 
         with pytest.raises(PermissionDenied):
             BookingService.cancel(actor=wrong_user, booking_id=booking.id)

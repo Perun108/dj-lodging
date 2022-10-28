@@ -16,7 +16,7 @@ class TestUserSingUpAPIView:
         email = fake.email()
         password = fake.password()
 
-        mocker.patch(
+        mock = mocker.patch(
             "djlodging.application_services.email.EmailService.send_confirmation_link",
             return_value=None,
         )
@@ -26,6 +26,7 @@ class TestUserSingUpAPIView:
         response = api_client.post(url, payload)
 
         assert response.status_code == HTTP_201_CREATED
+        mock.assert_called_once()
 
         user = User.objects.first()
         assert user is not None

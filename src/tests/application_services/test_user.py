@@ -107,10 +107,11 @@ class TestUserService:
         user = UserFactory()
         security_token = user.security_token
 
-        mocker.patch(
+        mock = mocker.patch(
             "djlodging.application_services.email.EmailService.send_change_password_link",
         )
         UserService.send_forgot_password_link(email=user.email)
+        mock.assert_called_once()
 
         user.refresh_from_db()
         assert user.security_token != security_token

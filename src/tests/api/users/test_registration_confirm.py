@@ -22,13 +22,16 @@ class TestUserRegistrationConfirmAPIView:
         assert user.security_token != ""
         assert PaymentProviderUser.objects.first() is None
 
-        mocker.patch("djlodging.application_services.users.PaymentProviderUserService.create")
+        mock = mocker.patch(
+            "djlodging.application_services.users.PaymentProviderUserService.create"
+        )
 
         url = reverse("users:registration")
         payload = {"user_id": user.id, "security_token": user.security_token}
 
         response = api_client.post(url, payload)
         assert response.status_code == HTTP_200_OK
+        mock.assert_called_once()
 
         user.refresh_from_db()
         assert user.is_active is True

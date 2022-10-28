@@ -55,7 +55,7 @@ class TestSendForgotPasswordLinkAPIView:
         user = UserFactory()
 
         security_token = user.security_token
-        mocker.patch(
+        mock = mocker.patch(
             "djlodging.application_services.email.EmailService.send_change_password_link",
         )
         payload = {"email": user.email}
@@ -63,6 +63,7 @@ class TestSendForgotPasswordLinkAPIView:
         url = reverse("users:forgot-password")
         response = api_client.post(url, payload)
         assert response.status_code == HTTP_202_ACCEPTED
+        mock.assert_called_once()
 
         user.refresh_from_db()
         assert user.security_token != security_token

@@ -26,7 +26,7 @@ class TestEmailChangeRequestAPIView:
 
         assert user.email == old_email
 
-        mocker.patch(
+        mock = mocker.patch(
             "djlodging.application_services.email.EmailService.send_change_email_link",
             return_value=None,
         )
@@ -36,6 +36,7 @@ class TestEmailChangeRequestAPIView:
         response = user_api_client_factory_boy.post(url, payload)
 
         assert response.status_code == HTTP_202_ACCEPTED
+        mock.assert_called_once()
 
         # Assert that the email has not been changed yet - only after the request is confirmed
         user.refresh_from_db()
