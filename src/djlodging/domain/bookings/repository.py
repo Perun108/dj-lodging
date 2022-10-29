@@ -1,3 +1,5 @@
+from typing import Optional
+
 from django.core.exceptions import ValidationError
 from django.db.models import QuerySet
 
@@ -24,6 +26,10 @@ class BookingRepository:
             return Booking.objects.get(id=booking_id)
         except Booking.DoesNotExist:
             raise ValidationError("Wrong booking_id")
+
+    @classmethod
+    def get_by_reference_code(cls, reference_code: str) -> Optional[Booking]:
+        return Booking.objects.filter(reference_code=reference_code).first()
 
     @classmethod
     def change_status(cls, booking: Booking, new_status: str) -> Booking:

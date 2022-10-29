@@ -59,7 +59,6 @@ class MyReviewViewSet(ViewSet):
         summary="Add a review for lodging",
     )
     def create(self, request):
-        # TODO Add check for user's actually staying in this lodging (add booking number or PIN)
         input_serializer = ReviewCreateInputSerializer(data=request.data)
         input_serializer.is_valid(raise_exception=True)
         review = ReviewService.create(user=request.user, **input_serializer.validated_data)

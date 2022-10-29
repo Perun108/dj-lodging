@@ -4,6 +4,11 @@ from uuid import UUID
 from django.core.exceptions import PermissionDenied
 from django.db.models import QuerySet
 
+from djlodging.application_services.exceptions import (
+    WrongBookingReferenceCode,
+    WrongLodgingError,
+)
+from djlodging.domain.bookings.repository import BookingRepository
 from djlodging.domain.lodgings.models import City, Country
 from djlodging.domain.lodgings.models.lodging import Lodging
 from djlodging.domain.lodgings.models.review import Review
@@ -148,8 +153,17 @@ class LodgingService:
 
 class ReviewService:
     @classmethod
-    def create(cls, lodging_id: UUID, user: User, text: str, score: int) -> Review:
+    def create(
+        cls, lodging_id: UUID, user: User, reference_code: str, text: str, score: int
+    ) -> Review:
         lodging = LodgingRepository.get_by_id(lodging_id)
+
+        booking = BookingRepository.get_by_reference_code(reference_code)
+        if booking is None or booking.user != user:
+            raise WrongBookingReferenceCode
+        if booking.lodging != lodging:
+            raise WrongLodgingError
+
         review = Review(lodging=lodging, user=user, text=text, score=score)
         ReviewRepository.save(review)
         return review

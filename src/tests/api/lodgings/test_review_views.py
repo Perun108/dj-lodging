@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 import pytest
 from faker import Faker
 from pytest_django.asserts import assertQuerysetEqual
@@ -6,10 +8,17 @@ from rest_framework.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
     HTTP_204_NO_CONTENT,
+    HTTP_400_BAD_REQUEST,
     HTTP_403_FORBIDDEN,
 )
 
+from djlodging.application_services.exceptions import (
+    WrongBookingReferenceCode,
+    WrongLodgingError,
+)
+from djlodging.domain.bookings.models import Booking
 from djlodging.domain.lodgings.models.review import Review
+from tests.domain.bookings.factories import BookingFactory
 from tests.domain.lodgings.factories import LodgingFactory, ReviewFactory
 from tests.domain.users.factories import UserFactory
 
@@ -72,10 +81,17 @@ class TestReviewViewSet:
 class TestMyReviewViewSet:
     def test_create_review_succeeds(self, user_api_client_pytest_fixture, user):
         lodging = LodgingFactory()
+        booking = BookingFactory(user=user, lodging=lodging)
+        reference_code = booking.reference_code
         text = fake.paragraph()
         score = int(fake.numerify("#"))
 
-        payload = {"lodging_id": lodging.id, "text": text, "score": score}
+        payload = {
+            "lodging_id": lodging.id,
+            "reference_code": reference_code,
+            "text": text,
+            "score": score,
+        }
 
         url = reverse("my-reviews-list")  # POST "/api/users/me/reviews/"
 
@@ -88,6 +104,89 @@ class TestMyReviewViewSet:
         assert review.user == user
         assert review.text == text
         assert review.score == score
+
+    def test_create_review_with_another_users_reference_code_fails(
+        self, user_api_client_pytest_fixture
+    ):
+        correct_user = UserFactory()
+        wrong_user = UserFactory()
+        lodging = LodgingFactory()
+        correct_booking = BookingFactory(user=correct_user, lodging=lodging)  # noqa
+        wrong_booking = BookingFactory(user=wrong_user, lodging=lodging)
+        wrong_reference_code = wrong_booking.reference_code
+
+        text = fake.paragraph()
+        score = int(fake.numerify("#"))
+
+        payload = {
+            "lodging_id": lodging.id,
+            "reference_code": wrong_reference_code,
+            "text": text,
+            "score": score,
+        }
+
+        url = reverse("my-reviews-list")  # POST "/api/users/me/reviews/"
+        response = user_api_client_pytest_fixture.post(url, payload)
+
+        assert response.status_code == HTTP_400_BAD_REQUEST
+        assert (
+            str(response.data["detail"]["non_field_errors"][0])
+            == WrongBookingReferenceCode().message
+        )
+
+        assert Review.objects.first() is None
+
+    def test_create_review_with_non_existent_reference_code_fails(
+        self, user_api_client_pytest_fixture, user
+    ):
+        lodging = LodgingFactory()
+        booking = BookingFactory(user=user, lodging=lodging)  # noqa
+        text = fake.paragraph()
+        score = int(fake.numerify("#"))
+        assert Booking.objects.first() == booking
+
+        payload = {
+            "lodging_id": lodging.id,
+            "reference_code": uuid4(),
+            "text": text,
+            "score": score,
+        }
+
+        url = reverse("my-reviews-list")  # POST "/api/users/me/reviews/"
+        response = user_api_client_pytest_fixture.post(url, payload)
+
+        assert response.status_code == HTTP_400_BAD_REQUEST
+        assert (
+            str(response.data["detail"]["non_field_errors"][0])
+            == WrongBookingReferenceCode().message
+        )
+
+        assert Review.objects.first() is None
+
+    def test_create_review_for_wrong_lodging_fails(self, user_api_client_pytest_fixture, user):
+        correct_lodging = LodgingFactory()
+        wrong_lodging = LodgingFactory()
+        correct_booking = BookingFactory(user=user, lodging=correct_lodging)  # noqa
+        wrong_booking = BookingFactory(user=user, lodging=wrong_lodging)
+        wrong_reference_code = wrong_booking.reference_code
+
+        text = fake.paragraph()
+        score = int(fake.numerify("#"))
+
+        payload = {
+            "lodging_id": correct_lodging.id,
+            "reference_code": wrong_reference_code,
+            "text": text,
+            "score": score,
+        }
+
+        url = reverse("my-reviews-list")  # POST "/api/users/me/reviews/"
+        response = user_api_client_pytest_fixture.post(url, payload)
+
+        assert response.status_code == HTTP_400_BAD_REQUEST
+        assert str(response.data["detail"]["non_field_errors"][0]) == WrongLodgingError().message
+
+        assert Review.objects.first() is None
 
     def test_list_my_reviews_for_multiple_lodgings_succeeds(
         self, user_api_client_pytest_fixture, user

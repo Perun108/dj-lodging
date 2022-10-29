@@ -133,6 +133,7 @@ class LodgingListInputSerializer(serializers.ModelSerializer):
 
 class ReviewCreateInputSerializer(serializers.Serializer):
     lodging_id = serializers.UUIDField()
+    reference_code = serializers.CharField()
     text = serializers.CharField()
     score = serializers.IntegerField()
 
