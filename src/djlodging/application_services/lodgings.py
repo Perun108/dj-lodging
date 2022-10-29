@@ -7,6 +7,7 @@ from django.db.models import QuerySet
 from djlodging.application_services.exceptions import (
     WrongBookingReferenceCode,
     WrongLodgingError,
+    WrongOwnerError,
 )
 from djlodging.domain.bookings.repository import BookingRepository
 from djlodging.domain.lodgings.models import City, Country
@@ -149,6 +150,27 @@ class LodgingService:
         )
         LodgingRepository.save(lodging)
         return lodging
+
+    @classmethod
+    def update(cls, actor: User, lodging_id: UUID, **kwargs) -> Lodging:
+        lodging = LodgingRepository.get_by_id(lodging_id)
+
+        if lodging.owner != actor:
+            raise WrongOwnerError
+
+        for field, value in kwargs.items():
+            setattr(lodging, field, value)
+        LodgingRepository.save(lodging)
+        return lodging
+
+    @classmethod
+    def delete(cls, actor: User, lodging_id: UUID) -> tuple:
+        lodging = LodgingRepository.get_by_id(lodging_id)
+
+        if lodging.owner != actor:
+            raise WrongOwnerError
+
+        return LodgingRepository.delete(lodging)
 
 
 class ReviewService:

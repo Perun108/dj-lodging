@@ -7,11 +7,14 @@ from rest_framework.reverse import reverse
 from rest_framework.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
+    HTTP_204_NO_CONTENT,
+    HTTP_400_BAD_REQUEST,
     HTTP_401_UNAUTHORIZED,
     HTTP_403_FORBIDDEN,
 )
 from rest_framework.test import APIClient
 
+from djlodging.application_services.exceptions import WrongOwnerError
 from djlodging.domain.lodgings.models.lodging import Lodging
 from djlodging.domain.lodgings.repositories import LodgingRepository
 from tests.domain.bookings.factories import BookingFactory
@@ -290,3 +293,95 @@ class TestLodgingViewSet:
         )
 
         assert annotated_lodging.average_rating == round(average_rating, ndigits=1)
+
+    def test_update_succeeds(self, partner_api_client_pytest_fixture, partner):
+        old_name = fake.name()
+        lodging = LodgingFactory(name=old_name, owner=partner)
+        new_name = fake.name()
+
+        payload = {"name": new_name}
+        url = reverse(
+            "lodgings-detail", args=[str(lodging.id)]
+        )  # PUT "/api/lodgings/{lodging_id}"
+
+        response = partner_api_client_pytest_fixture.put(url, payload)
+
+        assert response.status_code == HTTP_200_OK
+        assert response.data["id"] == str(lodging.id)
+        assert response.data["name"] == new_name
+
+    def test_update_by_not_owner_fails(self, partner_api_client_pytest_fixture, user):
+        old_name = fake.name()
+        lodging = LodgingFactory(name=old_name, owner=user)
+        new_name = fake.name()
+
+        payload = {"name": new_name}
+        url = reverse(
+            "lodgings-detail", args=[str(lodging.id)]
+        )  # PUT "/api/lodgings/{lodging_id}"
+
+        response = partner_api_client_pytest_fixture.put(url, payload)
+
+        assert response.status_code == HTTP_400_BAD_REQUEST
+        assert str(response.data["detail"]["non_field_errors"][0]) == WrongOwnerError().message
+
+        lodging.refresh_from_db()
+        assert lodging.name == old_name
+
+    def test_update_by_not_logged_in_owner_fails(self, partner):
+        old_name = fake.name()
+        lodging = LodgingFactory(name=old_name, owner=partner)
+        new_name = fake.name()
+
+        payload = {"name": new_name}
+        url = reverse(
+            "lodgings-detail", args=[str(lodging.id)]
+        )  # PUT "/api/lodgings/{lodging_id}"
+
+        api_client = APIClient()
+        response = api_client.put(url, payload)
+
+        assert response.status_code == HTTP_401_UNAUTHORIZED
+
+        lodging.refresh_from_db()
+        assert lodging.name == old_name
+
+    def test_delete_succeeds(self, partner_api_client_pytest_fixture, partner):
+        lodging = LodgingFactory(owner=partner)
+        assert Lodging.objects.first() is not None
+
+        url = reverse(
+            "lodgings-detail", args=[str(lodging.id)]
+        )  # DELETE "/api/lodgings/{lodging_id}"
+
+        response = partner_api_client_pytest_fixture.delete(url)
+
+        assert response.status_code == HTTP_204_NO_CONTENT
+        assert Lodging.objects.first() is None
+
+    def test_delete_by_not_owner_fails(self, partner_api_client_pytest_fixture, user):
+        lodging = LodgingFactory(owner=user)
+
+        url = reverse(
+            "lodgings-detail", args=[str(lodging.id)]
+        )  # DELETE "/api/lodgings/{lodging_id}"
+
+        response = partner_api_client_pytest_fixture.delete(url)
+
+        assert response.status_code == HTTP_400_BAD_REQUEST
+        assert str(response.data["detail"]["non_field_errors"][0]) == WrongOwnerError().message
+
+        assert Lodging.objects.first() == lodging
+
+    def test_delete_by_not_logged_in_owner_fails(self, partner):
+        lodging = LodgingFactory(owner=partner)
+
+        url = reverse(
+            "lodgings-detail", args=[str(lodging.id)]
+        )  # DELETE "/api/lodgings/{lodging_id}"
+
+        api_client = APIClient()
+        response = api_client.delete(url)
+
+        assert response.status_code == HTTP_401_UNAUTHORIZED
+        assert Lodging.objects.first() == lodging

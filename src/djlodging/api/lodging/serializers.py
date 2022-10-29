@@ -47,6 +47,18 @@ class LodgingCreateInputSerializer(serializers.Serializer):
     price = serializers.DecimalField(max_digits=7, decimal_places=2, min_value=0)
 
 
+class LodgingUpdateInputSerializer(serializers.Serializer):
+    name = serializers.CharField(required=False)
+    kind = serializers.CharField(required=False)
+    street = serializers.CharField(required=False)
+    house_number = serializers.CharField(required=False)
+    zip_code = serializers.CharField(required=False)
+    email = serializers.EmailField(required=False)
+    phone_number = serializers.CharField(required=False)
+    district = serializers.CharField(required=False)
+    price = serializers.DecimalField(max_digits=7, decimal_places=2, min_value=0, required=False)
+
+
 class LodgingCountryOutputSerializer(serializers.Serializer):
     id = serializers.UUIDField()
     name = serializers.CharField()

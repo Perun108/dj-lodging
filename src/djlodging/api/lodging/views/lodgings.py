@@ -2,7 +2,7 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED
+from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT
 from rest_framework.viewsets import ViewSet
 
 from djlodging.api.helpers import validate_required_query_params_with_any
@@ -12,6 +12,7 @@ from djlodging.api.lodging.serializers import (
     LodgingListInputSerializer,
     LodgingListOutputSerializer,
     LodgingOutputSerializer,
+    LodgingUpdateInputSerializer,
 )
 from djlodging.api.permissions import IsPartner
 from djlodging.application_services.lodgings import LodgingService
@@ -95,3 +96,48 @@ class LodgingViewSet(ViewSet):
         lodging = LodgingRepository.retrieve_lodging_with_average_rating(pk)
         output_serializer = LodgingOutputSerializer(lodging)
         return Response(data=output_serializer.data, status=HTTP_200_OK)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="id",
+                description="Lodging id",
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.PATH,
+            ),
+        ],
+        request=LodgingUpdateInputSerializer,
+        responses={
+            200: LodgingOutputSerializer,
+            400: OpenApiResponse(description="Bad request"),
+        },
+        summary="Update lodging's details by its owner",
+    )
+    def update(self, request, pk):
+        input_serializer = LodgingUpdateInputSerializer(data=request.data)
+        input_serializer.is_valid(raise_exception=True)
+        lodging = LodgingService.update(
+            actor=request.user, lodging_id=pk, **input_serializer.validated_data
+        )
+        output_serializer = LodgingOutputSerializer(lodging)
+        return Response(data=output_serializer.data, status=HTTP_200_OK)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="id",
+                description="Lodging id",
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.PATH,
+            ),
+        ],
+        request=None,
+        responses={
+            204: None,
+            400: OpenApiResponse(description="Bad request"),
+        },
+        summary="Delete lodging by its owner",
+    )
+    def delete(self, request, pk):
+        LodgingService.delete(actor=request.user, lodging_id=pk)
+        return Response(status=HTTP_204_NO_CONTENT)

@@ -6,5 +6,7 @@ class IsPartner(BasePermission):
     Allows access only to partner users.
     """
 
-    def has_permission(self, request, view):
-        return bool(request.user and request.user.is_partner)
+    def has_permission(self, request, view) -> bool:
+        return bool(
+            request.user and hasattr(request.user, "is_partner") and request.user.is_partner
+        )

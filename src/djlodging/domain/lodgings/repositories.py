@@ -70,6 +70,10 @@ class LodgingRepository:
         lodging.save()
 
     @classmethod
+    def delete(cls, lodging: Lodging) -> tuple:
+        return lodging.delete()
+
+    @classmethod
     def get_list(
         cls,
         date_from: date,
