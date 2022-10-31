@@ -7,6 +7,7 @@ from rest_framework.viewsets import ViewSet
 
 from djlodging.api.lodging.serializers import (
     CityCreateInputSerializer,
+    CityListPaginatedOutputSerializer,
     CityOutputSerializer,
     CityUpdateInputSerializer,
 )
@@ -93,14 +94,16 @@ class CityViewSet(ViewSet):
         ],
         request=None,
         responses={
-            200: CityOutputSerializer,
+            200: CityListPaginatedOutputSerializer,
             400: OpenApiResponse(description="Bad request"),
         },
         summary="List all available cities in a country by admin",
     )
     def list(self, request, country_pk):
-        cities = CityService.get_list(actor=request.user, country_id=country_pk)
-        output_serializer = CityOutputSerializer(cities, many=True)
+        cities = CityService.get_paginated_list(
+            actor=request.user, country_id=country_pk, query_params=request.query_params
+        )
+        output_serializer = CityListPaginatedOutputSerializer(cities)
         return Response(data=output_serializer.data, status=HTTP_200_OK)
 
     @extend_schema(

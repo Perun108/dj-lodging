@@ -8,6 +8,7 @@ from rest_framework.viewsets import ViewSet
 from djlodging.api.lodging.serializers import (
     CountryCreateInputSerializer,
     CountryOutputSerializer,
+    CountryPaginatedOutputSerializer,
     CountryUpdateInputSerializer,
 )
 from djlodging.application_services.lodgings import CountryService
@@ -54,13 +55,15 @@ class CountryViewSet(ViewSet):
     @extend_schema(
         request=None,
         responses={
-            200: CountryOutputSerializer(many=True),
+            200: CountryPaginatedOutputSerializer,
         },
         summary="List all available countries by admin",
     )
     def list(self, request):
-        countries = CountryService.get_list(actor=request.user)
-        output_serializer = CountryOutputSerializer(countries, many=True)
+        countries = CountryService.get_paginated_list(
+            actor=request.user, query_params=request.query_params
+        )
+        output_serializer = CountryPaginatedOutputSerializer(countries)
         return Response(data=output_serializer.data, status=HTTP_200_OK)
 
     @extend_schema(

@@ -2,7 +2,6 @@ from typing import Optional
 from uuid import UUID
 
 from django.core.exceptions import PermissionDenied
-from django.db.models import QuerySet
 
 from djlodging.api.pagination import paginate_queryset
 from djlodging.application_services.exceptions import (
@@ -41,11 +40,12 @@ class CountryService:
         return CountryRepository.get_by_id(country_id=country_id)
 
     @classmethod
-    def get_list(cls, *, actor) -> QuerySet[Country]:
+    def get_paginated_list(cls, *, actor: User, query_params: dict) -> dict:
         # Check permissions to prevent unauthorized actions that circumvents API level permissions
         if not actor.is_staff:
             raise PermissionDenied
-        return CountryRepository.get_all()
+        countries = CountryRepository.get_all()
+        return paginate_queryset(countries, query_params)
 
     @classmethod
     def update(cls, *, actor, country_id: UUID, **kwargs) -> Country:
@@ -98,12 +98,12 @@ class CityService:
         return city
 
     @classmethod
-    def get_list(cls, actor: User, country_id: UUID) -> QuerySet[City]:
+    def get_paginated_list(cls, actor: User, country_id: UUID, query_params: dict) -> dict:
         # Check permissions to prevent unauthorized actions that circumvents API level permissions
         if not actor.is_staff:
             raise PermissionDenied
         cities = CityRepository.get_list_by_country(country_id)
-        return cities
+        return paginate_queryset(cities, query_params)
 
     @classmethod
     def delete(cls, actor: User, city_id: UUID) -> tuple:

@@ -12,6 +12,11 @@ class CountryOutputSerializer(serializers.Serializer):
     name = serializers.CharField()
 
 
+class CountryPaginatedOutputSerializer(serializers.Serializer):
+    count = serializers.IntegerField()
+    results = CountryOutputSerializer(many=True)
+
+
 class CountryUpdateInputSerializer(serializers.Serializer):
     name = serializers.CharField()
 
@@ -31,6 +36,11 @@ class CityOutputSerializer(serializers.Serializer):
     country = CountryOutputSerializer()
     name = serializers.CharField()
     region = serializers.CharField(required=False)
+
+
+class CityListPaginatedOutputSerializer(serializers.Serializer):
+    count = serializers.IntegerField()
+    results = CityOutputSerializer(many=True)
 
 
 class LodgingCreateInputSerializer(serializers.Serializer):
