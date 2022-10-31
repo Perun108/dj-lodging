@@ -164,6 +164,11 @@ class ReviewOutputSerializer(serializers.Serializer):
     score = serializers.IntegerField()
 
 
+class ReviewPaginatedListOutputSerializer(serializers.Serializer):
+    count = serializers.IntegerField()
+    results = ReviewOutputSerializer(many=True)
+
+
 class ReviewUpdateInputSerializer(serializers.Serializer):
     text = serializers.CharField()
     score = serializers.IntegerField()

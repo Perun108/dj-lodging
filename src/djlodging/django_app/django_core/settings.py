@@ -174,6 +174,7 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_PAGE_SIZE": 1,
     "EXCEPTION_HANDLER": "djlodging.api.exception_handlers.drf_default_with_modifications_exception_handler",  # noqa
 }
 

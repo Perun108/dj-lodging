@@ -8,8 +8,10 @@ from djlodging.api.lodging.serializers import (
     MyReviewsListOutputSerializer,
     ReviewCreateInputSerializer,
     ReviewOutputSerializer,
+    ReviewPaginatedListOutputSerializer,
     ReviewUpdateInputSerializer,
 )
+from djlodging.api.pagination import paginate_queryset
 from djlodging.application_services.lodgings import ReviewService
 from djlodging.domain.lodgings.repositories import ReviewRepository
 
@@ -21,14 +23,15 @@ class ReviewViewSet(ViewSet):
         ],
         request=None,
         responses={
-            200: ReviewOutputSerializer(many=True),
+            200: ReviewPaginatedListOutputSerializer,
             400: OpenApiResponse(description="Bad request"),
         },
         summary="List all lodging's reviews by any user",
     )
     def list(self, request, lodging_pk):
         reviews = ReviewRepository.get_list(lodging_id=lodging_pk)
-        output_serializer = ReviewOutputSerializer(reviews, many=True)
+        qs = paginate_queryset(reviews, request.query_params)
+        output_serializer = ReviewPaginatedListOutputSerializer(qs)
         return Response(output_serializer.data, status=HTTP_200_OK)
 
     @extend_schema(
