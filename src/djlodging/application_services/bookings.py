@@ -2,9 +2,9 @@ from datetime import date
 from uuid import UUID
 
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db.models import QuerySet
 from django.utils import timezone
 
+from djlodging.api.pagination import paginate_queryset
 from djlodging.application_services.payments import PaymentService
 from djlodging.domain.bookings.models import Booking
 from djlodging.domain.bookings.repository import BookingRepository
@@ -89,7 +89,13 @@ class BookingService:
         return booking
 
     @classmethod
-    def get_filtered_list(cls, actor: User, query_params) -> QuerySet[Booking]:
+    def get_filtered_paginated_list(cls, actor: User, query_params) -> dict:
         if not actor.is_staff:
             raise PermissionDenied
-        return DomainBookingService.get_filtered_list(query_params)
+        bookings = DomainBookingService.get_filtered_list(query_params)
+        return paginate_queryset(bookings, query_params)
+
+    @classmethod
+    def get_my_paginated_list(cls, user: User, query_params: dict) -> dict:
+        my_bookings = BookingRepository.get_list_by_user(user)
+        return paginate_queryset(my_bookings, query_params)

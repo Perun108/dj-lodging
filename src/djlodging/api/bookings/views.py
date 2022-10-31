@@ -13,18 +13,17 @@ from rest_framework.viewsets import ViewSet
 
 from djlodging.api.bookings.serializers import (
     BookingCreateInputSerializer,
-    BookingListOutputSerializer,
+    BookingListPaginatedOutputSerializer,
     BookingOutputSerializer,
     BookingPayInputSerializer,
 )
 from djlodging.application_services.bookings import BookingService
-from djlodging.domain.bookings.repository import BookingRepository
 
 
 class BookingViewSet(ViewSet):
     @extend_schema(
         request=None,
-        responses={200: BookingListOutputSerializer},
+        responses={200: BookingListPaginatedOutputSerializer},
         summary="List all bookings by admin (filtered)",
         parameters=[
             OpenApiParameter(
@@ -138,10 +137,10 @@ class BookingViewSet(ViewSet):
         ],
     )
     def list(self, request):
-        bookings = BookingService.get_filtered_list(
+        bookings = BookingService.get_filtered_paginated_list(
             actor=request.user, query_params=request.query_params
         )
-        output_serializer = BookingListOutputSerializer(bookings, many=True)
+        output_serializer = BookingListPaginatedOutputSerializer(bookings)
         return Response(data=output_serializer.data, status=HTTP_200_OK)
 
     @extend_schema(
@@ -179,15 +178,17 @@ class MyBookingViewSet(ViewSet):
 
     @extend_schema(
         request=None,
-        responses={200: BookingListOutputSerializer},
+        responses={200: BookingListPaginatedOutputSerializer},
         summary="List my bookings",
     )
     def list(self, request):
         """
         List my bookings.
         """
-        bookings = BookingRepository.get_my_list(user=request.user)
-        output_serializer = BookingListOutputSerializer(bookings, many=True)
+        bookings = BookingService.get_my_paginated_list(
+            user=request.user, query_params=request.query_params
+        )
+        output_serializer = BookingListPaginatedOutputSerializer(bookings)
         return Response(data=output_serializer.data, status=HTTP_200_OK)
 
     @extend_schema(

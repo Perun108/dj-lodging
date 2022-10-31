@@ -9,8 +9,7 @@ from djlodging.api.helpers import validate_required_query_params_with_any
 from djlodging.api.lodging.serializers import (
     LodgingCreateInputSerializer,
     LodgingCreateOutputSerializer,
-    LodgingListInputSerializer,
-    LodgingListOutputSerializer,
+    LodgingListPaginatedOutputSerializer,
     LodgingOutputSerializer,
     LodgingUpdateInputSerializer,
 )
@@ -58,9 +57,9 @@ class LodgingViewSet(ViewSet):
                 location=OpenApiParameter.QUERY,
             ),
         ],
-        request=LodgingListInputSerializer,
+        request=None,
         responses={
-            200: LodgingListOutputSerializer,
+            200: LodgingListPaginatedOutputSerializer,
             400: OpenApiResponse(description="Bad request"),
         },
         summary="List lodgings in a city available for given dates by any user",
@@ -70,10 +69,8 @@ class LodgingViewSet(ViewSet):
             required_params=["country", "city"],
             query_params=request.query_params,
         )
-        input_serializer = LodgingListInputSerializer(data=request.query_params)
-        input_serializer.is_valid(raise_exception=True)
-        lodgings = LodgingRepository.get_list(**input_serializer.validated_data)
-        output_serializer = LodgingListOutputSerializer(lodgings, many=True)
+        lodgings = LodgingService.get_paginated_list(query_params=request.query_params)
+        output_serializer = LodgingListPaginatedOutputSerializer(lodgings)
         return Response(data=output_serializer.data, status=HTTP_200_OK)
 
     @extend_schema(

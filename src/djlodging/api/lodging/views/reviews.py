@@ -11,7 +11,6 @@ from djlodging.api.lodging.serializers import (
     ReviewPaginatedListOutputSerializer,
     ReviewUpdateInputSerializer,
 )
-from djlodging.api.pagination import paginate_queryset
 from djlodging.application_services.lodgings import ReviewService
 from djlodging.domain.lodgings.repositories import ReviewRepository
 
@@ -29,9 +28,10 @@ class ReviewViewSet(ViewSet):
         summary="List all lodging's reviews by any user",
     )
     def list(self, request, lodging_pk):
-        reviews = ReviewRepository.get_list(lodging_id=lodging_pk)
-        qs = paginate_queryset(reviews, request.query_params)
-        output_serializer = ReviewPaginatedListOutputSerializer(qs)
+        reviews = ReviewService.get_paginated_list(
+            lodging_id=lodging_pk, query_params=request.query_params
+        )
+        output_serializer = ReviewPaginatedListOutputSerializer(reviews)
         return Response(output_serializer.data, status=HTTP_200_OK)
 
     @extend_schema(
@@ -77,7 +77,7 @@ class MyReviewViewSet(ViewSet):
         summary="List my reviews for all my booked lodgings",
     )
     def list(self, request):
-        my_reviews = ReviewRepository.get_my_list(user=request.user)
+        my_reviews = ReviewRepository.get_list_by_user(user=request.user)
         output_serializer = MyReviewsListOutputSerializer(my_reviews, many=True)
         return Response(output_serializer.data, status=HTTP_200_OK)
 

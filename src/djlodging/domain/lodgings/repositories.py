@@ -85,6 +85,8 @@ class LodgingRepository:
         kind: Optional[str] = "",
         available_only: bool = False,
         order: Optional[str] = "-price",
+        *args,
+        **kwargs
     ) -> QuerySet:
 
         lodging_filter = Q(
@@ -151,7 +153,7 @@ class ReviewRepository:
             raise ValidationError("Such review does not exist")
 
     @classmethod
-    def get_list(cls, lodging_id: UUID) -> QuerySet[Review]:
+    def get_all_for_lodging(cls, lodging_id: UUID) -> QuerySet[Review]:
         return Review.objects.filter(lodging__id=lodging_id)
 
     @classmethod
@@ -159,5 +161,5 @@ class ReviewRepository:
         return review.delete()
 
     @classmethod
-    def get_my_list(cls, user: User) -> QuerySet[Review]:
+    def get_list_by_user(cls, user: User) -> QuerySet[Review]:
         return Review.objects.filter(user=user)

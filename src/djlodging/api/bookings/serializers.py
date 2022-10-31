@@ -26,6 +26,11 @@ class BookingListOutputSerializer(serializers.Serializer):
     status = serializers.CharField()
 
 
+class BookingListPaginatedOutputSerializer(serializers.Serializer):
+    count = serializers.IntegerField()
+    results = BookingListOutputSerializer(many=True)
+
+
 class BookingPayInputSerializer(serializers.Serializer):
     currency = serializers.CharField(required=False)
     capture_method = serializers.CharField(required=False)

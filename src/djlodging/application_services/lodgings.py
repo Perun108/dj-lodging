@@ -4,6 +4,7 @@ from uuid import UUID
 from django.core.exceptions import PermissionDenied
 from django.db.models import QuerySet
 
+from djlodging.api.pagination import paginate_queryset
 from djlodging.application_services.exceptions import (
     WrongBookingReferenceCode,
     WrongLodgingError,
@@ -166,11 +167,14 @@ class LodgingService:
     @classmethod
     def delete(cls, actor: User, lodging_id: UUID) -> tuple:
         lodging = LodgingRepository.get_by_id(lodging_id)
-
         if lodging.owner != actor:
             raise WrongOwnerError
-
         return LodgingRepository.delete(lodging)
+
+    @classmethod
+    def get_paginated_list(cls, query_params: dict) -> dict:
+        lodgings = LodgingRepository.get_list(**query_params.dict())
+        return paginate_queryset(lodgings, query_params)
 
 
 class ReviewService:
@@ -213,3 +217,8 @@ class ReviewService:
     @classmethod
     def retrieve_my(cls, actor: User, review_id: UUID) -> Review:
         return cls._verify_review_user_permissions(actor, review_id)
+
+    @classmethod
+    def get_paginated_list(cls, lodging_id: UUID, query_params: dict) -> dict:
+        reviews = ReviewRepository.get_all_for_lodging(lodging_id)
+        return paginate_queryset(reviews, query_params)

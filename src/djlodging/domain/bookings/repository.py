@@ -17,7 +17,7 @@ class BookingRepository:
         return Booking.objects.all()
 
     @classmethod
-    def get_my_list(cls, user: User) -> QuerySet[Booking]:
+    def get_list_by_user(cls, user: User) -> QuerySet[Booking]:
         return Booking.objects.filter(user=user)
 
     @classmethod

@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
 from djlodging.api.users.serializers import LodgingUserOutputSerializer
-from djlodging.domain.lodgings.models.lodging import Lodging
 
 
 class CountryCreateInputSerializer(serializers.Serializer):
@@ -121,26 +120,9 @@ class LodgingListOutputSerializer(LodgingOutputSerializer):
     available = serializers.BooleanField(required=False)
 
 
-class LodgingListInputSerializer(serializers.ModelSerializer):
-    """Serializer for query params in the GET request to list all lodgings"""
-
-    city = serializers.CharField(required=False)
-    country = serializers.CharField(required=False)
-    date_from = serializers.DateField()
-    date_to = serializers.DateField()
-    available_only = serializers.BooleanField(default=False)
-
-    class Meta:
-        model = Lodging
-        fields = [
-            "city",
-            "country",
-            "number_of_people",
-            "number_of_rooms",
-            "date_from",
-            "date_to",
-            "available_only",
-        ]
+class LodgingListPaginatedOutputSerializer(serializers.Serializer):
+    count = serializers.IntegerField()
+    results = LodgingListOutputSerializer(many=True)
 
 
 class ReviewCreateInputSerializer(serializers.Serializer):
