@@ -153,8 +153,11 @@ class TestMyBookingViewSet:
         response = user_api_client_pytest_fixture.get(url)
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == bookings_number_1 + bookings_number_2
-        assert Booking.objects.count() == bookings_number_1 + bookings_number_2
+        assert (
+            response.data["count"]
+            == bookings_number_1 + bookings_number_2
+            == Booking.objects.count()
+        )
         assertQuerysetEqual(
             Booking.objects.all(), bookings_for_lodging_1 + bookings_for_lodging_2, ordered=False
         )
@@ -182,7 +185,7 @@ class TestMyBookingViewSet:
         response = user_api_client_pytest_fixture.get(url)
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == bookings_number_1 + bookings_number_2
+        assert response.data["count"] == bookings_number_1 + bookings_number_2
         assert (
             Booking.objects.count()
             == bookings_number_1 + bookings_number_2 + another_user_bookings_number
@@ -199,8 +202,7 @@ class TestMyBookingViewSet:
         response = user_api_client_pytest_fixture.get(url)
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == bookings_number
-        assert Booking.objects.count() == bookings_number
+        assert response.data["count"] == bookings_number == Booking.objects.count()
         assertQuerysetEqual(Booking.objects.all(), bookings, ordered=False)
 
     def test_list_for_single_lodging_with_other_users_bookings_succeeds(
@@ -220,7 +222,7 @@ class TestMyBookingViewSet:
         response = user_api_client_pytest_fixture.get(url)
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == bookings_number
+        assert response.data["count"] == bookings_number
         assert Booking.objects.count() == bookings_number + another_user_bookings_number
 
     def test_list_without_my_bookings_succeeds(self, user_api_client_pytest_fixture, user):
@@ -233,7 +235,7 @@ class TestMyBookingViewSet:
         response = user_api_client_pytest_fixture.get(url)
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == 0
+        assert response.data["count"] == 0
         assert Booking.objects.count() == 1
 
     def test_pay_succeeds(self, user_with_payment_api_client_pytest_fixture, user_with_payment):

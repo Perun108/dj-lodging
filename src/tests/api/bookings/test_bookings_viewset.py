@@ -36,8 +36,12 @@ class TestBookingViewSet:
         response = admin_api_client_pytest_fixture.get(url)
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == bookings_count_1 + bookings_count_2
-        assert Booking.objects.count() == bookings_count_1 + bookings_count_2
+        assert (
+            response.data["count"]
+            == bookings_count_1 + bookings_count_2
+            == Booking.objects.count()
+        )
+
         assertQuerysetEqual(
             Booking.objects.all(), bookings_for_lodging_1 + bookings_for_lodging_2, ordered=False
         )
@@ -49,7 +53,7 @@ class TestBookingViewSet:
         response = admin_api_client_pytest_fixture.get(url)
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == 0
+        assert response.data["count"] == 0
         assert Booking.objects.count() == 0
 
     def test_list_all_by_non_admin_fails(self, user_api_client_pytest_fixture):

@@ -31,13 +31,15 @@ class TestQueryParamsFilteredList:
         )
 
         url = reverse("bookings-list")
-        response = admin_api_client_pytest_fixture.get(url, {"user_id": str(user_1.id)})
+        response = admin_api_client_pytest_fixture.get(
+            url, {"user_id": str(user_1.id), "page": 1, "page_size": 20}
+        )
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == user_1_bookings_number
+        assert response.data["count"] == user_1_bookings_number
         assert Booking.objects.count() == user_1_bookings_number + user_2_bookings_number
 
-        bookings_ids_list = [item["id"] for item in response.data]
+        bookings_ids_list = [item["id"] for item in response.data["results"]]
         user_1_bookings_ids_list = [str(item.id) for item in user_1_bookings]
 
         assert bookings_ids_list.sort() == user_1_bookings_ids_list.sort()
@@ -62,12 +64,14 @@ class TestQueryParamsFilteredList:
                 bookings_list.append(booking)
 
         url = reverse("bookings-list")
-        response = admin_api_client_pytest_fixture.get(url, {"date_from": current_date_from})
+        response = admin_api_client_pytest_fixture.get(
+            url, {"date_from": current_date_from, "page": 1, "page_size": 20}
+        )
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == len(bookings_list)
+        assert response.data["count"] == len(bookings_list)
 
-        filtered_bookings_ids_list = [item["id"] for item in response.data]
+        filtered_bookings_ids_list = [item["id"] for item in response.data["results"]]
         bookings_ids_list = [str(item.id) for item in bookings_list]
 
         assert len(filtered_bookings_ids_list) == len(bookings_ids_list)
@@ -97,12 +101,14 @@ class TestQueryParamsFilteredList:
         bookings_list.append(passed_booking)
 
         url = reverse("bookings-list")
-        response = admin_api_client_pytest_fixture.get(url, {"date_from": passed_date_from})
+        response = admin_api_client_pytest_fixture.get(
+            url, {"date_from": passed_date_from, "page": 1, "page_size": 20}
+        )
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == len(bookings_list)
+        assert response.data["count"] == len(bookings_list)
 
-        filtered_bookings_ids_list = [item["id"] for item in response.data]
+        filtered_bookings_ids_list = [item["id"] for item in response.data["results"]]
         bookings_ids_list = [str(item.id) for item in bookings_list]
 
         assert len(filtered_bookings_ids_list) == len(bookings_ids_list)
@@ -129,12 +135,14 @@ class TestQueryParamsFilteredList:
             bookings_list.append(booking)
 
         url = reverse("bookings-list")
-        response = admin_api_client_pytest_fixture.get(url, {"date_from": future_date_from})
+        response = admin_api_client_pytest_fixture.get(
+            url, {"date_from": future_date_from, "page": 1, "page_size": 20}
+        )
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == len(bookings_list)
+        assert response.data["count"] == len(bookings_list)
 
-        filtered_bookings_ids_list = [item["id"] for item in response.data]
+        filtered_bookings_ids_list = [item["id"] for item in response.data["results"]]
         bookings_ids_list = [str(item.id) for item in bookings_list]
 
         assert len(filtered_bookings_ids_list) == len(bookings_ids_list)
@@ -162,12 +170,14 @@ class TestQueryParamsFilteredList:
                 bookings_list.append(booking)
 
         url = reverse("bookings-list")
-        response = admin_api_client_pytest_fixture.get(url, {"date_to": current_date_to})
+        response = admin_api_client_pytest_fixture.get(
+            url, {"date_to": current_date_to, "page": 1, "page_size": 20}
+        )
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == len(bookings_list)
+        assert response.data["count"] == len(bookings_list)
 
-        filtered_bookings_ids_list = [item["id"] for item in response.data]
+        filtered_bookings_ids_list = [item["id"] for item in response.data["results"]]
         bookings_ids_list = [str(item.id) for item in bookings_list]
 
         assert len(filtered_bookings_ids_list) == len(bookings_ids_list)
@@ -197,12 +207,14 @@ class TestQueryParamsFilteredList:
             bookings_list.append(booking)
 
         url = reverse("bookings-list")
-        response = admin_api_client_pytest_fixture.get(url, {"date_to": passed_date_to})
+        response = admin_api_client_pytest_fixture.get(
+            url, {"date_to": passed_date_to, "page": 1, "page_size": 20}
+        )
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == len(bookings_list)
+        assert response.data["count"] == len(bookings_list)
 
-        filtered_bookings_ids_list = [item["id"] for item in response.data]
+        filtered_bookings_ids_list = [item["id"] for item in response.data["results"]]
         bookings_ids_list = [str(item.id) for item in bookings_list]
 
         assert len(filtered_bookings_ids_list) == len(bookings_ids_list)
@@ -231,12 +243,14 @@ class TestQueryParamsFilteredList:
         bookings_list.append(passed_booking)
 
         url = reverse("bookings-list")
-        response = admin_api_client_pytest_fixture.get(url, {"date_to": future_date_to})
+        response = admin_api_client_pytest_fixture.get(
+            url, {"date_to": future_date_to, "page": 1, "page_size": 20}
+        )
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == len(bookings_list)
+        assert response.data["count"] == len(bookings_list)
 
-        filtered_bookings_ids_list = [item["id"] for item in response.data]
+        filtered_bookings_ids_list = [item["id"] for item in response.data["results"]]
         bookings_ids_list = [str(item.id) for item in bookings_list]
 
         assert len(filtered_bookings_ids_list) == len(bookings_ids_list)
@@ -257,13 +271,15 @@ class TestQueryParamsFilteredList:
         )
 
         url = reverse("bookings-list")
-        response = admin_api_client_pytest_fixture.get(url, {"status": Booking.Status.PAID})
+        response = admin_api_client_pytest_fixture.get(
+            url, {"status": Booking.Status.PAID, "page": 1, "page_size": 20}
+        )
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == paid_bookings_number
+        assert response.data["count"] == paid_bookings_number
         assert Booking.objects.count() == paid_bookings_number + payment_pending_bookings_number
 
-        response_bookings_ids_list = [item["id"] for item in response.data]
+        response_bookings_ids_list = [item["id"] for item in response.data["results"]]
         paid_bookings_ids_list = [str(item.id) for item in paid_bookings]
 
         assert response_bookings_ids_list.sort() == paid_bookings_ids_list.sort()
@@ -286,13 +302,15 @@ class TestQueryParamsFilteredList:
         )
 
         url = reverse("bookings-list")
-        response = admin_api_client_pytest_fixture.get(url, {"lodging_id": str(lodging_1.id)})
+        response = admin_api_client_pytest_fixture.get(
+            url, {"lodging_id": str(lodging_1.id), "page": 1, "page_size": 20}
+        )
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == lodging_1_bookings_number
+        assert response.data["count"] == lodging_1_bookings_number
         assert Booking.objects.count() == lodging_1_bookings_number + lodging_2_bookings_number
 
-        bookings_ids_list = [item["id"] for item in response.data]
+        bookings_ids_list = [item["id"] for item in response.data["results"]]
         lodging_1_bookings_ids_list = [str(item.id) for item in lodging_1_bookings]
 
         assert bookings_ids_list.sort() == lodging_1_bookings_ids_list.sort()
@@ -317,13 +335,15 @@ class TestQueryParamsFilteredList:
         )
 
         url = reverse("bookings-list")
-        response = admin_api_client_pytest_fixture.get(url, {"owner_id": str(owner_1.id)})
+        response = admin_api_client_pytest_fixture.get(
+            url, {"owner_id": str(owner_1.id), "page": 1, "page_size": 20}
+        )
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == owner_1_bookings_number
+        assert response.data["count"] == owner_1_bookings_number
         assert Booking.objects.count() == owner_1_bookings_number + owner_2_bookings_number
 
-        bookings_ids_list = [item["id"] for item in response.data]
+        bookings_ids_list = [item["id"] for item in response.data["results"]]
         owner_1_bookings_ids_list = [str(item.id) for item in owner_1_bookings]
 
         assert bookings_ids_list.sort() == owner_1_bookings_ids_list.sort()
@@ -344,13 +364,15 @@ class TestQueryParamsFilteredList:
         )
 
         url = reverse("bookings-list")
-        response = admin_api_client_pytest_fixture.get(url, {"kind": Lodging.Kind.HOTEL})
+        response = admin_api_client_pytest_fixture.get(
+            url, {"kind": Lodging.Kind.HOTEL, "page": 1, "page_size": 20}
+        )
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == hotel_bookings_number
+        assert response.data["count"] == hotel_bookings_number
         assert Booking.objects.count() == hotel_bookings_number + apartment_bookings_number
 
-        response_bookings_ids_list = [item["id"] for item in response.data]
+        response_bookings_ids_list = [item["id"] for item in response.data["results"]]
         hotel_bookings_ids_list = [str(item.id) for item in hotel_bookings]
 
         assert response_bookings_ids_list.sort() == hotel_bookings_ids_list.sort()
@@ -376,14 +398,14 @@ class TestQueryParamsFilteredList:
 
         url = reverse("bookings-list")
         response = admin_api_client_pytest_fixture.get(
-            url, {"country_name": country_1_lodging.city.country.name}
+            url, {"country_name": country_1_lodging.city.country.name, "page": 1, "page_size": 20}
         )
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == country_1_bookings_number
+        assert response.data["count"] == country_1_bookings_number
         assert Booking.objects.count() == country_1_bookings_number + country_2_bookings_number
 
-        response_bookings_ids_list = [item["id"] for item in response.data]
+        response_bookings_ids_list = [item["id"] for item in response.data["results"]]
         country_1_bookings_ids_list = [str(item.id) for item in country_1_bookings]
 
         assert response_bookings_ids_list.sort() == country_1_bookings_ids_list.sort()
@@ -394,41 +416,6 @@ class TestQueryParamsFilteredList:
             country_1_bookings,
             ordered=False,
         )
-
-    # def test_list_filtered_by_country_name(self, admin_api_client_pytest_fixture):
-    #     country_1 = CountryFactory()
-    #     country_2 = CountryFactory()
-    #     country_1_city = CityFactory(country=country_1)
-    #     country_2_city = CityFactory(country=country_2)
-    #     country_1_lodging = LodgingFactory(city=country_1_city)
-    #     country_2_lodging = LodgingFactory(city=country_2_city)
-
-    #     country_1_bookings_number = 3
-    #     country_2_bookings_number = 2
-
-    #     country_1_bookings = BookingFactory.create_batch(
-    #         size=country_1_bookings_number, lodging=country_1_lodging
-    #     )
-    #     country_2_bookings = BookingFactory.create_batch(  # noqa
-    #         size=country_2_bookings_number, lodging=country_2_lodging
-    #     )
-
-    #     url = reverse("bookings-list")
-    #     response = admin_api_client_pytest_fixture.get(url, {"country_name": country_1.name})
-
-    #     assert response.status_code == HTTP_200_OK
-    #     assert len(response.data) == country_1_bookings_number
-    #     assert Booking.objects.count() == country_1_bookings_number + country_2_bookings_number
-
-    #     response_bookings_ids_list = [item["id"] for item in response.data]
-    #     country_1_bookings_ids_list = [str(item.id) for item in country_1_bookings]
-
-    #     assert response_bookings_ids_list.sort() == country_1_bookings_ids_list.sort()
-    #     assertQuerysetEqual(
-    #         Booking.objects.filter(lodging__city__country__name=country_1.name),
-    #         country_1_bookings,
-    #         ordered=False,
-    #     )
 
     def test_list_filtered_by_country_region(self, admin_api_client_pytest_fixture):
         country = CountryFactory()
@@ -450,13 +437,15 @@ class TestQueryParamsFilteredList:
         )
 
         url = reverse("bookings-list")
-        response = admin_api_client_pytest_fixture.get(url, {"country_region": region_1})
+        response = admin_api_client_pytest_fixture.get(
+            url, {"country_region": region_1, "page": 1, "page_size": 20}
+        )
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == region_1_bookings_number
+        assert response.data["count"] == region_1_bookings_number
         assert Booking.objects.count() == region_1_bookings_number + region_2_bookings_number
 
-        response_bookings_ids_list = [item["id"] for item in response.data]
+        response_bookings_ids_list = [item["id"] for item in response.data["results"]]
         region_1_bookings_ids_list = [str(item.id) for item in region_1_bookings]
 
         assert response_bookings_ids_list.sort() == region_1_bookings_ids_list.sort()
@@ -483,13 +472,15 @@ class TestQueryParamsFilteredList:
         )
 
         url = reverse("bookings-list")
-        response = admin_api_client_pytest_fixture.get(url, {"city_name": city_1.name})
+        response = admin_api_client_pytest_fixture.get(
+            url, {"city_name": city_1.name, "page": 1, "page_size": 20}
+        )
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == city_1_bookings_number
+        assert response.data["count"] == city_1_bookings_number
         assert Booking.objects.count() == city_1_bookings_number + city_2_bookings_number
 
-        response_bookings_ids_list = [item["id"] for item in response.data]
+        response_bookings_ids_list = [item["id"] for item in response.data["results"]]
         city_1_bookings_ids_list = [str(item.id) for item in city_1_bookings]
 
         assert response_bookings_ids_list.sort() == city_1_bookings_ids_list.sort()
@@ -516,16 +507,18 @@ class TestQueryParamsFilteredList:
         )
 
         url = reverse("bookings-list")
-        response = admin_api_client_pytest_fixture.get(url, {"city_district": district_1})
+        response = admin_api_client_pytest_fixture.get(
+            url, {"city_district": district_1, "page": 1, "page_size": 20}
+        )
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == district_1_lodging_bookings_number
+        assert response.data["count"] == district_1_lodging_bookings_number
         assert (
             Booking.objects.count()
             == district_1_lodging_bookings_number + district_2_lodging_bookings_number
         )
 
-        response_bookings_ids_list = [item["id"] for item in response.data]
+        response_bookings_ids_list = [item["id"] for item in response.data["results"]]
         district_1_bookings_ids_list = [str(item.id) for item in district_1_bookings]
 
         assert response_bookings_ids_list.sort() == district_1_bookings_ids_list.sort()
@@ -552,16 +545,18 @@ class TestQueryParamsFilteredList:
         )
 
         url = reverse("bookings-list")
-        response = admin_api_client_pytest_fixture.get(url, {"street": street_1})
+        response = admin_api_client_pytest_fixture.get(
+            url, {"street": street_1, "page": 1, "page_size": 20}
+        )
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == street_1_lodging_bookings_number
+        assert response.data["count"] == street_1_lodging_bookings_number
         assert (
             Booking.objects.count()
             == street_1_lodging_bookings_number + street_2_lodging_bookings_number
         )
 
-        response_bookings_ids_list = [item["id"] for item in response.data]
+        response_bookings_ids_list = [item["id"] for item in response.data["results"]]
         street_1_bookings_ids_list = [str(item.id) for item in street_1_bookings]
 
         assert response_bookings_ids_list.sort() == street_1_bookings_ids_list.sort()
@@ -588,16 +583,18 @@ class TestQueryParamsFilteredList:
         )
 
         url = reverse("bookings-list")
-        response = admin_api_client_pytest_fixture.get(url, {"zip_code": zip_code_1})
+        response = admin_api_client_pytest_fixture.get(
+            url, {"zip_code": zip_code_1, "page": 1, "page_size": 20}
+        )
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == zip_code_1_lodging_bookings_number
+        assert response.data["count"] == zip_code_1_lodging_bookings_number
         assert (
             Booking.objects.count()
             == zip_code_1_lodging_bookings_number + zip_code_2_lodging_bookings_number
         )
 
-        response_bookings_ids_list = [item["id"] for item in response.data]
+        response_bookings_ids_list = [item["id"] for item in response.data["results"]]
         zip_code_1_bookings_ids_list = [str(item.id) for item in zip_code_1_bookings]
 
         assert response_bookings_ids_list.sort() == zip_code_1_bookings_ids_list.sort()
@@ -624,16 +621,18 @@ class TestQueryParamsFilteredList:
         )
 
         url = reverse("bookings-list")
-        response = admin_api_client_pytest_fixture.get(url, {"email": email_1})
+        response = admin_api_client_pytest_fixture.get(
+            url, {"email": email_1, "page": 1, "page_size": 20}
+        )
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == email_1_lodging_bookings_number
+        assert response.data["count"] == email_1_lodging_bookings_number
         assert (
             Booking.objects.count()
             == email_1_lodging_bookings_number + email_2_lodging_bookings_number
         )
 
-        response_bookings_ids_list = [item["id"] for item in response.data]
+        response_bookings_ids_list = [item["id"] for item in response.data["results"]]
         email_1_bookings_ids_list = [str(item.id) for item in email_1_bookings]
 
         assert response_bookings_ids_list.sort() == email_1_bookings_ids_list.sort()
@@ -661,14 +660,14 @@ class TestQueryParamsFilteredList:
 
         url = reverse("bookings-list")
         response = admin_api_client_pytest_fixture.get(
-            url, {"number_of_people": number_of_people_1}
+            url, {"number_of_people": number_of_people_1, "page": 1, "page_size": 20}
         )
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == lodging_1_bookings_number
+        assert response.data["count"] == lodging_1_bookings_number
         assert Booking.objects.count() == lodging_1_bookings_number + lodging_2_bookings_number
 
-        response_bookings_ids_list = [item["id"] for item in response.data]
+        response_bookings_ids_list = [item["id"] for item in response.data["results"]]
         lodging_1_bookings_ids_list = [str(item.id) for item in lodging_1_bookings]
 
         assert response_bookings_ids_list.sort() == lodging_1_bookings_ids_list.sort()
@@ -695,13 +694,15 @@ class TestQueryParamsFilteredList:
         )
 
         url = reverse("bookings-list")
-        response = admin_api_client_pytest_fixture.get(url, {"number_of_rooms": number_of_rooms_1})
+        response = admin_api_client_pytest_fixture.get(
+            url, {"number_of_rooms": number_of_rooms_1, "page": 1, "page_size": 20}
+        )
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == lodging_1_bookings_number
+        assert response.data["count"] == lodging_1_bookings_number
         assert Booking.objects.count() == lodging_1_bookings_number + lodging_2_bookings_number
 
-        response_bookings_ids_list = [item["id"] for item in response.data]
+        response_bookings_ids_list = [item["id"] for item in response.data["results"]]
         lodging_1_bookings_ids_list = [str(item.id) for item in lodging_1_bookings]
 
         assert response_bookings_ids_list.sort() == lodging_1_bookings_ids_list.sort()
@@ -735,10 +736,12 @@ class TestQueryParamsFilteredList:
         )
 
         url = reverse("bookings-list")
-        response = admin_api_client_pytest_fixture.get(url, {"price_gte": medium_price})
+        response = admin_api_client_pytest_fixture.get(
+            url, {"price_gte": medium_price, "page": 1, "page_size": 20}
+        )
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == medium_price_bookings_number + high_price_bookings_number
+        assert response.data["count"] == medium_price_bookings_number + high_price_bookings_number
         assert (
             Booking.objects.count()
             == low_price_bookings_number
@@ -746,7 +749,7 @@ class TestQueryParamsFilteredList:
             + high_price_bookings_number
         )
 
-        response_bookings_ids_list = [item["id"] for item in response.data]
+        response_bookings_ids_list = [item["id"] for item in response.data["results"]]
         result_bookings = medium_price_bookings + high_price_bookings
         result_booking_ids_list = [str(item.id) for item in result_bookings]
 
@@ -781,10 +784,12 @@ class TestQueryParamsFilteredList:
         )
 
         url = reverse("bookings-list")
-        response = admin_api_client_pytest_fixture.get(url, {"price_lte": medium_price})
+        response = admin_api_client_pytest_fixture.get(
+            url, {"price_lte": medium_price, "page": 1, "page_size": 20}
+        )
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == low_price_bookings_number + medium_price_bookings_number
+        assert response.data["count"] == low_price_bookings_number + medium_price_bookings_number
         assert (
             Booking.objects.count()
             == low_price_bookings_number
@@ -792,7 +797,7 @@ class TestQueryParamsFilteredList:
             + high_price_bookings_number
         )
 
-        response_bookings_ids_list = [item["id"] for item in response.data]
+        response_bookings_ids_list = [item["id"] for item in response.data["results"]]
         result_bookings = low_price_bookings + medium_price_bookings
         result_booking_ids_list = [str(item.id) for item in result_bookings]
 
@@ -834,11 +839,11 @@ class TestQueryParamsFilteredList:
 
         url = reverse("bookings-list")
         response = admin_api_client_pytest_fixture.get(
-            url, {"price_lte": high_price, "price_gte": medium_price}
+            url, {"price_lte": high_price, "price_gte": medium_price, "page": 1, "page_size": 20}
         )
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == medium_price_bookings_number + high_price_bookings_number
+        assert response.data["count"] == medium_price_bookings_number + high_price_bookings_number
         assert (
             Booking.objects.count()
             == low_price_bookings_number
@@ -847,7 +852,7 @@ class TestQueryParamsFilteredList:
             + highest_price_bookings_number
         )
 
-        response_bookings_ids_list = [item["id"] for item in response.data]
+        response_bookings_ids_list = [item["id"] for item in response.data["results"]]
         result_bookings = medium_price_bookings + high_price_bookings
         result_booking_ids_list = [str(item.id) for item in result_bookings]
 

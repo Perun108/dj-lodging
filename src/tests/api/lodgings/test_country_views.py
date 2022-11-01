@@ -130,7 +130,7 @@ class TestCountryViewSet:
         response = admin_api_client_factory_boy.get(url)
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == number_of_countries
+        assert response.data["count"] == number_of_countries
 
     def test_list_countries_by_regular_user_fails(self, user_api_client_factory_boy):
         number_of_countries = 3

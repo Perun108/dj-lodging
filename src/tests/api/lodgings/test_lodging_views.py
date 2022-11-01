@@ -130,7 +130,7 @@ class TestLodgingViewSet:
 
         assert response.status_code == HTTP_200_OK
         # We should have only 1 lodging available - the third one that has not been booked.
-        assert len(response.data) == 1
+        assert response.data["count"] == 1
 
     def test_list_available_succeeds_2(self, user_api_client_pytest_fixture):
         city = CityFactory()
@@ -160,7 +160,7 @@ class TestLodgingViewSet:
         response = user_api_client_pytest_fixture.get(url, query_params)
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == 3
+        assert response.data["count"] == 3
 
     def test_list_available_succeeds_3(self, user_api_client_pytest_fixture):
         city = CityFactory()
@@ -190,7 +190,7 @@ class TestLodgingViewSet:
         response = user_api_client_pytest_fixture.get(url, query_params)
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == 2
+        assert response.data["count"] == 2
 
     def test_list_available_succeeds_4(self, user_api_client_pytest_fixture):
         size = 3
@@ -217,7 +217,7 @@ class TestLodgingViewSet:
         response = user_api_client_pytest_fixture.get(url, query_params)
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == 0
+        assert response.data["count"] == 0
 
     def test_list_all_succeeds_1(self, user_api_client_pytest_fixture):
         size = 3
@@ -243,7 +243,7 @@ class TestLodgingViewSet:
         response = user_api_client_pytest_fixture.get(url, query_params)
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == size
+        assert response.data["count"] == size
 
     def test_retrieve_succeeds(self, user_api_client_pytest_fixture):
         lodging = LodgingFactory()

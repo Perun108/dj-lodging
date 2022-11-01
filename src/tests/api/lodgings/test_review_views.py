@@ -48,7 +48,7 @@ class TestReviewViewSet:
         response = user_api_client_pytest_fixture.get(url)
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == tested_lodging_reviews_count
+        assert response.data["count"] == tested_lodging_reviews_count
 
     def test_list_without_reviews_succeeds(self, user_api_client_pytest_fixture):
         tested_lodging = LodgingFactory()
@@ -60,7 +60,7 @@ class TestReviewViewSet:
         response = user_api_client_pytest_fixture.get(url)
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == 0
+        assert response.data["count"] == 0
 
     def test_retrieve_succeeds(self, user_api_client_pytest_fixture):
         lodging = LodgingFactory()
