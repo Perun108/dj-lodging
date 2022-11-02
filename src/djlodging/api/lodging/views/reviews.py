@@ -5,7 +5,8 @@ from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CON
 from rest_framework.viewsets import ViewSet
 
 from djlodging.api.lodging.serializers import (
-    MyReviewsListOutputSerializer,
+    MyReviewOutputSerializer,
+    MyReviewsPaginatedListOutputSerializer,
     ReviewCreateInputSerializer,
     ReviewOutputSerializer,
     ReviewPaginatedListOutputSerializer,
@@ -71,14 +72,16 @@ class MyReviewViewSet(ViewSet):
     @extend_schema(
         request=None,
         responses={
-            200: MyReviewsListOutputSerializer(many=True),
+            200: MyReviewsPaginatedListOutputSerializer,
             400: OpenApiResponse(description="Bad request"),
         },
         summary="List my reviews for all my booked lodgings",
     )
     def list(self, request):
-        my_reviews = ReviewRepository.get_list_by_user(user=request.user)
-        output_serializer = MyReviewsListOutputSerializer(my_reviews, many=True)
+        my_reviews = ReviewService.get_my_paginated_list(
+            user=request.user, query_params=request.query_params
+        )
+        output_serializer = MyReviewsPaginatedListOutputSerializer(my_reviews)
         return Response(output_serializer.data, status=HTTP_200_OK)
 
     @extend_schema(
@@ -87,14 +90,14 @@ class MyReviewViewSet(ViewSet):
         ],
         request=None,
         responses={
-            200: MyReviewsListOutputSerializer(many=True),
+            200: MyReviewOutputSerializer,
             400: OpenApiResponse(description="Bad request"),
         },
         summary="Get my review's details",
     )
     def retrieve(self, request, pk):
         review = ReviewService.retrieve_my(actor=request.user, review_id=pk)
-        output_serializer = MyReviewsListOutputSerializer(review)
+        output_serializer = MyReviewOutputSerializer(review)
         return Response(output_serializer.data, status=HTTP_200_OK)
 
     @extend_schema(

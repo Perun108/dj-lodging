@@ -11,4 +11,6 @@ class BookingService:
     def get_filtered_list(cls, query_params) -> QuerySet[Booking]:
         qs = BookingRepository.get_all()
         filter_decorator = Filter(BookingFilterSet)
-        return filter_decorator.filter(queryset=qs, query_params=query_params)
+        filtered_qs = filter_decorator.filter(queryset=qs, query_params=query_params)
+        # sorted_qs = sort_queryset(filtered_qs, query_params)
+        return filtered_qs

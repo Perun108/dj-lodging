@@ -222,3 +222,8 @@ class ReviewService:
     def get_paginated_list(cls, lodging_id: UUID, query_params: dict) -> dict:
         reviews = ReviewRepository.get_all_for_lodging(lodging_id)
         return paginate_queryset(reviews, query_params)
+
+    @classmethod
+    def get_my_paginated_list(cls, user: User, query_params: dict) -> dict:
+        reviews = ReviewRepository.get_list_by_user(user)
+        return paginate_queryset(reviews, query_params)

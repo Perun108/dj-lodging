@@ -14,3 +14,4 @@ class BaseModel(models.Model):
         """Base model configs."""
 
         abstract = True
+        ordering = ("-created",)

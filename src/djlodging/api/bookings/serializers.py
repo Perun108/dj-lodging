@@ -24,6 +24,7 @@ class BookingListOutputSerializer(serializers.Serializer):
     date_from = serializers.DateField()
     date_to = serializers.DateField()
     status = serializers.CharField()
+    created = serializers.DateTimeField()
 
 
 class BookingListPaginatedOutputSerializer(serializers.Serializer):

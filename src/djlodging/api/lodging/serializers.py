@@ -104,6 +104,7 @@ class LodgingCreateOutputSerializer(serializers.Serializer):
     number_of_people = serializers.IntegerField()
     number_of_rooms = serializers.IntegerField()
     price = serializers.DecimalField(max_digits=7, decimal_places=2)
+    created = serializers.DateTimeField()
 
 
 class LodgingOutputSerializer(LodgingCreateOutputSerializer):
@@ -151,9 +152,9 @@ class UserReviewOutputSerializer(serializers.Serializer):
 class ReviewOutputSerializer(serializers.Serializer):
     id = serializers.UUIDField()
     user = UserReviewOutputSerializer()
-    date_time = serializers.DateTimeField(source="created")
     text = serializers.CharField()
     score = serializers.IntegerField()
+    created = serializers.DateTimeField()
 
 
 class ReviewPaginatedListOutputSerializer(serializers.Serializer):
@@ -166,9 +167,14 @@ class ReviewUpdateInputSerializer(serializers.Serializer):
     score = serializers.IntegerField()
 
 
-class MyReviewsListOutputSerializer(serializers.Serializer):
+class MyReviewOutputSerializer(serializers.Serializer):
     id = serializers.UUIDField()
     lodging = LodgingShortOutputSerializer()
-    date_time = serializers.DateTimeField(source="created")
     text = serializers.CharField()
     score = serializers.IntegerField()
+    created = serializers.DateTimeField()
+
+
+class MyReviewsPaginatedListOutputSerializer(serializers.Serializer):
+    count = serializers.IntegerField()
+    results = MyReviewOutputSerializer(many=True)

@@ -98,4 +98,5 @@ class BookingService:
     @classmethod
     def get_my_paginated_list(cls, user: User, query_params: dict) -> dict:
         my_bookings = BookingRepository.get_list_by_user(user)
+        # my_sorted_bookings = sort_queryset(my_bookings, query_params)
         return paginate_queryset(my_bookings, query_params)
