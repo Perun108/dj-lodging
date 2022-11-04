@@ -175,7 +175,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_PAGE_SIZE": 1,
-    "EXCEPTION_HANDLER": "djlodging.api.exception_handlers.drf_default_with_modifications_exception_handler",  # noqa
+    "EXCEPTION_HANDLER": "djlodging.api.exception_handlers.drf_default_with_modifications_exception_handler",  # noqa pylint: disable=line-too-long
 }
 
 
@@ -199,7 +199,7 @@ EMAIL_BACKEND = env.str(
     "DJANGO_EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend"
 )
 EMAIL_PROVIDER = {
-    "DEFAULT_EMAIL_PROVIDER_CLASS": "djlodging.infrastructure.providers.email.SendgridEmailProvider",  # noqa
+    "DEFAULT_EMAIL_PROVIDER_CLASS": "djlodging.infrastructure.providers.email.SendgridEmailProvider",  # noqa pylint: disable=line-too-long
     "API_KEY": env.str("EMAIL_PROVIDER_API_KEY", default="SET_YOUR_API_KEY"),
     "CONFIRMATION_LINK_TEMPLATE_ID": "d-118c70b3aa884c74af9d3c14403aa4f5",
     "CHANGE_PASSWORD_LINK_TEMPLATE_ID": "d-788fb445f4b24970abf871901cf43d96",

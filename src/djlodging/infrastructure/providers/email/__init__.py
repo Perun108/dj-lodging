@@ -5,12 +5,6 @@ from django.utils.module_loading import import_string
 from .base_email_provider import BaseEmailProvider
 from .sendgrid import SendgridEmailProvider
 
-__all__ = [
-    "email_provider",
-    "BaseEmailProvider",
-    "SendgridEmailProvider",
-]
-
 
 def __get_email_provider() -> SendgridEmailProvider:
     try:
@@ -28,3 +22,9 @@ def __get_email_provider() -> SendgridEmailProvider:
 
 
 email_provider = __get_email_provider()
+
+__all__ = [
+    "email_provider",
+    "BaseEmailProvider",
+    "SendgridEmailProvider",
+]

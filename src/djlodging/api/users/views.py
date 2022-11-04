@@ -280,7 +280,7 @@ class MeViewSet(ViewSet):
         summary="Update my details",
     )
     @action(detail=False, methods=["get", "put"])
-    def me(self, request):
+    def me(self, request):  # pylint: disable=inconsistent-return-statements
         """
         Retrieve/Update a user by himself. Different from the plain 'retrieve/update' method.
         """
@@ -288,7 +288,7 @@ class MeViewSet(ViewSet):
             output_serializer = UserOutputSerializer(request.user)
             return Response(output_serializer.data, status=HTTP_200_OK)
 
-        elif request.method == "PUT":
+        if request.method == "PUT":
             incoming_data = UserUpdateInputSerializer(data=request.data)
             incoming_data.is_valid(raise_exception=True)
             user = UserService.update(user=request.user, **incoming_data.validated_data)

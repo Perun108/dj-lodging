@@ -4,7 +4,6 @@ import stripe
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from djstripe import webhooks
-from djstripe.models import Customer
 from stripe.error import InvalidRequestError
 
 from djlodging.infrastructure.providers.payments.base_payment_provider import (
@@ -15,22 +14,21 @@ stripe.api_key = settings.STRIPE_API_KEY
 
 
 class StripePaymentProvider(BasePaymentProvider):
-    def get_payment_provider_customer(self):
-        return Customer
-
-    def create_payment_user(self, *, email: str) -> stripe.Customer:
+    def create_payment_user(self, email: str) -> stripe.Customer:
         """Create a stripe customer."""
         return stripe.Customer.create(email=email)
 
-    def create_payment_intent(self, user, amount, currency, metadata, capture_method):
+    def create_payment_intent(
+        self, customer_id, amount, currency, metadata, capture_method, receipt_email
+    ):
         amount_in_cents = int(amount * 100)
         payment_intent = stripe.PaymentIntent.create(
             amount=amount_in_cents,
             currency=currency,
-            customer=user.payment_user.customer_id,
+            customer=customer_id,
             capture_method=capture_method,
             metadata=metadata,
-            receipt_email=user.email,
+            receipt_email=receipt_email,
         )
         return payment_intent
 
@@ -55,6 +53,7 @@ class StripePaymentProvider(BasePaymentProvider):
 @webhooks.handler("payment_intent.succeeded")
 def confirm_payment(event, **kwargs):
     """Change booking status to 'PAID'"""
+    # pylint: disable=import-outside-toplevel
     from djlodging.application_services.bookings import BookingService
 
     payment_intent = event.data["object"]
