@@ -18,6 +18,7 @@ from djlodging.api.bookings.serializers import (
     BookingPayInputSerializer,
 )
 from djlodging.application_services.bookings import BookingService
+from djlodging.domain.bookings.repository import BookingRepository
 
 
 class BookingViewSet(ViewSet):
@@ -185,7 +186,7 @@ class MyBookingViewSet(ViewSet):
         """
         List my bookings.
         """
-        bookings = BookingService.get_my_paginated_list(
+        bookings = BookingRepository.get_paginated_list_by_user(
             user=request.user, query_params=request.query_params
         )
         output_serializer = BookingListPaginatedOutputSerializer(bookings)

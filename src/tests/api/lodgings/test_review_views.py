@@ -207,7 +207,7 @@ class TestMyReviewViewSet:
         response = user_api_client_pytest_fixture.get(url)
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == lodging_1_reviews_number + lodging_2_reviews_number
+        assert response.data["count"] == lodging_1_reviews_number + lodging_2_reviews_number
         assertQuerysetEqual(
             Review.objects.all(), lodging_1_reviews + lodging_2_reviews, ordered=False
         )
@@ -237,7 +237,7 @@ class TestMyReviewViewSet:
             Review.objects.count()
             == lodging_1_reviews_number + lodging_2_reviews_number + another_user_reviews_number
         )
-        assert len(response.data) == lodging_1_reviews_number + lodging_2_reviews_number
+        assert response.data["count"] == lodging_1_reviews_number + lodging_2_reviews_number
 
     def test_list_without_my_reviews_succeeds(self, user_api_client_pytest_fixture, user):
         another_user = UserFactory()
@@ -249,7 +249,7 @@ class TestMyReviewViewSet:
         response = user_api_client_pytest_fixture.get(url)
 
         assert response.status_code == HTTP_200_OK
-        assert len(response.data) == 0
+        assert response.data["count"] == 0
 
     def test_retrieve_my_succeeds(self, user_api_client_pytest_fixture, user):
         review = ReviewFactory(user=user)

@@ -1,16 +1,14 @@
-from typing import Optional
+from typing import Dict, List, Optional, Union
 from uuid import UUID
 
 from django.core.exceptions import PermissionDenied
 
-from djlodging.api.pagination import paginate_queryset
 from djlodging.application_services.exceptions import (
     WrongBookingReferenceCode,
     WrongLodgingError,
     WrongOwnerError,
 )
 from djlodging.domain.bookings.repository import BookingRepository
-from djlodging.domain.bookings.sorting import sort_queryset
 from djlodging.domain.lodgings.models import City, Country
 from djlodging.domain.lodgings.models.lodging import Lodging
 from djlodging.domain.lodgings.models.review import Review
@@ -41,14 +39,13 @@ class CountryService:
         return CountryRepository.get_by_id(country_id=country_id)
 
     @classmethod
-    def get_paginated_list(cls, *, actor: User, query_params: dict) -> dict:
+    def get_paginated_list(
+        cls, *, actor: User, query_params: dict
+    ) -> Dict[str, Union[int, List[Country]]]:
         # Check permissions to prevent unauthorized actions that circumvents API level permissions
         if not actor.is_staff:
             raise PermissionDenied
-        # TODO Move this to DomainService!
-        countries = CountryRepository.get_all()
-        sorted_countries = sort_queryset(countries, query_params)
-        return paginate_queryset(sorted_countries, query_params)
+        return CountryRepository.get_list(query_params)
 
     @classmethod
     def update(cls, *, actor, country_id: UUID, **kwargs) -> Country:
@@ -101,14 +98,13 @@ class CityService:
         return city
 
     @classmethod
-    def get_paginated_list(cls, actor: User, country_id: UUID, query_params: dict) -> dict:
+    def get_paginated_list(
+        cls, actor: User, country_id: UUID, query_params: dict
+    ) -> Dict[str, Union[int, List[City]]]:
         # Check permissions to prevent unauthorized actions that circumvents API level permissions
         if not actor.is_staff:
             raise PermissionDenied
-        cities = CityRepository.get_list_by_country(country_id)
-        # TODO Move this to DomainService!
-        sorted_cities = sort_queryset(cities, query_params)
-        return paginate_queryset(sorted_cities, query_params)
+        return CityRepository.get_paginated_list_by_country(country_id, query_params)
 
     @classmethod
     def delete(cls, actor: User, city_id: UUID) -> tuple:
@@ -176,13 +172,6 @@ class LodgingService:
             raise WrongOwnerError
         return LodgingRepository.delete(lodging)
 
-    @classmethod
-    def get_paginated_list(cls, query_params: dict) -> dict:
-        # TODO Move this to DomainService!
-        lodgings = LodgingRepository.get_list(**query_params.dict())
-        sorted_lodgings = sort_queryset(lodgings, query_params)
-        return paginate_queryset(sorted_lodgings, query_params)
-
 
 class ReviewService:
     @classmethod
@@ -224,17 +213,3 @@ class ReviewService:
     @classmethod
     def retrieve_my(cls, actor: User, review_id: UUID) -> Review:
         return cls._verify_review_user_permissions(actor, review_id)
-
-    @classmethod
-    def get_paginated_list(cls, lodging_id: UUID, query_params: dict) -> dict:
-        reviews = ReviewRepository.get_all_for_lodging(lodging_id)
-        # TODO Move this to DomainService!
-        sorted_reviews = sort_queryset(reviews, query_params)
-        return paginate_queryset(sorted_reviews, query_params)
-
-    @classmethod
-    def get_my_paginated_list(cls, user: User, query_params: dict) -> dict:
-        # TODO Move this to DomainService!
-        my_reviews = ReviewRepository.get_list_by_user(user)
-        my_sorted_reviews = sort_queryset(my_reviews, query_params)
-        return paginate_queryset(my_sorted_reviews, query_params)

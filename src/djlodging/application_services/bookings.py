@@ -4,12 +4,9 @@ from uuid import UUID
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.utils import timezone
 
-from djlodging.api.pagination import paginate_queryset
 from djlodging.application_services.payments import PaymentService
 from djlodging.domain.bookings.models import Booking
 from djlodging.domain.bookings.repository import BookingRepository
-from djlodging.domain.bookings.services import BookingService as DomainBookingService
-from djlodging.domain.bookings.sorting import sort_queryset
 from djlodging.domain.lodgings.repositories import LodgingRepository
 from djlodging.domain.users.models import User
 
@@ -93,12 +90,4 @@ class BookingService:
     def get_filtered_paginated_list(cls, actor: User, query_params) -> dict:
         if not actor.is_staff:
             raise PermissionDenied
-        bookings = DomainBookingService.get_filtered_list(query_params)
-        return paginate_queryset(bookings, query_params)
-
-    @classmethod
-    def get_my_paginated_list(cls, user: User, query_params: dict) -> dict:
-        # TODO Move this to DomainService!
-        my_bookings = BookingRepository.get_list_by_user(user)
-        my_sorted_bookings = sort_queryset(my_bookings, query_params)
-        return paginate_queryset(my_sorted_bookings, query_params)
+        return BookingRepository.get_filtered_list(query_params)

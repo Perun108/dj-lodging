@@ -5,7 +5,6 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT
 from rest_framework.viewsets import ViewSet
 
-from djlodging.api.helpers import validate_required_query_params_with_any
 from djlodging.api.lodging.serializers import (
     LodgingCreateInputSerializer,
     LodgingCreateOutputSerializer,
@@ -65,11 +64,7 @@ class LodgingViewSet(ViewSet):
         summary="List lodgings in a city available for given dates by any user",
     )
     def list(self, request):
-        validate_required_query_params_with_any(
-            required_params=["country", "city"],
-            query_params=request.query_params,
-        )
-        lodgings = LodgingService.get_paginated_list(query_params=request.query_params)
+        lodgings = LodgingRepository.get_paginated_filtered_list(query_params=request.query_params)
         output_serializer = LodgingListPaginatedOutputSerializer(lodgings)
         return Response(data=output_serializer.data, status=HTTP_200_OK)
 

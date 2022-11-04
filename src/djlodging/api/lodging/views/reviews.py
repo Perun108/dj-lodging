@@ -29,7 +29,7 @@ class ReviewViewSet(ViewSet):
         summary="List all lodging's reviews by any user",
     )
     def list(self, request, lodging_pk):
-        reviews = ReviewService.get_paginated_list(
+        reviews = ReviewRepository.get_paginated_list_by_lodging(
             lodging_id=lodging_pk, query_params=request.query_params
         )
         output_serializer = ReviewPaginatedListOutputSerializer(reviews)
@@ -78,7 +78,7 @@ class MyReviewViewSet(ViewSet):
         summary="List my reviews for all my booked lodgings",
     )
     def list(self, request):
-        my_reviews = ReviewService.get_my_paginated_list(
+        my_reviews = ReviewRepository.get_paginated_list_by_user(
             user=request.user, query_params=request.query_params
         )
         output_serializer = MyReviewsPaginatedListOutputSerializer(my_reviews)

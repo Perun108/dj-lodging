@@ -47,15 +47,15 @@ def test_get_list_with_available_and_unavailable_for_same_dates_succeeds():
     # Get list of all lodgings for a range from today till the last booked date.
     date_from = timezone.now().date()
     date_to = date_from + timezone.timedelta(days=number_of_bookings)
-
-    result = LodgingRepository.get_list(
-        date_from=date_from,
-        date_to=date_to,
-        number_of_people=number_of_people,
-        number_of_rooms=number_of_rooms,
-        city=city,
-        available_only=available_only,
-    )
+    query_params = {
+        "date_from": date_from,
+        "date_to": date_to,
+        "number_of_people": number_of_people,
+        "number_of_rooms": number_of_rooms,
+        "city": city,
+        "available_only": available_only,
+    }
+    result = LodgingRepository.get_filtered_list(query_params)
 
     assert result.count() == number_of_lodgings
     assert result.filter(available=False).count() == number_of_bookings
@@ -104,15 +104,15 @@ def test_get_list_with_available_and_unavailable_for_different_dates_succeeds():
     # Get list of all lodgings for a range completely different from the booked dates.
     date_from = timezone.now().date() + timezone.timedelta(days=30)
     date_to = date_from + timezone.timedelta(days=7)
-
-    result = LodgingRepository.get_list(
-        date_from=date_from,
-        date_to=date_to,
-        number_of_people=number_of_people,
-        number_of_rooms=number_of_rooms,
-        city=city,
-        available_only=available_only,
-    )
+    query_params = {
+        "date_from": date_from,
+        "date_to": date_to,
+        "number_of_people": number_of_people,
+        "number_of_rooms": number_of_rooms,
+        "city": city,
+        "available_only": available_only,
+    }
+    result = LodgingRepository.get_filtered_list(query_params)
 
     assert result.count() == number_of_lodgings
     assert result.filter(available=False).count() == 0
@@ -163,14 +163,15 @@ def test_get_list_with_only_available_for_same_dates_succeeds():
     date_from = timezone.now().date()
     date_to = date_from + timezone.timedelta(days=number_of_bookings)
 
-    result = LodgingRepository.get_list(
-        date_from=date_from,
-        date_to=date_to,
-        number_of_people=number_of_people,
-        number_of_rooms=number_of_rooms,
-        city=city,
-        available_only=available_only,
-    )
+    query_params = {
+        "date_from": date_from,
+        "date_to": date_to,
+        "number_of_people": number_of_people,
+        "number_of_rooms": number_of_rooms,
+        "city": city,
+        "available_only": available_only,
+    }
+    result = LodgingRepository.get_filtered_list(query_params)
 
     assert result.count() == number_of_lodgings - number_of_bookings
 
@@ -218,14 +219,15 @@ def test_get_list_with_only_available_for_different_dates_succeeds():
     date_from = timezone.now().date() + timezone.timedelta(days=30)
     date_to = date_from + timezone.timedelta(days=7)
 
-    result = LodgingRepository.get_list(
-        date_from=date_from,
-        date_to=date_to,
-        number_of_people=number_of_people,
-        number_of_rooms=number_of_rooms,
-        city=city,
-        available_only=available_only,
-    )
+    query_params = {
+        "date_from": date_from,
+        "date_to": date_to,
+        "number_of_people": number_of_people,
+        "number_of_rooms": number_of_rooms,
+        "city": city,
+        "available_only": available_only,
+    }
+    result = LodgingRepository.get_filtered_list(query_params)
 
     assert result.count() == number_of_lodgings
 
