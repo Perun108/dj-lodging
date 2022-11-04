@@ -33,6 +33,5 @@ static/
 *.coverage
 htmlcov/
 .env
-.pylintrc
 pylint_report
 .github/
