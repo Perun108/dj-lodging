@@ -44,14 +44,12 @@ class CityViewSet(ViewSet):
             OpenApiParameter(
                 name="country_id", type=OpenApiTypes.STR, location=OpenApiParameter.PATH
             ),
-            OpenApiParameter(
-                name="city_id", type=OpenApiTypes.STR, location=OpenApiParameter.PATH
-            ),
+            OpenApiParameter(name="id", type=OpenApiTypes.STR, location=OpenApiParameter.PATH),
         ],
         request=None,
         responses={
             200: CityOutputSerializer,
-            400: OpenApiResponse(description="Bad request"),
+            404: OpenApiResponse(description="Not found"),
         },
         summary="Get city's details by admin",
     )
@@ -65,9 +63,7 @@ class CityViewSet(ViewSet):
             OpenApiParameter(
                 name="country_id", type=OpenApiTypes.STR, location=OpenApiParameter.PATH
             ),
-            OpenApiParameter(
-                name="city_id", type=OpenApiTypes.STR, location=OpenApiParameter.PATH
-            ),
+            OpenApiParameter(name="id", type=OpenApiTypes.STR, location=OpenApiParameter.PATH),
         ],
         request=CityUpdateInputSerializer,
         responses={
@@ -111,9 +107,7 @@ class CityViewSet(ViewSet):
             OpenApiParameter(
                 name="country_id", type=OpenApiTypes.STR, location=OpenApiParameter.PATH
             ),
-            OpenApiParameter(
-                name="city_id", type=OpenApiTypes.STR, location=OpenApiParameter.PATH
-            ),
+            OpenApiParameter(name="id", type=OpenApiTypes.STR, location=OpenApiParameter.PATH),
         ],
         request=None,
         responses={

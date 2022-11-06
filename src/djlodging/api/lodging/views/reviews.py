@@ -38,12 +38,12 @@ class ReviewViewSet(ViewSet):
     @extend_schema(
         parameters=[
             OpenApiParameter("lodging_id", type=OpenApiTypes.UUID, location=OpenApiParameter.PATH),
-            OpenApiParameter("review_id", type=OpenApiTypes.UUID, location=OpenApiParameter.PATH),
+            OpenApiParameter("id", type=OpenApiTypes.UUID, location=OpenApiParameter.PATH),
         ],
         request=None,
         responses={
             200: ReviewOutputSerializer,
-            400: OpenApiResponse(description="Bad request"),
+            404: OpenApiResponse(description="Not found"),
         },
         summary="Get a review's details by any user",
     )
@@ -86,12 +86,12 @@ class MyReviewViewSet(ViewSet):
 
     @extend_schema(
         parameters=[
-            OpenApiParameter("review_id", type=OpenApiTypes.UUID, location=OpenApiParameter.PATH),
+            OpenApiParameter("id", type=OpenApiTypes.UUID, location=OpenApiParameter.PATH),
         ],
         request=None,
         responses={
             200: MyReviewOutputSerializer,
-            400: OpenApiResponse(description="Bad request"),
+            404: OpenApiResponse(description="Not found"),
         },
         summary="Get my review's details",
     )
@@ -102,7 +102,7 @@ class MyReviewViewSet(ViewSet):
 
     @extend_schema(
         parameters=[
-            OpenApiParameter("review_id", type=OpenApiTypes.UUID, location=OpenApiParameter.PATH),
+            OpenApiParameter("id", type=OpenApiTypes.UUID, location=OpenApiParameter.PATH),
         ],
         request=ReviewUpdateInputSerializer,
         responses={
@@ -122,7 +122,7 @@ class MyReviewViewSet(ViewSet):
 
     @extend_schema(
         parameters=[
-            OpenApiParameter("review_id", type=OpenApiTypes.UUID, location=OpenApiParameter.PATH),
+            OpenApiParameter("id", type=OpenApiTypes.UUID, location=OpenApiParameter.PATH),
         ],
         request=None,
         responses={

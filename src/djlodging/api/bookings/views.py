@@ -151,7 +151,7 @@ class BookingViewSet(ViewSet):
         request=None,
         responses={
             200: BookingOutputSerializer,
-            400: OpenApiResponse(description="Bad request"),
+            404: OpenApiResponse(description="Not found"),
         },
         summary="Retrieve a booking details by admin",
     )

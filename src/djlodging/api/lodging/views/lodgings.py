@@ -80,7 +80,7 @@ class LodgingViewSet(ViewSet):
         request=None,
         responses={
             200: LodgingOutputSerializer,
-            400: OpenApiResponse(description="Bad request"),
+            404: OpenApiResponse(description="Not found"),
         },
         summary="Get lodging's details by any user",
     )

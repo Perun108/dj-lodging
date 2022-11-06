@@ -1,6 +1,5 @@
 from typing import Dict, List, Optional, Union
 
-from django.core.exceptions import ValidationError
 from django.db.models import QuerySet
 
 from djlodging.api.pagination import paginate_queryset
@@ -32,10 +31,7 @@ class BookingRepository:
 
     @classmethod
     def get_by_id(cls, booking_id):
-        try:
-            return Booking.objects.get(id=booking_id)
-        except Booking.DoesNotExist:
-            raise ValidationError("Wrong booking_id")
+        return Booking.objects.get(id=booking_id)
 
     @classmethod
     def get_by_reference_code(cls, reference_code: str) -> Optional[Booking]:

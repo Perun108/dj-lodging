@@ -35,7 +35,7 @@ class CountryViewSet(ViewSet):
     @extend_schema(
         parameters=[
             OpenApiParameter(
-                name="country_id",
+                name="id",
                 type=OpenApiTypes.UUID,
                 location=OpenApiParameter.PATH,
             )
@@ -43,7 +43,7 @@ class CountryViewSet(ViewSet):
         request=None,
         responses={
             200: CountryOutputSerializer,
-            400: OpenApiResponse(description="Bad request"),
+            404: OpenApiResponse(description="Not found"),
         },
         summary="Get country's details by admin",
     )
@@ -69,7 +69,7 @@ class CountryViewSet(ViewSet):
     @extend_schema(
         parameters=[
             OpenApiParameter(
-                name="country_id",
+                name="id",
                 type=OpenApiTypes.UUID,
                 location=OpenApiParameter.PATH,
             )
@@ -93,7 +93,7 @@ class CountryViewSet(ViewSet):
     @extend_schema(
         parameters=[
             OpenApiParameter(
-                name="country_id",
+                name="id",
                 type=OpenApiTypes.UUID,
                 location=OpenApiParameter.PATH,
             )

@@ -12,17 +12,11 @@ class UserRepository:
 
     @classmethod
     def get_by_id(cls, user_id) -> User:
-        try:
-            return User.objects.get(id=user_id)
-        except User.DoesNotExist:
-            raise ValidationError("user_id is invalid")
+        return User.objects.get(id=user_id)
 
     @classmethod
     def get_user_by_security_token(cls, security_token: UUID) -> User:
-        try:
-            return User.objects.get(security_token=security_token)
-        except User.DoesNotExist:
-            raise ValidationError("User does not exist")
+        return User.objects.get(security_token=security_token)
 
     @classmethod
     def get_user_by_security_token_and_email(cls, security_token, email) -> User:
@@ -47,10 +41,7 @@ class UserRepository:
 
     @classmethod
     def get_by_email(cls, email: str) -> User:
-        try:
-            return User.objects.get(email=email)
-        except User.DoesNotExist:
-            raise ValidationError("Wrong email!")
+        return User.objects.get(email=email)
 
 
 class PaymentProviderUserRepository:

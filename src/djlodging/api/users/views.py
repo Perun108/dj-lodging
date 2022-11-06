@@ -85,7 +85,7 @@ class UserGetByTokenAndEmailAPIView(APIView):
                 name="retrieve_user_id",
                 fields={"user_id": serializers.UUIDField()},
             ),
-            400: OpenApiResponse(description="Bad request"),
+            404: OpenApiResponse(description="Not found"),
         },
         summary="Get user by security token and email",
     )
@@ -213,9 +213,7 @@ class EmailChangeConfirmAPIView(APIView):
 class UserViewSet(ViewSet):
     @extend_schema(
         parameters=[
-            OpenApiParameter(
-                name="user_id", type=OpenApiTypes.UUID, location=OpenApiParameter.PATH
-            )
+            OpenApiParameter(name="id", type=OpenApiTypes.UUID, location=OpenApiParameter.PATH)
         ],
         request=UserUpdateInputSerializer,
         responses={

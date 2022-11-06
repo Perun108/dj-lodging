@@ -21,10 +21,7 @@ class CountryRepository:
 
     @classmethod
     def get_by_id(cls, country_id: UUID) -> Country:
-        try:
-            return Country.objects.get(id=country_id)
-        except Country.DoesNotExist:
-            raise ValidationError("There is no country with this id")
+        return Country.objects.get(id=country_id)
 
     @classmethod
     def get_all(cls) -> QuerySet[Country]:
@@ -49,10 +46,7 @@ class CityRepository:
 
     @classmethod
     def get_by_id(cls, city_id: UUID) -> City:
-        try:
-            return City.objects.get(id=city_id)
-        except City.DoesNotExist:
-            raise ValidationError("There is no city with this id")
+        return City.objects.get(id=city_id)
 
     @classmethod
     def get_list_by_country(cls, country_id: UUID) -> QuerySet[City]:
@@ -75,10 +69,7 @@ class CityRepository:
 class LodgingRepository:
     @classmethod
     def get_by_id(cls, lodging_id: UUID) -> Lodging:
-        try:
-            return Lodging.objects.get(id=lodging_id)
-        except Lodging.DoesNotExist:
-            raise ValidationError("There is no lodging with this id")
+        return Lodging.objects.get(id=lodging_id)
 
     @classmethod
     def save(cls, lodging: Lodging) -> None:
@@ -166,10 +157,7 @@ class ReviewRepository:
 
     @classmethod
     def get_by_id(cls, review_id: UUID) -> Review:
-        try:
-            return Review.objects.get(id=review_id)
-        except Review.DoesNotExist:
-            raise ValidationError("Such review does not exist")
+        return Review.objects.get(id=review_id)
 
     @classmethod
     def get_list_by_lodging(cls, lodging_id: UUID) -> QuerySet[Review]:
