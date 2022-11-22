@@ -85,6 +85,15 @@ class LodgingViewSet(ViewSet):
         summary="Get lodging's details by any user",
     )
     def retrieve(self, request, pk):
+        """Get a single lodging's details
+
+        Args:
+            request (HttRequest): request from the Frontend
+            pk (UUID): lodging's id
+
+        Returns:
+            HttpResponse: serialized lodging's details
+        """
         lodging = LodgingRepository.retrieve_lodging_with_average_rating(pk)
         output_serializer = LodgingOutputSerializer(lodging)
         return Response(data=output_serializer.data, status=HTTP_200_OK)
