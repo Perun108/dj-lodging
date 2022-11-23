@@ -16,13 +16,13 @@ ENV PYTHONFAULTHANDLER=1 \
     PYTHONPATH="$PYTHONPATH:/runtime/lib/python3.10/site-packages" \
     POETRY_VERSION=1.1.14
 
-RUN apt-get update && apt-get install -y build-essential unzip wget
+RUN apt-get update && apt-get install -y --no-install-recommends wget
 RUN pip install "poetry==$POETRY_VERSION"
 
 WORKDIR /src
 
 # Generate requirements and install *all* dependencies.
-COPY pyproject.toml poetry.lock /src/
+COPY ./src/pyproject.toml ./src/poetry.lock /src/
 RUN poetry export --dev --without-hashes --no-interaction --no-ansi -f requirements.txt -o requirements.txt
 RUN pip install --prefix=/runtime --force-reinstall -r requirements.txt
 
