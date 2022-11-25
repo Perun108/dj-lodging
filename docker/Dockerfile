@@ -32,7 +32,7 @@ FROM base AS runtime
 COPY --from=builder /runtime /usr/local
 COPY ./src /app
 COPY docker/init.sh /app
-ADD docker/nginx/default.conf /etc/nginx/sites-enabled/default
+# ADD docker/nginx/default.conf /etc/nginx/sites-enabled/default
 WORKDIR /app
 
 ENTRYPOINT [ "/app/init.sh" ]
