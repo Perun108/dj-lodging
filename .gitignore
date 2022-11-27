@@ -35,3 +35,4 @@ htmlcov/
 .env
 pylint_report
 .github/
+djlodging-key.pem
