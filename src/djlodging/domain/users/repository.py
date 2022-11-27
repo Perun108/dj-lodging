@@ -1,6 +1,8 @@
 from uuid import UUID
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 from djlodging.domain.users.models import User
 
@@ -29,7 +31,9 @@ class UserRepository:
     def get_user_by_id_and_security_token(cls, user_id: UUID, security_token: UUID) -> User:
         user = User.objects.filter(id=user_id, security_token=security_token).first()
         if user is None:
-            raise ValidationError("User does not exist")
+            raise ValidationError(
+                "User does not exist or have been deleted after sign up time had passed."
+            )
         return user
 
     @classmethod
@@ -42,6 +46,15 @@ class UserRepository:
     @classmethod
     def get_by_email(cls, email: str) -> User:
         return User.objects.get(email=email)
+
+    @classmethod
+    def delete_users_with_unfinished_registration(cls) -> None:
+        unregistered_users = User.objects.filter(
+            is_active=False,
+            security_token_expiration_time__lte=timezone.now()
+            - settings.SECURITY_TOKEN_LIFE_TIME_IN_HOURS,
+        )
+        unregistered_users.delete()
 
 
 class PaymentProviderUserRepository:

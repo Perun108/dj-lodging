@@ -1,6 +1,12 @@
 from django.core.exceptions import ValidationError
 
 
+class RegistrationTimePassed(ValidationError):
+    def __init__(self, code=None, params=None) -> None:
+        message = "Your sign up time has already passed. Please start registration again."
+        super().__init__(message=message, code=code, params=params)
+
+
 class WrongBookingReferenceCode(ValidationError):
     def __init__(self, code=None, params=None) -> None:
         message = (

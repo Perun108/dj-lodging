@@ -63,6 +63,7 @@ THIRD_PARTY_APPS = [
     "django_filters",
     "silk",
     "djstripe",
+    "django_celery_beat",
 ]
 
 LOCAL_APPS = ["djlodging.domain.lodgings", "djlodging.domain.bookings", "djlodging.domain.users"]
@@ -194,6 +195,8 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
 }
 
+SECURITY_TOKEN_LIFE_TIME_IN_HOURS = env.int("SECURITY_TOKEN_LIFE_TIME_IN_HOURS", default=2)
+
 # EMAIL SETTINGS
 EMAIL_BACKEND = env.str(
     "DJANGO_EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend"
@@ -207,6 +210,23 @@ EMAIL_PROVIDER = {
     "DEFAULT_FROM_EMAIL": env.str("DEFAULT_FROM_EMAIL", default="example@example.com"),
 }
 DOMAIN = "https://dj-lodging.com"
+
+# CELERY SETTINGS
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+CELERY_BEAT_SCHEDULE = {
+    "delete_users_with_unfinished_registration": {
+        "task": "djlodging.infrastructure.jobs.celery_tasks.delete_users_with_unfinished_registration",  # noqa
+        "schedule": timedelta(
+            hours=env.int(
+                "CELERY_BEAT_DELETE_USERS_WITH_UNFINISHED_REGISTRATION_INTERVAL", default=24
+            )
+        ),
+    },
+    "do_some_task": {
+        "task": "my_app.tasks.do_some_task ",
+        "schedule": env.int("CELERY_BEAT_DO_SOME_TASK_INTERVAL", default=24),
+    },
+}
 
 # PAYMENT PROVIDER
 PAYMENT_PROVIDER = "djlodging.infrastructure.providers.payments.StripePaymentProvider"
