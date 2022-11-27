@@ -2,7 +2,7 @@ from uuid import UUID
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.utils import timezone
+from django.utils.timezone import now, timedelta
 
 from djlodging.domain.users.models import User
 
@@ -51,8 +51,8 @@ class UserRepository:
     def delete_users_with_unfinished_registration(cls) -> None:
         unregistered_users = User.objects.filter(
             is_active=False,
-            security_token_expiration_time__lte=timezone.now()
-            - settings.SECURITY_TOKEN_LIFE_TIME_IN_HOURS,
+            security_token_expiration_time__lte=now()
+            - timedelta(hours=settings.SECURITY_TOKEN_LIFE_TIME_IN_HOURS),
         )
         unregistered_users.delete()
 

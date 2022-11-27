@@ -3,7 +3,7 @@ from uuid import UUID, uuid4
 from django.conf import settings
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.utils import timezone
+from django.utils.timezone import now, timedelta
 
 from djlodging.application_services.email import EmailService
 from djlodging.application_services.exceptions import RegistrationTimePassed
@@ -30,7 +30,7 @@ class UserService:
     def confirm_registration(cls, user_id: UUID, security_token: UUID) -> User:
         user = UserRepository.get_user_by_id_and_security_token(user_id, security_token)
 
-        if user.security_token_expiration_time < timezone.now() - timezone.timedelta(
+        if user.security_token_expiration_time < now() - timedelta(
             hours=settings.SECURITY_TOKEN_LIFE_TIME_IN_HOURS
         ):
             raise RegistrationTimePassed
