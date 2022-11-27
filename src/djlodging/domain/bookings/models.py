@@ -30,6 +30,7 @@ class Booking(BaseModel):
         max_length=50, choices=Status.choices, default=Status.PAYMENT_PENDING
     )
     payment_intent_id = models.CharField(max_length=255, blank=True)
+    payment_expiration_time = models.DateTimeField(blank=True, auto_now=True)
     reference_code = models.CharField(max_length=6, default=generate_reference_code)
 
     def __str__(self):

@@ -26,6 +26,9 @@ class UserService:
         user = User(**kwargs)
         validate_password(password, user)
         user.set_password(password)
+        user.security_token_expiration_time = now() + timedelta(
+            hours=settings.SECURITY_TOKEN_LIFE_TIME_IN_HOURS
+        )
         UserRepository.save(user)
         return user
 
@@ -33,10 +36,8 @@ class UserService:
     def confirm_registration(cls, user_id: UUID, security_token: UUID) -> User:
         user = UserRepository.get_user_by_id_and_security_token(user_id, security_token)
 
-        if user.security_token_expiration_time < now() - timedelta(
-            hours=settings.SECURITY_TOKEN_LIFE_TIME_IN_HOURS
-        ):
-            delete_unregistered_user_after_security_token_expired.apply_async(args=[user.id])
+        if user.security_token_expiration_time < now():
+            delete_unregistered_user_after_security_token_expired.apply_async(args=[user_id])
             raise RegistrationTimePassed
 
         user.security_token = ""

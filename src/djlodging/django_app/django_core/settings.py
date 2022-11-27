@@ -236,3 +236,6 @@ DJSTRIPE_WEBHOOK_SECRET = env.str(
 )  # Get it from the section in the Stripe dashboard where you added the webhook endpoint
 DJSTRIPE_USE_NATIVE_JSONFIELD = True  # We recommend setting to True for new installations
 DJSTRIPE_FOREIGN_KEY_TO_FIELD = "id"
+BOOKING_PAYMENT_EXPIRATION_TIME_IN_MINUTES = env.int(
+    "BOOKING_PAYMENT_EXPIRATION_TIME_IN_MINUTES", default=15
+)

@@ -1,6 +1,7 @@
 from typing import Dict, List, Optional, Union
 
 from django.db.models import QuerySet
+from django.utils.timezone import now
 
 from djlodging.api.pagination import paginate_queryset
 from djlodging.domain.bookings.filters import BookingFilterSet
@@ -50,3 +51,15 @@ class BookingRepository:
         filtered_qs = filter_decorator.filter(queryset=qs, query_params=query_params)
         sorted_qs = sort_queryset(filtered_qs, query_params)
         return paginate_queryset(sorted_qs, query_params)
+
+    @classmethod
+    def delete_by_id(cls, booking_id) -> tuple:
+        booking = cls.get_by_id(booking_id)
+        return booking.delete()
+
+    @classmethod
+    def delete_all_expired_unpaid_bookings(cls) -> None:
+        expired_unpaid_bookings = Booking.objects.filter(
+            status=Booking.Status.PAYMENT_PENDING, payment_expiration_time__lte=now()
+        )
+        expired_unpaid_bookings.delete()

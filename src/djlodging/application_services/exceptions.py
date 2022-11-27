@@ -7,6 +7,12 @@ class RegistrationTimePassed(ValidationError):
         super().__init__(message=message, code=code, params=params)
 
 
+class PaymentExpirationTimePassed(ValidationError):
+    def __init__(self, code=None, params=None) -> None:
+        message = "The time for payment has already passed. Please start the booking again."
+        super().__init__(message=message, code=code, params=params)
+
+
 class WrongBookingReferenceCode(ValidationError):
     def __init__(self, code=None, params=None) -> None:
         message = (

@@ -1,30 +1,33 @@
 from datetime import date
 from uuid import UUID
 
+from django.conf import settings
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.utils import timezone
+from django.utils.timezone import now, timedelta
 
+from djlodging.application_services.exceptions import PaymentExpirationTimePassed
 from djlodging.application_services.payments import PaymentService
 from djlodging.domain.bookings.models import Booking
 from djlodging.domain.bookings.repository import BookingRepository
 from djlodging.domain.lodgings.repositories import LodgingRepository
 from djlodging.domain.users.models import User
+from djlodging.infrastructure.jobs.celery_tasks import delete_expired_unpaid_booking
 
 
 class BookingService:
     @classmethod
     def _validate_dates(cls, date_from, date_to):
-        now = timezone.now().date()
+        current_date = now().date()
         if date_from == date_to:
             raise ValidationError("Please provide date_to")
-        if any([date_from < now, date_to < now, date_from > date_to]):
+        if any([date_from < current_date, date_to < current_date, date_from > date_to]):
             raise ValidationError("The dates are invalid")
 
     @classmethod
     def _validate_lodging_availability(cls, lodging_id: UUID, date_from: date, date_to: date):
         lodging = LodgingRepository.get_by_id(lodging_id)
         for booking in lodging.booking.all():
-            if (
+            if booking.status != Booking.Status.CANCELED and (
                 booking.date_from <= date_from < booking.date_to
                 or booking.date_from < date_to <= booking.date_to
             ):
@@ -35,7 +38,14 @@ class BookingService:
     def create(cls, lodging_id: UUID, user: User, date_from: date, date_to: date) -> Booking:
         cls._validate_dates(date_from, date_to)
         lodging = cls._validate_lodging_availability(lodging_id, date_from, date_to)
-        booking = Booking(lodging=lodging, user=user, date_from=date_from, date_to=date_to)
+        booking = Booking(
+            lodging=lodging,
+            user=user,
+            date_from=date_from,
+            date_to=date_to,
+            payment_expiration_time=now()
+            + timedelta(minutes=settings.BOOKING_PAYMENT_EXPIRATION_TIME_IN_MINUTES),
+        )
         BookingRepository.save(booking)
         return booking
 
@@ -46,11 +56,15 @@ class BookingService:
         return BookingRepository.get_by_id(booking_id)
 
     @classmethod
-    def pay(cls, actor, booking_id: UUID, currency="usd", capture_method="automatic"):
+    def pay(cls, actor, booking_id: UUID, currency="usd", capture_method="automatic") -> str:
         booking = BookingRepository.get_by_id(booking_id)
 
         if actor != booking.user:
             raise PermissionDenied
+
+        elif booking.payment_expiration_time > now():
+            delete_expired_unpaid_booking.apply_async(args=[booking_id])
+            raise PaymentExpirationTimePassed
 
         metadata = {"booking_id": booking.id}
 
