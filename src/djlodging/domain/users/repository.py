@@ -48,6 +48,11 @@ class UserRepository:
         return User.objects.get(email=email)
 
     @classmethod
+    def delete_by_id(cls, user_id: UUID) -> tuple:
+        user = cls.get_by_id(user_id)
+        return user.delete()
+
+    @classmethod
     def delete_users_with_unfinished_registration(cls) -> None:
         unregistered_users = User.objects.filter(
             is_active=False,

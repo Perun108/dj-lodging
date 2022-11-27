@@ -11,6 +11,9 @@ from djlodging.domain.users.repository import (
     PaymentProviderUserRepository,
     UserRepository,
 )
+from djlodging.infrastructure.jobs.celery_tasks import (
+    delete_unregistered_user_after_security_token_expired,
+)
 from djlodging.infrastructure.providers.payments import payment_provider
 
 from ..domain.users.models import PaymentProviderUser, User
@@ -33,8 +36,8 @@ class UserService:
         if user.security_token_expiration_time < now() - timedelta(
             hours=settings.SECURITY_TOKEN_LIFE_TIME_IN_HOURS
         ):
+            delete_unregistered_user_after_security_token_expired.apply_async(args=[user.id])
             raise RegistrationTimePassed
-        # TODO Send celery task to delete this user!
 
         user.security_token = ""
         user.is_active = True
