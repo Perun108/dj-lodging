@@ -212,6 +212,7 @@ EMAIL_PROVIDER = {
 DOMAIN = "https://dj-lodging.com"
 
 # CELERY SETTINGS
+CELERY_BROKER_URL = env.str("CELERY_BROKER_URL")
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 CELERY_BEAT_SCHEDULE = {
     "delete_users_with_unfinished_registration": {
@@ -221,10 +222,6 @@ CELERY_BEAT_SCHEDULE = {
                 "CELERY_BEAT_DELETE_USERS_WITH_UNFINISHED_REGISTRATION_INTERVAL", default=24
             )
         ),
-    },
-    "do_some_task": {
-        "task": "my_app.tasks.do_some_task ",
-        "schedule": env.int("CELERY_BEAT_DO_SOME_TASK_INTERVAL", default=24),
     },
 }
 
