@@ -2,12 +2,14 @@ from decimal import Decimal
 
 import stripe
 from django.conf import settings
-from django.core.exceptions import ValidationError
 from djstripe import webhooks
 from stripe.error import InvalidRequestError
 
 from djlodging.infrastructure.providers.payments.base_payment_provider import (
     BasePaymentProvider,
+)
+from djlodging.infrastructure.providers.payments.exceptions import (
+    PaymentProviderException,
 )
 
 stripe.api_key = settings.STRIPE_API_KEY
@@ -47,7 +49,7 @@ class StripePaymentProvider(BasePaymentProvider):
                 payment_intent=payment_intent_id, amount=amount_in_cents, metadata=metadata
             )
         except InvalidRequestError as ex:
-            raise ValidationError(message=ex.user_message)
+            raise PaymentProviderException(message=ex.user_message)
 
 
 @webhooks.handler("payment_intent.succeeded")

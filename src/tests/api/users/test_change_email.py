@@ -8,6 +8,7 @@ from rest_framework.status import (
     HTTP_202_ACCEPTED,
     HTTP_400_BAD_REQUEST,
     HTTP_401_UNAUTHORIZED,
+    HTTP_404_NOT_FOUND,
 )
 from rest_framework.test import APIClient
 
@@ -54,9 +55,8 @@ class TestEmailChangeRequestAPIView:
 
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert (
-            str(response.data)
-            == "{'detail': {'new_email': [ErrorDetail(string='This field is required.', "
-            "code='required')]}}"
+            str(response.data) == "{'new_email': [ErrorDetail(string='This field is required.', "
+            "code='required')]}"
         )
 
         user.refresh_from_db()
@@ -75,8 +75,8 @@ class TestEmailChangeRequestAPIView:
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert (
             str(response.data)
-            == "{'detail': {'new_email': [ErrorDetail(string='Enter a valid email address.', "
-            "code='invalid')]}}"
+            == "{'new_email': [ErrorDetail(string='Enter a valid email address.', "
+            "code='invalid')]}"
         )
         user.refresh_from_db()
         assert user.email == old_email
@@ -136,11 +136,7 @@ class TestEmailChangeConfirmAPIView:
         client = APIClient()
         response = client.post(url, payload)
 
-        assert response.status_code == HTTP_400_BAD_REQUEST
-        assert (
-            str(response.data["detail"])
-            == "{'non_field_errors': [ErrorDetail(string='User does not exist', code='invalid')]}"
-        )
+        assert response.status_code == HTTP_404_NOT_FOUND
 
         user.refresh_from_db()
         assert user.email == old_email
@@ -161,7 +157,7 @@ class TestEmailChangeConfirmAPIView:
 
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert (
-            str(response.data["detail"])
+            str(response.data)
             == "{'security_token': [ErrorDetail(string='This field is required.', "
             "code='required')]}"
         )
@@ -181,7 +177,7 @@ class TestEmailChangeConfirmAPIView:
 
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert (
-            str(response.data["detail"])
+            str(response.data)
             == "{'new_email': [ErrorDetail(string='This field is required.', code='required')]}"
         )
 
@@ -200,7 +196,7 @@ class TestEmailChangeConfirmAPIView:
 
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert (
-            str(response.data["detail"])
+            str(response.data)
             == "{'security_token': [ErrorDetail(string='This field is required.', "
             "code='required')], 'new_email': [ErrorDetail(string='This field is required.', "
             "code='required')]}"
@@ -226,7 +222,7 @@ class TestEmailChangeConfirmAPIView:
 
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert (
-            str(response.data["detail"])
+            str(response.data)
             == "{'new_email': [ErrorDetail(string='Enter a valid email address.', "
             "code='invalid')]}"
         )

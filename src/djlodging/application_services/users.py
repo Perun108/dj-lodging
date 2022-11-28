@@ -7,6 +7,8 @@ from django.utils.timezone import now, timedelta
 
 from djlodging.application_services.email import EmailService
 from djlodging.application_services.exceptions import RegistrationTimePassed
+from djlodging.domain.users.constants import WRONG_EMAIL_MESSAGE
+from djlodging.domain.users.exceptions import UserDoesNotExist
 from djlodging.domain.users.repository import (
     PaymentProviderUserRepository,
     UserRepository,
@@ -65,7 +67,10 @@ class UserService:
 
     @classmethod
     def send_forgot_password_link(cls, email: str) -> None:
-        user = UserRepository.get_by_email(email)
+        try:
+            user = UserRepository.get_by_email(email)
+        except User.DoesNotExist:
+            raise UserDoesNotExist(message=WRONG_EMAIL_MESSAGE)
         security_token = uuid4()
         UserRepository.update(user, security_token=security_token)
         EmailService.send_change_password_link(user.email, security_token)

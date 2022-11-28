@@ -4,6 +4,8 @@ from django.core.exceptions import ValidationError
 from faker import Faker
 
 from djlodging.application_services.users import UserService
+from djlodging.domain.users.constants import WRONG_EMAIL_MESSAGE
+from djlodging.domain.users.exceptions import UserDoesNotExist
 from tests.domain.users.factories import UserFactory
 
 fake = Faker()
@@ -123,9 +125,9 @@ class TestUserService:
 
         security_token = user.security_token
 
-        with pytest.raises(ValidationError) as exc:
+        with pytest.raises(UserDoesNotExist) as exc:
             UserService.send_forgot_password_link(email=wrong_email)
-        assert str(exc.value) == "['Wrong email!']"
+        assert str(exc.value) == WRONG_EMAIL_MESSAGE
 
         user.refresh_from_db()
         assert user.security_token == security_token

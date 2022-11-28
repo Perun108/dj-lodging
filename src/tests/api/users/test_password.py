@@ -6,6 +6,7 @@ from rest_framework.reverse import reverse
 from rest_framework.status import HTTP_200_OK, HTTP_202_ACCEPTED, HTTP_400_BAD_REQUEST
 from rest_framework.test import APIClient
 
+from djlodging.domain.users.constants import USER_DOES_NOT_EXIST_MESSAGE
 from tests.domain.users.factories import UserFactory
 
 fake = Faker()
@@ -41,7 +42,7 @@ class TestPasswordChangeAPIView:
         response = user_api_client_pytest_fixture.patch(url, payload)
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert (
-            str(response.data["detail"])
+            str(response.data)
             == "{'non_field_errors': [ErrorDetail(string='Wrong password!', code='invalid')]}"
         )
         user.refresh_from_db()
@@ -112,11 +113,7 @@ class TestPasswordResetConfirmAPIView:
         url = reverse("users:confirm-reset-password")
         response = api_client.post(url, payload)
         assert response.status_code == HTTP_400_BAD_REQUEST
-        assert (
-            str(response.data)
-            == "{'detail': {'non_field_errors': [ErrorDetail(string='Such user does not exist', "
-            "code='invalid')]}}"
-        )
+        assert response.data["message"] == USER_DOES_NOT_EXIST_MESSAGE
 
         user.refresh_from_db()
 
@@ -141,11 +138,7 @@ class TestPasswordResetConfirmAPIView:
         url = reverse("users:confirm-reset-password")
         response = api_client.post(url, payload)
         assert response.status_code == HTTP_400_BAD_REQUEST
-        assert (
-            str(response.data)
-            == "{'detail': {'non_field_errors': [ErrorDetail(string='Such user does not exist', "
-            "code='invalid')]}}"
-        )
+        assert response.data["message"] == USER_DOES_NOT_EXIST_MESSAGE
 
         user.refresh_from_db()
 
@@ -171,11 +164,7 @@ class TestPasswordResetConfirmAPIView:
         url = reverse("users:confirm-reset-password")
         response = api_client.post(url, payload)
         assert response.status_code == HTTP_400_BAD_REQUEST
-        assert (
-            str(response.data)
-            == "{'detail': {'non_field_errors': [ErrorDetail(string='Such user does not exist', "
-            "code='invalid')]}}"
-        )
+        assert response.data["message"] == USER_DOES_NOT_EXIST_MESSAGE
 
         user.refresh_from_db()
 
@@ -199,8 +188,8 @@ class TestPasswordResetConfirmAPIView:
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert (
             str(response.data)
-            == "{'detail': {'security_token': [ErrorDetail(string='This field is required.', "
-            "code='required')]}}"
+            == "{'security_token': [ErrorDetail(string='This field is required.', "
+            "code='required')]}"
         )
 
         user.refresh_from_db()
@@ -225,9 +214,8 @@ class TestPasswordResetConfirmAPIView:
         response = api_client.post(url, payload)
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert (
-            str(response.data)
-            == "{'detail': {'email': [ErrorDetail(string='This field is required.', "
-            "code='required')]}}"
+            str(response.data) == "{'email': [ErrorDetail(string='This field is required.', "
+            "code='required')]}"
         )
 
         user.refresh_from_db()
@@ -251,9 +239,9 @@ class TestPasswordResetConfirmAPIView:
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert (
             str(response.data)
-            == "{'detail': {'security_token': [ErrorDetail(string='This field is required.', "
+            == "{'security_token': [ErrorDetail(string='This field is required.', "
             "code='required')], 'email': [ErrorDetail(string='This field is required.', "
-            "code='required')]}}"
+            "code='required')]}"
         )
 
         user.refresh_from_db()

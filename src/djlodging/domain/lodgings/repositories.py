@@ -91,7 +91,7 @@ class LodgingRepository:
         city = query_params.get("city")
 
         if not (country or city):
-            raise ValidationError("You must provide either a country or a city!")
+            raise ValidationError("You must provide either a city or a country!")
 
         lodging_filter = Q(
             number_of_people__gte=number_of_people,
@@ -102,8 +102,6 @@ class LodgingRepository:
             lodging_filter |= Q(city__name__exact=city)
         elif country:
             lodging_filter |= Q(country__name__exact=country)
-        else:
-            raise ValidationError("You must specify either city or country")
 
         if kind:
             lodging_filter |= Q(kind__exact=kind)

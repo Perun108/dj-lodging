@@ -1,8 +1,12 @@
 from uuid import UUID
 
-from django.core.exceptions import ValidationError
 from django.utils.timezone import now
 
+from djlodging.domain.users.constants import (
+    USER_DOES_NOT_EXIST_MESSAGE,
+    USER_DOES_NOT_EXIST_OR_WAS_DELETED_MESSAGE,
+)
+from djlodging.domain.users.exceptions import UserDoesNotExist
 from djlodging.domain.users.models import User
 
 
@@ -23,16 +27,14 @@ class UserRepository:
     def get_user_by_security_token_and_email(cls, security_token, email) -> User:
         user = User.objects.filter(security_token=security_token, email=email).first()
         if user is None:
-            raise ValidationError("Such user does not exist")
+            raise UserDoesNotExist(message=USER_DOES_NOT_EXIST_MESSAGE)
         return user
 
     @classmethod
     def get_user_by_id_and_security_token(cls, user_id: UUID, security_token: UUID) -> User:
         user = User.objects.filter(id=user_id, security_token=security_token).first()
         if user is None:
-            raise ValidationError(
-                "User does not exist or have been deleted after sign up time had passed."
-            )
+            raise UserDoesNotExist(message=USER_DOES_NOT_EXIST_OR_WAS_DELETED_MESSAGE)
         return user
 
     @classmethod

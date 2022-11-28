@@ -45,9 +45,8 @@ class TestUserSingUpAPIView:
         response = api_client.post(url, payload)
 
         assert response.status_code == HTTP_400_BAD_REQUEST
-        assert "email" in response.data["detail"]
         assert (
-            str(response.data["detail"])
+            str(response.data)
             == "{'email': [ErrorDetail(string='This field is required.', code='required')]}"
         )
 
@@ -60,9 +59,8 @@ class TestUserSingUpAPIView:
         response = api_client.post(url, payload)
 
         assert response.status_code == HTTP_400_BAD_REQUEST
-        assert "password" in response.data["detail"]
         assert (
-            str(response.data["detail"])
+            str(response.data)
             == "{'password': [ErrorDetail(string='This field is required.', code='required')]}"
         )
 
@@ -77,7 +75,7 @@ class TestUserSingUpAPIView:
 
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert (
-            str(response.data["detail"])
+            str(response.data)
             == "{'non_field_errors': [ErrorDetail(string='The password is too similar to the email.', code='password_too_similar')]}"  # noqa
         )
 
@@ -92,7 +90,7 @@ class TestUserSingUpAPIView:
 
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert (
-            str(response.data["detail"])
+            str(response.data)
             == "{'non_field_errors': [ErrorDetail(string='This password is too common.', code='password_too_common')]}"  # noqa
         )
 
@@ -107,7 +105,7 @@ class TestUserSingUpAPIView:
 
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert (
-            str(response.data["detail"])
+            str(response.data)
             == "{'non_field_errors': [ErrorDetail(string='This password is too common.', "
             "code='password_too_common'), ErrorDetail(string='This password is entirely numeric.',"
             " code='password_entirely_numeric')]}"
@@ -123,8 +121,7 @@ class TestUserSingUpAPIView:
         response = api_client.post(url, payload)
 
         assert response.status_code == HTTP_400_BAD_REQUEST
-        assert "email" in response.data["detail"]
         assert (
-            str(response.data["detail"])
+            str(response.data)
             == "{'email': [ErrorDetail(string='Enter a valid email address.', code='invalid')]}"
         )

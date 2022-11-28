@@ -58,7 +58,7 @@ class TestMyBookingViewSet:
 
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert (
-            str(response.data["detail"])
+            str(response.data)
             == "{'non_field_errors': [ErrorDetail(string='The dates are invalid', code='invalid')]}"  # noqa
         )
 
@@ -80,7 +80,7 @@ class TestMyBookingViewSet:
 
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert (
-            str(response.data["detail"])
+            str(response.data)
             == "{'non_field_errors': [ErrorDetail(string='The dates are invalid', code='invalid')]}"  # noqa
         )
 
@@ -102,7 +102,7 @@ class TestMyBookingViewSet:
 
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert (
-            str(response.data["detail"])
+            str(response.data)
             == "{'non_field_errors': [ErrorDetail(string='Please provide date_to', code='invalid')]}"  # noqa
         )
 
@@ -126,7 +126,7 @@ class TestMyBookingViewSet:
 
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert (
-            str(response.data["detail"])
+            str(response.data)
             == "{'non_field_errors': [ErrorDetail(string='The dates are invalid', code='invalid')]}"  # noqa
         )
 
@@ -243,7 +243,6 @@ class TestMyBookingViewSet:
         payload = {}
         url = reverse("my-bookings-pay", args=[str(booking.id)])
         response = user_with_payment_api_client_pytest_fixture.post(url, payload, format="json")
-
         assert response.status_code == HTTP_201_CREATED
         assert "client_secret" in response.data
         assert response.data["client_secret"].startswith("pi_") is True

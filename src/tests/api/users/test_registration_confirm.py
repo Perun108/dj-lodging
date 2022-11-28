@@ -1,11 +1,13 @@
 from uuid import uuid4
 
 import pytest
+from django.utils.timezone import now, timedelta
 from faker import Faker
 from rest_framework.reverse import reverse
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from rest_framework.test import APIClient
 
+from djlodging.domain.users.constants import USER_DOES_NOT_EXIST_OR_WAS_DELETED_MESSAGE
 from djlodging.domain.users.models import PaymentProviderUser
 from tests.domain.users.factories import UserFactory
 
@@ -16,10 +18,14 @@ fake = Faker()
 class TestUserRegistrationConfirmAPIView:
     def test_confirm_registration_succeeds(self, mocker):
         api_client = APIClient()
-        user = UserFactory(is_active=False)
+        security_token_expiration_time = now() + timedelta(hours=2)
+        user = UserFactory(
+            is_active=False, security_token_expiration_time=security_token_expiration_time
+        )
 
         assert user.is_active is False
         assert user.security_token != ""
+        assert user.security_token_expiration_time > now()
         assert PaymentProviderUser.objects.first() is None
 
         mock = mocker.patch(
@@ -57,9 +63,8 @@ class TestUserRegistrationConfirmAPIView:
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert (
             str(response.data)
-            == "{'detail': {'user_id': [ErrorDetail(string='This field is required.', "
-            "code='required')], 'security_token': [ErrorDetail(string='Must be a valid UUID.', "
-            "code='invalid')]}}"
+            == "{'user_id': [ErrorDetail(string='This field is required.', code='required')], "
+            "'security_token': [ErrorDetail(string='Must be a valid UUID.', code='invalid')]}"
         )
 
         user.refresh_from_db()
@@ -77,12 +82,10 @@ class TestUserRegistrationConfirmAPIView:
         payload = {"user_id": user.id, "security_token": wrong_token}
 
         response = api_client.post(url, payload)
+        assert response is not None
         assert response.status_code == HTTP_400_BAD_REQUEST
-        assert (
-            str(response.data)
-            == "{'detail': {'non_field_errors': [ErrorDetail(string='User does not exist', "
-            "code='invalid')]}}"
-        )
+        assert str(response.data["message"]) == USER_DOES_NOT_EXIST_OR_WAS_DELETED_MESSAGE
+
         user.refresh_from_db()
         assert user.is_active is False
         assert user.security_token != ""

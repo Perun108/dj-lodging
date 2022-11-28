@@ -5,7 +5,10 @@ from django.conf import settings
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.utils.timezone import now, timedelta
 
-from djlodging.application_services.exceptions import PaymentExpirationTimePassed
+from djlodging.application_services.exceptions import (
+    LodgingAlreadyBookedError,
+    PaymentExpirationTimePassed,
+)
 from djlodging.application_services.payments import PaymentService
 from djlodging.domain.bookings.models import Booking
 from djlodging.domain.bookings.repository import BookingRepository
@@ -24,20 +27,20 @@ class BookingService:
             raise ValidationError("The dates are invalid")
 
     @classmethod
-    def _validate_lodging_availability(cls, lodging_id: UUID, date_from: date, date_to: date):
+    def _check_lodging_availability(cls, lodging_id: UUID, date_from: date, date_to: date):
         lodging = LodgingRepository.get_by_id(lodging_id)
         for booking in lodging.booking.all():
             if booking.status != Booking.Status.CANCELED and (
                 booking.date_from <= date_from < booking.date_to
                 or booking.date_from < date_to <= booking.date_to
             ):
-                raise ValidationError("This lodging is already booked for these dates")
+                raise LodgingAlreadyBookedError
         return lodging
 
     @classmethod
     def create(cls, lodging_id: UUID, user: User, date_from: date, date_to: date) -> Booking:
         cls._validate_dates(date_from, date_to)
-        lodging = cls._validate_lodging_availability(lodging_id, date_from, date_to)
+        lodging = cls._check_lodging_availability(lodging_id, date_from, date_to)
         booking = Booking(
             lodging=lodging,
             user=user,
@@ -62,7 +65,7 @@ class BookingService:
         if actor != booking.user:
             raise PermissionDenied
 
-        elif booking.payment_expiration_time > now():
+        elif booking.payment_expiration_time < now():
             delete_expired_unpaid_booking.apply_async(args=[booking_id])
             raise PaymentExpirationTimePassed
 

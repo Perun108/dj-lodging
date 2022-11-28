@@ -323,7 +323,7 @@ class TestLodgingViewSet:
         response = partner_api_client_pytest_fixture.put(url, payload)
 
         assert response.status_code == HTTP_400_BAD_REQUEST
-        assert str(response.data["detail"]["non_field_errors"][0]) == WrongOwnerError().message
+        assert response.data["message"] == WrongOwnerError().message
 
         lodging.refresh_from_db()
         assert lodging.name == old_name
@@ -369,7 +369,7 @@ class TestLodgingViewSet:
         response = partner_api_client_pytest_fixture.delete(url)
 
         assert response.status_code == HTTP_400_BAD_REQUEST
-        assert str(response.data["detail"]["non_field_errors"][0]) == WrongOwnerError().message
+        assert response.data["message"] == WrongOwnerError().message
 
         assert Lodging.objects.first() == lodging
 

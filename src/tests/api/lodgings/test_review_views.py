@@ -129,10 +129,7 @@ class TestMyReviewViewSet:
         response = user_api_client_pytest_fixture.post(url, payload)
 
         assert response.status_code == HTTP_400_BAD_REQUEST
-        assert (
-            str(response.data["detail"]["non_field_errors"][0])
-            == WrongBookingReferenceCode().message
-        )
+        assert response.data["message"] == WrongBookingReferenceCode().message
 
         assert Review.objects.first() is None
 
@@ -156,10 +153,7 @@ class TestMyReviewViewSet:
         response = user_api_client_pytest_fixture.post(url, payload)
 
         assert response.status_code == HTTP_400_BAD_REQUEST
-        assert (
-            str(response.data["detail"]["non_field_errors"][0])
-            == WrongBookingReferenceCode().message
-        )
+        assert response.data["message"] == WrongBookingReferenceCode().message
 
         assert Review.objects.first() is None
 
@@ -184,7 +178,7 @@ class TestMyReviewViewSet:
         response = user_api_client_pytest_fixture.post(url, payload)
 
         assert response.status_code == HTTP_400_BAD_REQUEST
-        assert str(response.data["detail"]["non_field_errors"][0]) == WrongLodgingError().message
+        assert response.data["message"] == WrongLodgingError().message
 
         assert Review.objects.first() is None
 

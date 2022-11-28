@@ -10,6 +10,7 @@ from rest_framework.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_401_UNAUTHORIZED,
     HTTP_403_FORBIDDEN,
+    HTTP_404_NOT_FOUND,
 )
 from rest_framework.test import APIClient
 
@@ -64,7 +65,7 @@ class TestCountryViewSet:
         response = admin_api_client_factory_boy.post(url, payload)
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert (
-            str(response.data["detail"])
+            str(response.data)
             == "{'name': [ErrorDetail(string='This field may not be blank.', code='blank')]}"
         )
 
@@ -115,11 +116,7 @@ class TestCountryViewSet:
 
         response = admin_api_client_factory_boy.get(url)
 
-        assert response.status_code == HTTP_400_BAD_REQUEST
-        assert (
-            str(response.data) == "{'detail': {'non_field_errors': "
-            "[ErrorDetail(string='There is no country with this id', code='invalid')]}}"
-        )
+        assert response.status_code == HTTP_404_NOT_FOUND
 
     def test_list_countries_by_admin_succeeds(self, admin_api_client_factory_boy):
         number_of_countries = 3
@@ -211,11 +208,7 @@ class TestCountryViewSet:
 
         response = admin_api_client_factory_boy.put(url, payload)
 
-        assert response.status_code == HTTP_400_BAD_REQUEST
-        assert (
-            str(response.data) == "{'detail': {'non_field_errors': "
-            "[ErrorDetail(string='There is no country with this id', code='invalid')]}}"
-        )
+        assert response.status_code == HTTP_404_NOT_FOUND
 
     def test_delete_country_by_admin_succeeds(self, admin_api_client_factory_boy):
         country = CountryFactory()
@@ -266,8 +259,4 @@ class TestCountryViewSet:
 
         response = admin_api_client_factory_boy.delete(url)
 
-        assert response.status_code == HTTP_400_BAD_REQUEST
-        assert (
-            str(response.data) == "{'detail': {'non_field_errors': "
-            "[ErrorDetail(string='There is no country with this id', code='invalid')]}}"
-        )
+        assert response.status_code == HTTP_404_NOT_FOUND

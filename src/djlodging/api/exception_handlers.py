@@ -6,16 +6,28 @@ from rest_framework.response import Response
 from rest_framework.serializers import as_serializer_error
 from rest_framework.views import exception_handler
 
-
-class ApplicationError(Exception):
-    def __init__(self, message, extra=None):
-        super().__init__(message)
-
-        self.message = message
-        self.extra = extra or {}
+from djlodging.domain.core.base_exceptions import BaseDjLodgingError
 
 
 def custom_exception_handler(exc, ctx):
+    if isinstance(exc, DjangoValidationError):
+        exc = exceptions.ValidationError(as_serializer_error(exc))
+
+    elif isinstance(exc, ObjectDoesNotExist):
+        exc = exceptions.NotFound()
+
+    response = exception_handler(exc, ctx)
+
+    # If unexpected error occurs (server error, etc.)
+    if response is None:
+        if isinstance(exc, BaseDjLodgingError):
+            data = {"message": exc.message, "extra": exc.extra}
+            return Response(data, status=400)
+
+    return response
+
+
+def experimental_exception_handler(exc, ctx):
     """
     {
         "message": "Error message",
@@ -35,7 +47,7 @@ def custom_exception_handler(exc, ctx):
 
     # If unexpected error occurs (server error, etc.)
     if response is None:
-        if isinstance(exc, ApplicationError):
+        if isinstance(exc, BaseDjLodgingError):
             data = {"message": exc.message, "extra": exc.extra}
             return Response(data, status=400)
 
@@ -52,27 +64,5 @@ def custom_exception_handler(exc, ctx):
         response.data["extra"] = {}
 
     del response.data["detail"]
-
-    return response
-
-
-def drf_default_with_modifications_exception_handler(exc, ctx):
-    if isinstance(exc, DjangoValidationError):
-        exc = exceptions.ValidationError(as_serializer_error(exc))
-
-    elif isinstance(exc, (ObjectDoesNotExist, Http404)):
-        exc = exceptions.NotFound()
-
-    elif isinstance(exc, PermissionDenied):
-        exc = exceptions.PermissionDenied()
-
-    response = exception_handler(exc, ctx)
-
-    # If unexpected error occurs (server error, etc.)
-    if response is None:
-        return response
-
-    if isinstance(exc.detail, (list, dict)):
-        response.data = {"detail": response.data}
 
     return response

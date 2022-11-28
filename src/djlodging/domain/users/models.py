@@ -26,7 +26,7 @@ class User(AbstractUser, BaseModel):
     nationality = models.CharField(max_length=255, blank=True)
     gender = models.CharField(max_length=20, blank=True, choices=Gender.choices)
     security_token = models.CharField(max_length=100, blank=True, default=uuid4)
-    security_token_expiration_time = models.DateTimeField(blank=True, auto_now=True)
+    security_token_expiration_time = models.DateTimeField(blank=True, null=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]

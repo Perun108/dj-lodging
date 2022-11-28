@@ -46,7 +46,6 @@ class SendgridEmailProvider(BaseEmailProvider):
             "from": {"email": self.from_email},
             "template_id": self.confirmation_link_template_id,
         }
-        print(self.confirmation_link_template_id)
         return self.sendgrid_api.client.mail.send.post(request_body=data)
 
     def send_change_password_link(
