@@ -3,4 +3,4 @@
 # dj-lodging
 ![Tests Status](./src/coverage.svg)
 
-Django backend for a lodging reservation application
+Django backend for a lodging reservation application inspired by booking.com.
