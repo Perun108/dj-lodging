@@ -4,3 +4,6 @@
 ![Tests Status](./src/coverage.svg)
 
 Django backend for a lodging reservation application inspired by booking.com.
+
+Implemented according to the Domain-driven design, incorporating some of the best practices of [HackSoft Django-Styleguide](https://github.com/HackSoftware/Django-Styleguide).
+
