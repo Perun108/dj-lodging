@@ -1,8 +1,25 @@
+from uuid import UUID
+
+from djlodging.application_services.email import EmailService
 from djlodging.domain.bookings.repository import BookingRepository
 from djlodging.domain.users.repository import UserRepository
 from djlodging.infrastructure.jobs.celery_config import app as celery_app
 
 
+# ==================EMAIL TASKS=========================================
+def send_confirmation_link_task(email: str, security_token: UUID):
+    return EmailService.send_confirmation_link(email=email, security_token=security_token)
+
+
+def send_change_password_link_task(email: str, token: UUID):
+    return EmailService.send_change_password_link(email=email, token=token)
+
+
+def send_change_email_link_task(new_email: str, token: UUID):
+    return EmailService.send_change_email_link(new_email=new_email, token=token)
+
+
+# ==================CELERY TASKS=========================================
 @celery_app.task()
 def delete_unregistered_user_after_security_token_expired(user_id):
     UserRepository.delete_by_id(user_id)

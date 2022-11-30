@@ -5,7 +5,6 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.utils.timezone import now, timedelta
 
-from djlodging.application_services.email import EmailService
 from djlodging.application_services.exceptions import RegistrationTimePassed
 from djlodging.domain.users.constants import WRONG_EMAIL_MESSAGE
 from djlodging.domain.users.exceptions import UserDoesNotExist
@@ -15,6 +14,9 @@ from djlodging.domain.users.repository import (
 )
 from djlodging.infrastructure.jobs.celery_tasks import (
     delete_unregistered_user_after_security_token_expired,
+    send_change_email_link_task,
+    send_change_password_link_task,
+    send_confirmation_link_task,
 )
 from djlodging.infrastructure.providers.payments import payment_provider
 
@@ -32,6 +34,7 @@ class UserService:
             hours=settings.SECURITY_TOKEN_LIFE_TIME_IN_HOURS
         )
         UserRepository.save(user)
+        send_confirmation_link_task(user.email, user.security_token)
         return user
 
     @classmethod
@@ -73,7 +76,7 @@ class UserService:
             raise UserDoesNotExist(message=WRONG_EMAIL_MESSAGE)
         security_token = uuid4()
         UserRepository.update(user, security_token=security_token)
-        EmailService.send_change_password_link(user.email, security_token)
+        send_change_password_link_task(user.email, security_token)
 
     @classmethod
     def confirm_reset_password(cls, security_token: UUID, email: str, new_password: str) -> None:
@@ -86,7 +89,7 @@ class UserService:
     def send_change_email_link(cls, user: User, new_email: str) -> None:
         security_token = uuid4()
         UserRepository.update(user, security_token=security_token)
-        EmailService.send_change_email_link(new_email, security_token)
+        send_change_email_link_task(new_email, security_token)
 
     @classmethod
     def change_email(cls, security_token: UUID, new_email: str) -> None:

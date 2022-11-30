@@ -27,7 +27,6 @@ from djlodging.api.users.serializers import (
     UserSignUpInputSerializer,
     UserUpdateInputSerializer,
 )
-from djlodging.application_services.email import EmailService
 from djlodging.application_services.users import UserService
 from djlodging.domain.users.repository import UserRepository
 
@@ -53,7 +52,6 @@ class UserSingUpAPIView(APIView):
         incoming_data = UserSignUpInputSerializer(data=request.data)
         incoming_data.is_valid(raise_exception=True)
         user = UserService.create(**incoming_data.validated_data, is_active=False)
-        EmailService.send_confirmation_link(user.email, user.security_token)
         output_serializer = UserShortOutputSerializer(user)
         return Response(output_serializer.data, status=HTTP_201_CREATED)
 
