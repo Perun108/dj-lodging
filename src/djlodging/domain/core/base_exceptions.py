@@ -4,3 +4,7 @@ class BaseDjLodgingError(Exception):
 
         self.message = message
         self.extra = extra or {}
+
+
+class DjLodgingValidationError(BaseDjLodgingError):
+    pass

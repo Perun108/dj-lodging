@@ -1,12 +1,12 @@
 from typing import Dict, List, Union
 from uuid import UUID
 
-from django.core.exceptions import ValidationError
 from django.db.models import Avg, Case, Q, QuerySet, Value, When
 from django.db.models.functions import Round
 
 from djlodging.api.pagination import paginate_queryset
 from djlodging.domain.bookings.sorting import sort_queryset
+from djlodging.domain.core.base_exceptions import DjLodgingValidationError
 from djlodging.domain.lodgings.models import Country
 from djlodging.domain.lodgings.models.city import City
 from djlodging.domain.lodgings.models.lodging import Lodging
@@ -91,7 +91,7 @@ class LodgingRepository:
         city = query_params.get("city")
 
         if not (country or city):
-            raise ValidationError("You must provide either a city or a country!")
+            raise DjLodgingValidationError("You must provide either a city or a country!")
 
         lodging_filter = Q(
             number_of_people__gte=number_of_people,

@@ -1,3 +1,4 @@
+from djlodging.domain.core.base_exceptions import DjLodgingValidationError
 from djlodging.domain.users.models import User
 from djlodging.infrastructure.providers.payments import payment_provider
 
@@ -7,6 +8,11 @@ class PaymentService:
     def create_payment(
         cls, user: User, price, metadata, currency="usd", capture_method="automatic"
     ):
+        if not hasattr(user, "payment_user"):
+            raise DjLodgingValidationError(
+                "Payments were not properly assigned to this user. "
+                + "Please go through all steps during registration."
+            )
         payment_intent = payment_provider.create_payment_intent(
             customer_id=user.payment_user.customer_id,
             amount=price,

@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from djlodging.application_services.email import EmailService
+from djlodging.domain.bookings.models import Booking
 from djlodging.domain.bookings.repository import BookingRepository
 from djlodging.domain.users.repository import UserRepository
 from djlodging.infrastructure.jobs.celery_config import app as celery_app
@@ -17,6 +18,14 @@ def send_change_password_link_task(email: str, token: UUID):
 
 def send_change_email_link_task(new_email: str, token: UUID):
     return EmailService.send_change_email_link(new_email=new_email, token=token)
+
+
+def send_booking_confirmation_email_to_user_task(booking: Booking):
+    return EmailService.send_booking_confirmation_email_to_user(booking)
+
+
+def send_booking_confirmation_email_to_owner_task(booking: Booking):
+    return EmailService.send_booking_confirmation_email_to_owner(booking)
 
 
 # ==================CELERY TASKS=========================================

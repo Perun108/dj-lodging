@@ -32,7 +32,7 @@ SECRET_KEY = env.str("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG")
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["dj-lodging-dev.us-east-1.elasticbeanstalk.com"]
 
 
 # Application definition
@@ -203,11 +203,13 @@ EMAIL_BACKEND = env.str(
 )
 EMAIL_PROVIDER = {
     "DEFAULT_EMAIL_PROVIDER_CLASS": "djlodging.infrastructure.providers.email.SendgridEmailProvider",  # noqa pylint: disable=line-too-long
+    "DEFAULT_FROM_EMAIL": env.str("DEFAULT_FROM_EMAIL", default="example@example.com"),
     "API_KEY": env.str("EMAIL_PROVIDER_API_KEY", default="SET_YOUR_API_KEY"),
     "CONFIRMATION_LINK_TEMPLATE_ID": "d-118c70b3aa884c74af9d3c14403aa4f5",
     "CHANGE_PASSWORD_LINK_TEMPLATE_ID": "d-788fb445f4b24970abf871901cf43d96",
     "CHANGE_EMAIL_LINK_TEMPLATE_ID": "d-27e74abd0a49487ca6bd59cd95081d27",
-    "DEFAULT_FROM_EMAIL": env.str("DEFAULT_FROM_EMAIL", default="example@example.com"),
+    "BOOKING_CONFIRMATION_EMAIL_FOR_USER_TEMPLATE_ID": "d-07202cd50655498587d59a73929aea24",
+    "BOOKING_CONFIRMATION_EMAIL_FOR_OWNER_TEMPLATE_ID": "d-ca813fa9a96542dc8c6fd3345485e737",
 }
 DOMAIN = "https://dj-lodging.com"
 

@@ -2,10 +2,11 @@ from uuid import UUID, uuid4
 
 from django.conf import settings
 from django.contrib.auth.password_validation import validate_password
-from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.exceptions import PermissionDenied
 from django.utils.timezone import now, timedelta
 
 from djlodging.application_services.exceptions import RegistrationTimePassed
+from djlodging.domain.core.base_exceptions import DjLodgingValidationError
 from djlodging.domain.users.constants import WRONG_EMAIL_MESSAGE
 from djlodging.domain.users.exceptions import UserDoesNotExist
 from djlodging.domain.users.repository import (
@@ -63,7 +64,7 @@ class UserService:
     @classmethod
     def change_password(cls, user: User, old_password: str, new_password: str) -> User:
         if not user.check_password(old_password):
-            raise ValidationError("Wrong password!")
+            raise DjLodgingValidationError("Wrong password!")
         user.set_password(new_password)
         UserRepository.save(user)
         return user

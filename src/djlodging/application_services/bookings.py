@@ -2,7 +2,7 @@ from datetime import date
 from uuid import UUID
 
 from django.conf import settings
-from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.exceptions import PermissionDenied
 from django.utils.timezone import now, timedelta
 
 from djlodging.application_services.exceptions import (
@@ -12,9 +12,13 @@ from djlodging.application_services.exceptions import (
 from djlodging.application_services.payments import PaymentService
 from djlodging.domain.bookings.models import Booking
 from djlodging.domain.bookings.repository import BookingRepository
+from djlodging.domain.core.base_exceptions import DjLodgingValidationError
 from djlodging.domain.lodgings.repositories import LodgingRepository
 from djlodging.domain.users.models import User
-from djlodging.infrastructure.jobs.celery_tasks import delete_expired_unpaid_booking
+from djlodging.infrastructure.jobs.celery_tasks import (
+    delete_expired_unpaid_booking,
+    send_booking_confirmation_email_to_user_task,
+)
 
 
 class BookingService:
@@ -22,9 +26,9 @@ class BookingService:
     def _validate_dates(cls, date_from, date_to):
         current_date = now().date()
         if date_from == date_to:
-            raise ValidationError("Please provide date_to")
+            raise DjLodgingValidationError("Please provide date_to")
         if any([date_from < current_date, date_to < current_date, date_from > date_to]):
-            raise ValidationError("The dates are invalid")
+            raise DjLodgingValidationError("The dates are invalid")
 
     @classmethod
     def _check_lodging_availability(cls, lodging_id: UUID, date_from: date, date_to: date):
@@ -86,6 +90,8 @@ class BookingService:
     def confirm(cls, metadata):
         booking = BookingRepository.get_by_id(metadata["booking_id"])
         BookingRepository.change_status(booking, new_status=Booking.Status.PAID)
+        send_booking_confirmation_email_to_user_task(booking)
+        # send_booking_confirmation_email_to_owner_task(booking)
 
     @classmethod
     def cancel(cls, actor: User, booking_id: UUID) -> Booking:
@@ -93,7 +99,7 @@ class BookingService:
         if actor != booking.user:
             raise PermissionDenied
         if booking.status != Booking.Status.PAID:
-            raise ValidationError("This booking cannot be canceled!")
+            raise DjLodgingValidationError("This booking cannot be canceled!")
 
         PaymentService.create_refund(
             payment_intent_id=booking.payment_intent_id,
