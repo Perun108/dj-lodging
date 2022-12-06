@@ -1,4 +1,3 @@
-from datetime import datetime
 from uuid import UUID
 
 from django.conf import settings
@@ -111,8 +110,8 @@ class SendgridEmailProvider(BaseEmailProvider):
         username: str,
         lodging_name: str,
         city: str,
-        date_from: datetime,
-        date_to: datetime,
+        date_from: str,
+        date_to: str,
         reference_code: UUID,
     ) -> dict:
         data = {
@@ -143,8 +142,8 @@ class SendgridEmailProvider(BaseEmailProvider):
         username: str,
         lodging_name: str,
         city: str,
-        date_from: datetime,
-        date_to: datetime,
+        date_from: str,
+        date_to: str,
         reference_code: UUID,
     ) -> dict:
         data = {

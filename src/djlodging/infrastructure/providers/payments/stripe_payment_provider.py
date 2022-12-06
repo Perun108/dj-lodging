@@ -59,4 +59,4 @@ def confirm_payment(event, **kwargs):
     from djlodging.application_services.bookings import BookingService
 
     payment_intent = event.data["object"]
-    BookingService.confirm(payment_intent)
+    BookingService.confirm(payment_intent["metadata"])

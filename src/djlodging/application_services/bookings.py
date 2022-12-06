@@ -17,6 +17,7 @@ from djlodging.domain.lodgings.repositories import LodgingRepository
 from djlodging.domain.users.models import User
 from djlodging.infrastructure.jobs.celery_tasks import (
     delete_expired_unpaid_booking,
+    send_booking_confirmation_email_to_owner_task,
     send_booking_confirmation_email_to_user_task,
 )
 
@@ -90,8 +91,8 @@ class BookingService:
     def confirm(cls, metadata):
         booking = BookingRepository.get_by_id(metadata["booking_id"])
         BookingRepository.change_status(booking, new_status=Booking.Status.PAID)
-        send_booking_confirmation_email_to_user_task(booking)
-        # send_booking_confirmation_email_to_owner_task(booking)
+        send_booking_confirmation_email_to_user_task(str(booking.id))
+        send_booking_confirmation_email_to_owner_task(str(booking.id))
 
     @classmethod
     def cancel(cls, actor: User, booking_id: UUID) -> Booking:
