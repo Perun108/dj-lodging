@@ -84,7 +84,7 @@ class TestUserRegistrationConfirmAPIView:
         response = api_client.post(url, payload)
         assert response is not None
         assert response.status_code == HTTP_400_BAD_REQUEST
-        assert str(response.data["message"]) == USER_DOES_NOT_EXIST_OR_WAS_DELETED_MESSAGE
+        assert response.data["message"] == USER_DOES_NOT_EXIST_OR_WAS_DELETED_MESSAGE
 
         user.refresh_from_db()
         assert user.is_active is False

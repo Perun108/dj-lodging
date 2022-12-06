@@ -57,10 +57,7 @@ class TestMyBookingViewSet:
         response = user_api_client_pytest_fixture.post(url, payload)
 
         assert response.status_code == HTTP_400_BAD_REQUEST
-        assert (
-            str(response.data)
-            == "{'non_field_errors': [ErrorDetail(string='The dates are invalid', code='invalid')]}"  # noqa
-        )
+        assert response.data["message"] == "The dates are invalid"
 
         booking = Booking.objects.first()
         assert booking is None
@@ -79,10 +76,7 @@ class TestMyBookingViewSet:
         response = user_api_client_pytest_fixture.post(url, payload)
 
         assert response.status_code == HTTP_400_BAD_REQUEST
-        assert (
-            str(response.data)
-            == "{'non_field_errors': [ErrorDetail(string='The dates are invalid', code='invalid')]}"  # noqa
-        )
+        assert response.data["message"] == "Date_to must be greater than date_from"
 
         booking = Booking.objects.first()
         assert booking is None
@@ -101,10 +95,7 @@ class TestMyBookingViewSet:
         response = user_api_client_pytest_fixture.post(url, payload)
 
         assert response.status_code == HTTP_400_BAD_REQUEST
-        assert (
-            str(response.data)
-            == "{'non_field_errors': [ErrorDetail(string='Please provide date_to', code='invalid')]}"  # noqa
-        )
+        assert response.data["message"] == "Date_to must be greater than date_from"
 
         booking = Booking.objects.first()
         assert booking is None
@@ -125,10 +116,7 @@ class TestMyBookingViewSet:
         response = user_api_client_pytest_fixture.post(url, payload)
 
         assert response.status_code == HTTP_400_BAD_REQUEST
-        assert (
-            str(response.data)
-            == "{'non_field_errors': [ErrorDetail(string='The dates are invalid', code='invalid')]}"  # noqa
-        )
+        assert response.data["message"] == "Date_to must be greater than date_from"
 
         booking = Booking.objects.first()
         assert booking is None

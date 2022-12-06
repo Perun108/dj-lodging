@@ -25,9 +25,9 @@ class BookingService:
     @classmethod
     def _validate_dates(cls, date_from, date_to):
         current_date = now().date()
-        if date_from == date_to:
-            raise DjLodgingValidationError("Please provide date_to")
-        if any([date_from < current_date, date_to < current_date, date_from > date_to]):
+        if date_from >= date_to:
+            raise DjLodgingValidationError("Date_to must be greater than date_from")
+        if date_from < current_date or date_to < current_date:
             raise DjLodgingValidationError("The dates are invalid")
 
     @classmethod

@@ -32,7 +32,7 @@ class TestUserGetByTokenAndEmailAPIView:
         response = client.get(url, query_params)
 
         assert response.status_code == HTTP_400_BAD_REQUEST
-        assert str(response.data["message"]) == USER_DOES_NOT_EXIST_MESSAGE
+        assert response.data["message"] == USER_DOES_NOT_EXIST_MESSAGE
 
     def test_get_user_id_by_token_and_email_without_email_fails(self):
         user = UserFactory()
@@ -43,7 +43,7 @@ class TestUserGetByTokenAndEmailAPIView:
         response = client.get(url, query_params)
 
         assert response.status_code == HTTP_400_BAD_REQUEST
-        assert str(response.data["message"]) == USER_DOES_NOT_EXIST_MESSAGE
+        assert response.data["message"] == USER_DOES_NOT_EXIST_MESSAGE
 
     def test_get_user_id_by_token_and_email_without_token_and_email_fails(self):
         query_params = {}
@@ -52,4 +52,4 @@ class TestUserGetByTokenAndEmailAPIView:
         response = client.get(url, query_params)
 
         assert response.status_code == HTTP_400_BAD_REQUEST
-        assert str(response.data["message"]) == USER_DOES_NOT_EXIST_MESSAGE
+        assert response.data["message"] == USER_DOES_NOT_EXIST_MESSAGE

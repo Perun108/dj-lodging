@@ -1,10 +1,11 @@
 import pytest
-from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 from faker import Faker
 
 from djlodging.application_services.bookings import BookingService
 from djlodging.domain.bookings.models import Booking
+from djlodging.domain.core.base_exceptions import DjLodgingValidationError
 from tests.domain.bookings.factories import BookingFactory
 from tests.domain.lodgings.factories import LodgingFactory
 from tests.domain.users.factories import UserFactory
@@ -37,11 +38,11 @@ class TestBookingService:
         date_from = timezone.now().date() - timezone.timedelta(days=1)
         date_to = date_from + timezone.timedelta(days=2)
 
-        with pytest.raises(ValidationError) as exc:
+        with pytest.raises(DjLodgingValidationError) as exc:
             BookingService.create(
                 lodging_id=lodging.id, user=user, date_from=date_from, date_to=date_to
             )
-        assert str(exc.value) == "['The dates are invalid']"
+        assert str(exc.value) == "The dates are invalid"
 
         booking = Booking.objects.first()
         assert booking is None
@@ -52,11 +53,11 @@ class TestBookingService:
         date_from = timezone.now().date() + timezone.timedelta(days=1)
         date_to = date_from - timezone.timedelta(days=2)
 
-        with pytest.raises(ValidationError) as exc:
+        with pytest.raises(DjLodgingValidationError) as exc:
             BookingService.create(
                 lodging_id=lodging.id, user=user, date_from=date_from, date_to=date_to
             )
-        assert str(exc.value) == "['The dates are invalid']"
+        assert str(exc.value) == "Date_to must be greater than date_from"
 
         booking = Booking.objects.first()
         assert booking is None
@@ -67,11 +68,11 @@ class TestBookingService:
         date_from = timezone.now().date() - timezone.timedelta(days=1)
         date_to = date_from
 
-        with pytest.raises(ValidationError) as exc:
+        with pytest.raises(DjLodgingValidationError) as exc:
             BookingService.create(
                 lodging_id=lodging.id, user=user, date_from=date_from, date_to=date_to
             )
-        assert str(exc.value) == "['Please provide date_to']"
+        assert str(exc.value) == "Date_to must be greater than date_from"
 
         booking = Booking.objects.first()
         assert booking is None
@@ -82,11 +83,11 @@ class TestBookingService:
         date_from = timezone.now().date() + timezone.timedelta(days=2)
         date_to = timezone.now().date()
 
-        with pytest.raises(ValidationError) as exc:
+        with pytest.raises(DjLodgingValidationError) as exc:
             BookingService.create(
                 lodging_id=lodging.id, user=user, date_from=date_from, date_to=date_to
             )
-        assert str(exc.value) == "['The dates are invalid']"
+        assert str(exc.value) == "Date_to must be greater than date_from"
 
         booking = Booking.objects.first()
         assert booking is None
@@ -133,12 +134,12 @@ class TestBookingService:
         user = UserFactory()
         booking = BookingFactory(user=user, status=Booking.Status.PAYMENT_PENDING)
 
-        with pytest.raises(ValidationError) as exc:
+        with pytest.raises(DjLodgingValidationError) as exc:
             BookingService.cancel(actor=user, booking_id=booking.id)
 
-        assert str(exc.value) == "['This booking cannot be canceled!']"
+        assert str(exc.value) == "This booking cannot be canceled!"
 
-    def test_cancel_booking_with_wrong_user_fails(self, mocker):
+    def test_cancel_booking_with_wrong_user_fails(self):
         user = UserFactory()
         wrong_user = UserFactory()
         booking = BookingFactory(user=user, status=Booking.Status.PAID)

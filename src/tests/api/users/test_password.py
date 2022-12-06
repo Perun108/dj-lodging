@@ -41,10 +41,7 @@ class TestPasswordChangeAPIView:
         url = reverse("users:change-password")
         response = user_api_client_pytest_fixture.patch(url, payload)
         assert response.status_code == HTTP_400_BAD_REQUEST
-        assert (
-            str(response.data)
-            == "{'non_field_errors': [ErrorDetail(string='Wrong password!', code='invalid')]}"
-        )
+        assert response.data["message"] == "Wrong password!"
         user.refresh_from_db()
         assert user.check_password(new_password) is False
 

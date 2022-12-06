@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from faker import Faker
 
 from djlodging.application_services.users import UserService
+from djlodging.domain.core.base_exceptions import DjLodgingValidationError
 from djlodging.domain.users.constants import WRONG_EMAIL_MESSAGE
 from djlodging.domain.users.exceptions import UserDoesNotExist
 from tests.domain.users.factories import UserFactory
@@ -96,9 +97,9 @@ class TestUserService:
         new_password = fake.password()
         assert user.check_password(old_password) is False
 
-        with pytest.raises(ValidationError) as exc:
+        with pytest.raises(DjLodgingValidationError) as exc:
             UserService.change_password(user, old_password=old_password, new_password=new_password)
-        assert str(exc.value) == "['Wrong password!']"
+        assert str(exc.value) == "Wrong password!"
 
         user.refresh_from_db()
         assert user.check_password(new_password) is False
