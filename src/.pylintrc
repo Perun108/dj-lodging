@@ -159,7 +159,6 @@ disable=raw-checker-failed,
         too-few-public-methods,
         abstract-method, # I get too many of these warnings in Serializers.
         invalid-name, # Strangely it warns about DRF's 'pk' arguments.
-        C0114,C0115,C0116
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
