@@ -201,15 +201,17 @@ SECURITY_TOKEN_LIFE_TIME_IN_HOURS = env.int("SECURITY_TOKEN_LIFE_TIME_IN_HOURS",
 EMAIL_BACKEND = env.str(
     "DJANGO_EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend"
 )
-EMAIL_PROVIDER = {
-    "DEFAULT_EMAIL_PROVIDER_CLASS": "djlodging.infrastructure.providers.email.SendgridEmailProvider",  # noqa pylint: disable=line-too-long
-    "DEFAULT_FROM_EMAIL": env.str("DEFAULT_FROM_EMAIL", default="example@example.com"),
+DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL", default="example@example.com")
+EMAIL_PROVIDER = "djlodging.infrastructure.providers.email.SendgridEmailProvider"
+EMAIL_PROVIDER_SETTINGS = {
     "API_KEY": env.str("EMAIL_PROVIDER_API_KEY", default="SET_YOUR_API_KEY"),
     "CONFIRMATION_LINK_TEMPLATE_ID": "d-118c70b3aa884c74af9d3c14403aa4f5",
     "CHANGE_PASSWORD_LINK_TEMPLATE_ID": "d-788fb445f4b24970abf871901cf43d96",
     "CHANGE_EMAIL_LINK_TEMPLATE_ID": "d-27e74abd0a49487ca6bd59cd95081d27",
     "BOOKING_CONFIRMATION_EMAIL_FOR_USER_TEMPLATE_ID": "d-07202cd50655498587d59a73929aea24",
     "BOOKING_CONFIRMATION_EMAIL_FOR_OWNER_TEMPLATE_ID": "d-ca813fa9a96542dc8c6fd3345485e737",
+    # "BOOKING_CANCELLATION_EMAIL_FOR_USER_TEMPLATE_ID":,
+    # "BOOKING_CANCELLATION_EMAIL_FOR_OWNER_TEMPLATE_ID":
 }
 DOMAIN = "https://dj-lodging.com"
 
@@ -227,7 +229,7 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
-# PAYMENT PROVIDER
+# PAYMENT SETTINGS
 PAYMENT_PROVIDER = "djlodging.infrastructure.providers.payments.StripePaymentProvider"
 STRIPE_LIVE_SECRET_KEY = env.str("STRIPE_LIVE_SECRET_KEY", "<your secret key>")
 STRIPE_TEST_SECRET_KEY = env.str("STRIPE_TEST_SECRET_KEY", "<your secret key>")
