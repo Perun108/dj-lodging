@@ -32,12 +32,12 @@ class SendgridEmailProvider(BaseEmailProvider):
         self.booking_confirmation_email_for_owner_template_id = email_provider_settings[
             "BOOKING_CONFIRMATION_EMAIL_FOR_OWNER_TEMPLATE_ID"
         ]
-        # self.booking_cancellation_email_to_user_template_id = email_provider_settings[
-        #     "BOOKING_CANCELLATION_EMAIL_FOR_USER_TEMPLATE_ID"
-        # ]
-        # self.booking_cancellation_email_to_owner_template_id = settings.EMAIL_PROVIDER_SETTINGS[
-        #     "BOOKING_CANCELLATION_EMAIL_FOR_OWNER_TEMPLATE_ID"
-        # ]
+        self.booking_cancellation_email_to_user_template_id = email_provider_settings[
+            "BOOKING_CANCELLATION_EMAIL_FOR_USER_TEMPLATE_ID"
+        ]
+        self.booking_cancellation_email_to_owner_template_id = email_provider_settings[
+            "BOOKING_CANCELLATION_EMAIL_FOR_OWNER_TEMPLATE_ID"
+        ]
 
     def send_confirmation_link(
         self,
@@ -180,7 +180,6 @@ class SendgridEmailProvider(BaseEmailProvider):
         city: str,
         date_from: str,
         date_to: str,
-        reference_code: str,
     ) -> dict:
         data = {
             "personalizations": [
@@ -193,7 +192,6 @@ class SendgridEmailProvider(BaseEmailProvider):
                         "city": city,
                         "date_from": date_from,
                         "date_to": date_to,
-                        "reference_code": reference_code,
                     },
                 }
             ],

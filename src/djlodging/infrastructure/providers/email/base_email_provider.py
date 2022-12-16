@@ -65,7 +65,6 @@ class BaseEmailProvider(ABC):
         city: str,
         date_from: str,
         date_to: str,
-        reference_code: str,
     ):
         pass
 

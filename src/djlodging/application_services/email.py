@@ -63,7 +63,6 @@ class EmailService:
             city=booking.lodging.city.name,
             date_from=booking.date_from.strftime("%b %d, %Y"),
             date_to=booking.date_to.strftime("%b %d, %Y"),
-            reference_code=booking.reference_code,
         )
 
     @classmethod
