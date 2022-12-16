@@ -27,6 +27,14 @@ def send_booking_confirmation_email_to_owner_task(booking_id: str):
     return EmailService.send_booking_confirmation_email_to_owner(booking_id)
 
 
+def send_booking_cancellation_email_to_owner_task(booking_id: str):
+    return EmailService.send_booking_cancellation_email_to_owner(booking_id)
+
+
+def send_booking_cancellation_email_to_user_task(booking_id: str):
+    return EmailService.send_booking_cancellation_email_to_user(booking_id)
+
+
 # ==================CELERY TASKS=========================================
 @celery_app.task()
 def delete_unregistered_user_after_security_token_expired(user_id):

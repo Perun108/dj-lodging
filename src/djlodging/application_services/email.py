@@ -51,3 +51,33 @@ class EmailService:
             date_to=booking.date_to.strftime("%b %d, %Y"),
             reference_code=booking.reference_code,
         )
+
+    @classmethod
+    def send_booking_cancellation_email_to_user(cls, booking_id: str):
+        booking = BookingRepository.get_by_id(booking_id)
+        user = booking.user
+        return email_provider.send_booking_cancellation_email_to_user(
+            email=user.email,
+            username=user.username,
+            lodging_name=booking.lodging.name,
+            city=booking.lodging.city.name,
+            date_from=booking.date_from.strftime("%b %d, %Y"),
+            date_to=booking.date_to.strftime("%b %d, %Y"),
+            reference_code=booking.reference_code,
+        )
+
+    @classmethod
+    def send_booking_cancellation_email_to_owner(cls, booking_id: str):
+        booking = BookingRepository.get_by_id(booking_id)
+        user = booking.user
+        owner = booking.lodging.owner
+        return email_provider.send_booking_cancellation_email_to_owner(
+            email=owner.email,
+            owner_name=owner.username,
+            username=user.username,
+            lodging_name=booking.lodging.name,
+            city=booking.lodging.city.name,
+            date_from=booking.date_from.strftime("%b %d, %Y"),
+            date_to=booking.date_to.strftime("%b %d, %Y"),
+            reference_code=booking.reference_code,
+        )
