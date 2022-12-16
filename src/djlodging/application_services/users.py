@@ -73,8 +73,8 @@ class UserService:
     def send_forgot_password_link(cls, email: str) -> None:
         try:
             user = UserRepository.get_by_email(email)
-        except User.DoesNotExist:
-            raise UserDoesNotExist(message=WRONG_EMAIL_MESSAGE)
+        except User.DoesNotExist as exc:
+            raise UserDoesNotExist(message=WRONG_EMAIL_MESSAGE) from exc
         security_token = uuid4()
         UserRepository.update(user, security_token=security_token)
         send_change_password_link_task(user.email, security_token)

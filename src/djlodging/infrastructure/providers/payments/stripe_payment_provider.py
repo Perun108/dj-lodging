@@ -48,8 +48,8 @@ class StripePaymentProvider(BasePaymentProvider):
             return stripe.Refund.create(
                 payment_intent=payment_intent_id, amount=amount_in_cents, metadata=metadata
             )
-        except InvalidRequestError as ex:
-            raise PaymentProviderException(message=ex.user_message)
+        except InvalidRequestError as exc:
+            raise PaymentProviderException(message=exc.user_message) from exc
 
 
 @webhooks.handler("payment_intent.succeeded")
