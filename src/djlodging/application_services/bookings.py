@@ -72,7 +72,7 @@ class BookingService:
         if actor != booking.user:
             raise PermissionDenied
 
-        elif booking.payment_expiration_time < now():
+        if booking.payment_expiration_time < now():
             delete_expired_unpaid_booking.apply_async(args=[booking_id])
             raise PaymentExpirationTimePassed
 

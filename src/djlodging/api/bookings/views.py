@@ -1,3 +1,5 @@
+"""Bookings views (APIs)"""
+
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import (
     OpenApiParameter,
@@ -22,6 +24,10 @@ from djlodging.domain.bookings.repository import BookingRepository
 
 
 class BookingViewSet(ViewSet):
+    """
+    ViewSet for bookings management by admin.
+    """
+
     @extend_schema(
         request=None,
         responses={200: BookingListPaginatedOutputSerializer},
@@ -138,6 +144,9 @@ class BookingViewSet(ViewSet):
         ],
     )
     def list(self, request):
+        """
+        List all bookings filtered by query_params.
+        """
         bookings = BookingService.get_filtered_paginated_list(
             actor=request.user, query_params=request.query_params
         )
@@ -156,12 +165,19 @@ class BookingViewSet(ViewSet):
         summary="Retrieve a booking details by admin",
     )
     def retrieve(self, request, pk):
+        """
+        Get a booking's details.
+        """
         booking = BookingService.retrieve(actor=request.user, booking_id=pk)
         output_serializer = BookingOutputSerializer(booking)
         return Response(data=output_serializer.data, status=HTTP_200_OK)
 
 
 class MyBookingViewSet(ViewSet):
+    """
+    ViewSet for user's own bookings management.
+    """
+
     @extend_schema(
         request=BookingCreateInputSerializer,
         responses={
@@ -171,6 +187,9 @@ class MyBookingViewSet(ViewSet):
         summary="Book a lodging",
     )
     def create(self, request):
+        """
+        Book a lodging for oneself.
+        """
         input_serializer = BookingCreateInputSerializer(data=request.data)
         input_serializer.is_valid(raise_exception=True)
         booking = BookingService.create(user=request.user, **input_serializer.validated_data)
@@ -207,6 +226,9 @@ class MyBookingViewSet(ViewSet):
     )
     @action(detail=True, methods=["post"])
     def pay(self, request, pk):
+        """
+        Pay for one's own booking.
+        """
         input_serializer = BookingPayInputSerializer(data=request.data)
         input_serializer.is_valid(raise_exception=True)
         client_secret = BookingService.pay(
@@ -227,6 +249,9 @@ class MyBookingViewSet(ViewSet):
     )
     @action(detail=True, methods=["post"])
     def cancel(self, request, pk):
+        """
+        Cancel one's own booking.
+        """
         booking = BookingService.cancel(actor=request.user, booking_id=pk)
         output_serializer = BookingOutputSerializer(booking)
         return Response(output_serializer.data, status=HTTP_200_OK)
