@@ -1,9 +1,7 @@
 from django.conf import settings
 from sendgrid import SendGridAPIClient
 
-from djlodging.infrastructure.providers.email.base_email_provider import (
-    BaseEmailProvider,
-)
+from djlodging.infrastructure.providers.email.base_email_provider import BaseEmailProvider
 
 
 # pylint: disable=too-many-instance-attributes
