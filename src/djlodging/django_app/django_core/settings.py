@@ -220,7 +220,7 @@ CELERY_BROKER_URL = env.str("CELERY_BROKER_URL")
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 CELERY_BEAT_SCHEDULE = {
     "delete_users_with_unfinished_registration": {
-        "task": "djlodging.infrastructure.jobs.celery_tasks.delete_users_with_unfinished_registration",  # noqa
+        "task": "djlodging.infrastructure.jobs.celery_tasks.delete_users_with_unfinished_registration",  # noqa pylint: disable=C0301
         "schedule": timedelta(
             hours=env.int(
                 "CELERY_BEAT_DELETE_USERS_WITH_UNFINISHED_REGISTRATION_INTERVAL", default=24

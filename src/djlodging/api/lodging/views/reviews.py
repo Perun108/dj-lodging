@@ -47,7 +47,7 @@ class ReviewViewSet(ViewSet):
         },
         summary="Get a review's details by any user",
     )
-    def retrieve(self, request, lodging_pk, pk):
+    def retrieve(self, request, lodging_pk, pk):  # pylint:disable=unused-argument
         review = ReviewRepository.get_by_id(review_id=pk)
         output_serializer = ReviewOutputSerializer(review)
         return Response(output_serializer.data, status=HTTP_200_OK)

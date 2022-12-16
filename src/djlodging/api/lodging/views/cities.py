@@ -53,7 +53,7 @@ class CityViewSet(ViewSet):
         },
         summary="Get city's details by admin",
     )
-    def retrieve(self, request, country_pk, pk):
+    def retrieve(self, request, country_pk, pk):  # pylint:disable=unused-argument
         city = CityService.retrieve(actor=request.user, city_id=pk)
         output_serializer = CityOutputSerializer(city)
         return Response(data=output_serializer.data, status=HTTP_200_OK)
@@ -72,7 +72,7 @@ class CityViewSet(ViewSet):
         },
         summary="Edit city's details by admin",
     )
-    def update(self, request, country_pk, pk):
+    def update(self, request, country_pk, pk):  # pylint:disable=unused-argument
         incoming_data = CityUpdateInputSerializer(data=request.data)
         incoming_data.is_valid(raise_exception=True)
         city = CityService.update(actor=request.user, city_id=pk, **incoming_data.validated_data)
@@ -116,7 +116,7 @@ class CityViewSet(ViewSet):
         },
         summary="Delete a city from the DB by admin",
     )
-    def destroy(self, request, country_pk, pk):
+    def destroy(self, request, country_pk, pk):  # pylint:disable=unused-argument
         incoming_data = CityUpdateInputSerializer(data=request.data)
         incoming_data.is_valid(raise_exception=True)
         CityService.delete(actor=request.user, city_id=pk)

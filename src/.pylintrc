@@ -154,7 +154,12 @@ disable=raw-checker-failed,
         useless-suppression,
         deprecated-pragma,
         use-symbolic-message-instead,
-        C0114,C0115,C0116,W0223,C0103,W0707
+      #   Added by kosperun later:
+        too-many-arguments,
+        too-few-public-methods,
+        abstract-method, # I get too many of these warnings in Serializers.
+        invalid-name, # Strangely it warns about DRF's 'pk' arguments.
+        C0114,C0115,C0116
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

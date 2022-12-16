@@ -6,6 +6,7 @@ from djlodging.infrastructure.providers.email.base_email_provider import (
 )
 
 
+# pylint: disable=too-many-instance-attributes
 class SendgridEmailProvider(BaseEmailProvider):
     """Sendgrid Email Provider class"""
 
