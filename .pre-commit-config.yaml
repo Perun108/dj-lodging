@@ -42,7 +42,7 @@ repos:
         pass_filenames: false
         always_run: true
         stages: [push]
-        args: ["DJANGO_SETTINGS_MODULE", "djlodging.django_app.django_core.settings"]
+        args: ["--ds=djlodging.django_app.django_core.settings"]
 
 # sets up .pre-commit-ci.yaml to ensure pre-commit dependencies stay up to date
 ci:
