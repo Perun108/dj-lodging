@@ -39,10 +39,11 @@ repos:
         name: pytest-check
         entry: pytest
         language: system
+        args: ["--ds=djlodging.django_app.django_core.settings"]
         pass_filenames: false
         always_run: true
+        verbose: true
         stages: [push]
-        args: ["--ds=djlodging.django_app.django_core.settings"]
 
 # sets up .pre-commit-ci.yaml to ensure pre-commit dependencies stay up to date
 ci:
