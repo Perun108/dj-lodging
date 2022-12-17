@@ -33,7 +33,7 @@ static/
 *.coverage
 htmlcov/
 .env
-pylint_report
+*pylint_report
 .github/
 djlodging-key.pem
 # Elastic Beanstalk Files
