@@ -40,8 +40,8 @@ repos:
         entry: pytest
         language: system
         pass_filenames: false
-        always_run: true
         stages: [push]
+        # always_run: true
 
 # sets up .pre-commit-ci.yaml to ensure pre-commit dependencies stay up to date
 ci:
