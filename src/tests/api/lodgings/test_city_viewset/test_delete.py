@@ -1,11 +1,7 @@
 import pytest
 from faker import Faker
 from rest_framework.reverse import reverse
-from rest_framework.status import (
-    HTTP_204_NO_CONTENT,
-    HTTP_401_UNAUTHORIZED,
-    HTTP_403_FORBIDDEN,
-)
+from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN
 from rest_framework.test import APIClient
 
 from djlodging.domain.lodgings.models import City

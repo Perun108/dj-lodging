@@ -9,10 +9,7 @@ from djlodging.application_services.exceptions import RegistrationTimePassed
 from djlodging.domain.core.base_exceptions import DjLodgingValidationError
 from djlodging.domain.users.constants import WRONG_EMAIL_MESSAGE
 from djlodging.domain.users.exceptions import UserDoesNotExist
-from djlodging.domain.users.repository import (
-    PaymentProviderUserRepository,
-    UserRepository,
-)
+from djlodging.domain.users.repository import PaymentProviderUserRepository, UserRepository
 from djlodging.infrastructure.jobs.celery_tasks import (
     delete_unregistered_user_after_security_token_expired,
     send_change_email_link_task,

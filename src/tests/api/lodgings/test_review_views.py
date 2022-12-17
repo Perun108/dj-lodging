@@ -12,10 +12,7 @@ from rest_framework.status import (
     HTTP_403_FORBIDDEN,
 )
 
-from djlodging.application_services.exceptions import (
-    WrongBookingReferenceCode,
-    WrongLodgingError,
-)
+from djlodging.application_services.exceptions import WrongBookingReferenceCode, WrongLodgingError
 from djlodging.domain.bookings.models import Booking
 from djlodging.domain.lodgings.models.review import Review
 from tests.domain.bookings.factories import BookingFactory

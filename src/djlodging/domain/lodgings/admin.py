@@ -1,12 +1,6 @@
 from django.contrib import admin
 
-from djlodging.domain.lodgings.models import (
-    City,
-    Country,
-    Lodging,
-    LodgingImage,
-    Review,
-)
+from djlodging.domain.lodgings.models import City, Country, Lodging, LodgingImage, Review
 
 
 class CountryAdmin(admin.ModelAdmin):

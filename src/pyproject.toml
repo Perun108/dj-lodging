@@ -27,17 +27,17 @@ redis = "^4.3.5"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.2"
+pytest-cov = "^3.0.0"
 pytest-django = "^4.5.2"
+pytest-mock = "^3.8.2"
 pylint-django = "^2.5.3"
 django-silk = "^5.0.1"
 factory-boy = "^3.2.1"
-flake8 = "^5.0.4"
-pre-commit = "^2.20.0"
 Faker = "^14.0.0"
-ipython = "^8.4.0"
-pytest-cov = "^3.0.0"
-pytest-mock = "^3.8.2"
+flake8 = "^5.0.4"
 flake8-django = "^1.1.5"
+pre-commit = "^2.20.0"
+ipython = "^8.4.0"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -47,6 +47,18 @@ DJANGO_SETTINGS_MODULE = "djlodging.django_app.django_core.settings"
 
 [tool.poetry.scripts]
 manage = 'djlodging.django_app.manage:main'
+
+[tool.black]
+line_length=99
+
+[tool.isort]
+profile = "black"
+line_length = 99
+include_trailing_comma = "true"
+multi_line_output = 3
+force_grid_wrap=0
+use_parentheses="true"
+# src_paths = ["isort", "test"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

@@ -5,12 +5,8 @@ from django.conf import settings
 from djstripe import webhooks
 from stripe.error import InvalidRequestError
 
-from djlodging.infrastructure.providers.payments.base_payment_provider import (
-    BasePaymentProvider,
-)
-from djlodging.infrastructure.providers.payments.exceptions import (
-    PaymentProviderException,
-)
+from djlodging.infrastructure.providers.payments.base_payment_provider import BasePaymentProvider
+from djlodging.infrastructure.providers.payments.exceptions import PaymentProviderException
 
 stripe.api_key = settings.STRIPE_API_KEY
 
