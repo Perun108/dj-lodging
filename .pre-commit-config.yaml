@@ -41,7 +41,7 @@ repos:
         language: system
         pass_filenames: false
         stages: [push]
-        # always_run: true
+        always_run: true
 
 # sets up .pre-commit-ci.yaml to ensure pre-commit dependencies stay up to date
 ci:
