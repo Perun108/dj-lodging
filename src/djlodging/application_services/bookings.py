@@ -9,10 +9,12 @@ from djlodging.application_services.exceptions import (
     LodgingAlreadyBookedError,
     PaymentExpirationTimePassed,
 )
+from djlodging.application_services.helpers import check_staff_permissions
 from djlodging.application_services.payments import PaymentService
 from djlodging.domain.bookings.models import Booking
 from djlodging.domain.bookings.repository import BookingRepository
 from djlodging.domain.core.base_exceptions import DjLodgingValidationError
+from djlodging.domain.lodgings.models.lodging import Lodging
 from djlodging.domain.lodgings.repositories import LodgingRepository
 from djlodging.domain.users.models import User
 from djlodging.infrastructure.jobs.celery_tasks import (
@@ -26,7 +28,7 @@ from djlodging.infrastructure.jobs.celery_tasks import (
 
 class BookingService:
     @classmethod
-    def _validate_dates(cls, date_from, date_to):
+    def _validate_dates(cls, date_from: date, date_to: date) -> None:
         current_date = now().date()
         if date_from >= date_to:
             raise DjLodgingValidationError("Date_to must be greater than date_from")
@@ -34,7 +36,9 @@ class BookingService:
             raise DjLodgingValidationError("The dates are invalid")
 
     @classmethod
-    def _check_lodging_availability(cls, lodging_id: UUID, date_from: date, date_to: date):
+    def _check_lodging_availability(
+        cls, lodging_id: UUID, date_from: date, date_to: date
+    ) -> Lodging:
         lodging = LodgingRepository.get_by_id(lodging_id)
         for booking in lodging.booking.all():
             if booking.status != Booking.Status.CANCELED and (
@@ -61,12 +65,13 @@ class BookingService:
 
     @classmethod
     def retrieve(cls, actor: User, booking_id: UUID) -> Booking:
-        if not actor.is_staff:
-            raise PermissionDenied
+        check_staff_permissions(actor)
         return BookingRepository.get_by_id(booking_id)
 
     @classmethod
-    def pay(cls, actor, booking_id: UUID, currency="usd", capture_method="automatic") -> str:
+    def pay(
+        cls, actor, booking_id: UUID, currency: str = "usd", capture_method: str = "automatic"
+    ) -> str:
         booking = cls._validate_booking_for_payment(actor, booking_id)
         metadata = {"booking_id": booking.id}
         payment_intent = PaymentService.create_payment(
@@ -88,12 +93,12 @@ class BookingService:
         return booking
 
     @classmethod
-    def _set_booking_payment_intent_id(cls, booking, payment_intent_id: str):
+    def _set_booking_payment_intent_id(cls, booking: Booking, payment_intent_id: str) -> None:
         booking.payment_intent_id = payment_intent_id
         BookingRepository.save(booking)
 
     @classmethod
-    def confirm(cls, metadata):
+    def confirm(cls, metadata: dict) -> None:
         booking = BookingRepository.get_by_id(metadata["booking_id"])
         BookingRepository.change_status(booking, new_status=Booking.Status.PAID)
         send_booking_confirmation_email_to_user_task(str(booking.id))
@@ -123,7 +128,6 @@ class BookingService:
         return booking
 
     @classmethod
-    def get_filtered_paginated_list(cls, actor: User, query_params) -> dict:
-        if not actor.is_staff:
-            raise PermissionDenied
+    def get_filtered_paginated_list(cls, actor: User, query_params: dict) -> dict:
+        check_staff_permissions(actor)
         return BookingRepository.get_filtered_list(query_params)

@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from djlodging.domain.core.base_exceptions import DjLodgingValidationError
 from djlodging.domain.users.models import User
 from djlodging.infrastructure.providers.payments import payment_provider
@@ -6,7 +8,12 @@ from djlodging.infrastructure.providers.payments import payment_provider
 class PaymentService:
     @classmethod
     def create_payment(
-        cls, user: User, price, metadata, currency="usd", capture_method="automatic"
+        cls,
+        user: User,
+        price: Decimal,
+        metadata: dict,
+        currency: str = "usd",
+        capture_method: str = "automatic",
     ):
         if not hasattr(user, "payment_user"):
             raise DjLodgingValidationError(
@@ -24,10 +31,10 @@ class PaymentService:
         return payment_intent
 
     @classmethod
-    def create_refund(cls, payment_intent_id, price, metadata):
-        payment_intent = payment_provider.create_refund(
+    def create_refund(cls, payment_intent_id: str, price: Decimal, metadata: dict):
+        refund = payment_provider.create_refund(
             payment_intent_id=payment_intent_id,
             amount=price,
             metadata=metadata,
         )
-        return payment_intent
+        return refund
