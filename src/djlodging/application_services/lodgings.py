@@ -28,7 +28,7 @@ from djlodging.domain.users.models import User
 
 class CountryService:
     @classmethod
-    def create(cls, *, actor, name: str) -> Country:
+    def create(cls, *, actor: User, name: str) -> Country:
         # Check permissions to prevent unauthorized actions that circumvents API level permissions
         check_staff_permissions(actor)
         country = Country(name=name)
@@ -36,7 +36,7 @@ class CountryService:
         return country
 
     @classmethod
-    def retrieve(cls, *, actor, country_id: UUID) -> Country:
+    def retrieve(cls, *, actor: User, country_id: UUID) -> Country:
         # Check permissions to prevent unauthorized actions that circumvents API level permissions
         check_staff_permissions(actor)
         return CountryRepository.get_by_id(country_id=country_id)
@@ -50,7 +50,7 @@ class CountryService:
         return CountryRepository.get_list(query_params)
 
     @classmethod
-    def update(cls, *, actor, country_id: UUID, **kwargs) -> Country:
+    def update(cls, *, actor: User, country_id: UUID, **kwargs) -> Country:
         # Check permissions to prevent unauthorized actions that circumvents API level permissions
         check_staff_permissions(actor)
         country = CountryRepository.get_by_id(country_id=country_id)
@@ -60,7 +60,7 @@ class CountryService:
         return country
 
     @classmethod
-    def delete(cls, *, actor, country_id: UUID) -> tuple:
+    def delete(cls, *, actor: User, country_id: UUID) -> tuple:
         # Check permissions to prevent unauthorized actions that circumvents API level permissions
         check_staff_permissions(actor)
         return CountryRepository.delete(country_id)

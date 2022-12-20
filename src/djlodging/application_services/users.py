@@ -1,14 +1,17 @@
 from uuid import UUID, uuid4
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
-from django.core.exceptions import PermissionDenied
 from django.utils.timezone import now, timedelta
 
 from djlodging.application_services.exceptions import RegistrationTimePassed
+from djlodging.application_services.helpers import check_staff_permissions
 from djlodging.domain.core.base_exceptions import DjLodgingValidationError
 from djlodging.domain.users.constants import WRONG_EMAIL_MESSAGE
 from djlodging.domain.users.exceptions import UserDoesNotExist
+from djlodging.domain.users.models import PaymentProviderUser
+from djlodging.domain.users.models import User as UserModel
 from djlodging.domain.users.repository import PaymentProviderUserRepository, UserRepository
 from djlodging.infrastructure.jobs.celery_tasks import (
     delete_unregistered_user_after_security_token_expired,
@@ -18,12 +21,12 @@ from djlodging.infrastructure.jobs.celery_tasks import (
 )
 from djlodging.infrastructure.providers.payments import payment_provider
 
-from ..domain.users.models import PaymentProviderUser, User
+User = get_user_model()
 
 
 class UserService:
     @classmethod
-    def create(cls, **kwargs):
+    def create(cls, **kwargs) -> UserModel:
         password = kwargs.pop("password")
         user = User(**kwargs)
         validate_password(password, user)
@@ -36,7 +39,7 @@ class UserService:
         return user
 
     @classmethod
-    def confirm_registration(cls, user_id: UUID, security_token: UUID) -> User:
+    def confirm_registration(cls, user_id: UUID, security_token: UUID) -> UserModel:
         user = UserRepository.get_user_by_id_and_security_token(user_id, security_token)
 
         if user.security_token_expiration_time < now():
@@ -50,7 +53,9 @@ class UserService:
         return user
 
     @classmethod
-    def make_user_partner(cls, user, first_name, last_name, phone_number):
+    def make_user_partner(
+        cls, user: UserModel, first_name: str, last_name: str, phone_number: str
+    ) -> UserModel:
         user.first_name = first_name
         user.last_name = last_name
         user.phone_number = phone_number
@@ -59,7 +64,7 @@ class UserService:
         return user
 
     @classmethod
-    def change_password(cls, user: User, old_password: str, new_password: str) -> User:
+    def change_password(cls, user: UserModel, old_password: str, new_password: str) -> UserModel:
         if not user.check_password(old_password):
             raise DjLodgingValidationError("Wrong password!")
         user.set_password(new_password)
@@ -84,7 +89,7 @@ class UserService:
         UserRepository.save(user)
 
     @classmethod
-    def send_change_email_link(cls, user: User, new_email: str) -> None:
+    def send_change_email_link(cls, user: UserModel, new_email: str) -> None:
         security_token = uuid4()
         UserRepository.update(user, security_token=security_token)
         send_change_email_link_task(new_email, security_token)
@@ -97,15 +102,13 @@ class UserService:
         UserRepository.save(user)
 
     @classmethod
-    def update_by_admin(cls, actor: User, user_id: UUID, **kwargs) -> User:
-        if not actor.is_staff:
-            raise PermissionDenied
-
+    def update_by_admin(cls, actor: UserModel, user_id: UUID, **kwargs) -> UserModel:
+        check_staff_permissions(actor)
         user = UserRepository.get_by_id(user_id)
         return cls.update(user, **kwargs)
 
     @classmethod
-    def update(cls, user: User, **kwargs) -> User:
+    def update(cls, user: UserModel, **kwargs) -> UserModel:
         for field, value in kwargs.items():
             setattr(user, field, value)
         UserRepository.save(user)
@@ -114,7 +117,7 @@ class UserService:
 
 class PaymentProviderUserService:
     @classmethod
-    def create(cls, user: User) -> PaymentProviderUser:
+    def create(cls, user: UserModel) -> PaymentProviderUser:
         customer = payment_provider.create_payment_user(email=user.email)
         payment_provider_user = PaymentProviderUser(user=user, customer_id=customer.id)
         PaymentProviderUserRepository.save(payment_provider_user)

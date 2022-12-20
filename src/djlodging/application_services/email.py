@@ -8,7 +8,7 @@ from djlodging.infrastructure.providers.email import email_provider
 
 class EmailService:
     @classmethod
-    def send_confirmation_link(cls, email, security_token):
+    def send_confirmation_link(cls, email: str, security_token: UUID):
         link = f"{settings.DOMAIN}/sign-up?token={str(security_token)}&email={email}"
         return email_provider.send_confirmation_link(email=email, link=link)
 

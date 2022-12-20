@@ -1,4 +1,5 @@
-from typing import Dict, List, Union
+from datetime import date
+from typing import Dict, List, Optional, Union
 from uuid import UUID
 
 from django.db.models import Avg, Case, Q, QuerySet, Value, When
@@ -93,28 +94,34 @@ class LodgingRepository:
         if not (country or city):
             raise DjLodgingValidationError("You must provide either a city or a country!")
 
-        lodging_filter = Q(
-            number_of_people__gte=number_of_people,
-            number_of_rooms__exact=number_of_rooms,
+        lodging_filter = cls._construct_lodging_filter(
+            number_of_people, number_of_rooms, kind, country, city
         )
+        query_expression = cls._generate_query_expression_for_filter(
+            date_from, date_to, lodging_filter
+        )
+        filtered_lodgings = cls._get_filtered_lodgings(available_only, query_expression)
+        # Add average_rating to each lodging
+        result = cls._annotate_lodgings_with_average_ratings(filtered_lodgings).distinct()
+        return result
 
-        if city:
-            lodging_filter |= Q(city__name__exact=city)
-        elif country:
-            lodging_filter |= Q(country__name__exact=country)
-
-        if kind:
-            lodging_filter |= Q(kind__exact=kind)
-
+    @classmethod
+    def _generate_query_expression_for_filter(
+        cls, date_from: date, date_to: date, lodging_filter: Q
+    ) -> Q:
         filtered_lodgings = Lodging.objects.filter(lodging_filter)
         filtered_lodgings_ids_list = filtered_lodgings.values_list("id", flat=True)
-
         query_expression = (
             ~Q(booking__lodging__id__in=filtered_lodgings_ids_list)
             | Q(id__in=filtered_lodgings_ids_list) & Q(booking__date_to__lte=date_from)
             | Q(id__in=filtered_lodgings_ids_list) & Q(booking__date_from__gte=date_to)
         )
+        return query_expression
 
+    @classmethod
+    def _get_filtered_lodgings(
+        cls, available_only: bool, query_expression: Q
+    ) -> QuerySet[Lodging]:
         if available_only:
             # TODO: Filter for Bookings status!
             filtered_lodgings = Lodging.objects.filter(query_expression)
@@ -128,22 +135,53 @@ class LodgingRepository:
                     default=Value(False),
                 )
             )
-        # Add average_rating to each lodging
-        result = cls._annotate_lodgings_with_average_ratings(filtered_lodgings).distinct()
-        return result
+
+        return filtered_lodgings
 
     @classmethod
-    def get_paginated_filtered_list(cls, query_params):
+    def _construct_lodging_filter(
+        cls,
+        number_of_people: int,
+        number_of_rooms: int,
+        kind: str,
+        country: Optional[str],
+        city: Optional[str],
+    ) -> Q:
+        lodging_filter = Q(
+            number_of_people__gte=number_of_people,
+            number_of_rooms__exact=number_of_rooms,
+        )
+
+        if city and country:
+            lodging_filter |= Q(city__name__exact=city, country__name__exact=country)
+        elif country:
+            lodging_filter |= Q(country__name__exact=country)
+        else:
+            raise DjLodgingValidationError(
+                "You must provide a city name with a country name! "
+                "Or at least the name of the country."
+            )
+
+        if kind:
+            lodging_filter |= Q(kind__exact=kind)
+        return lodging_filter
+
+    @classmethod
+    def _annotate_lodgings_with_average_ratings(
+        cls, filtered_lodgings: QuerySet
+    ) -> QuerySet[Lodging]:
+        return filtered_lodgings.annotate(average_rating=Round(Avg("reviews__score"), precision=1))
+
+    @classmethod
+    def get_paginated_filtered_list(
+        cls, query_params: dict
+    ) -> Dict[str, Union[int, List[Lodging]]]:
         lodgings = cls.get_filtered_list(query_params)
         sorted_lodgings = sort_queryset(lodgings, query_params)
         return paginate_queryset(sorted_lodgings, query_params)
 
     @classmethod
-    def _annotate_lodgings_with_average_ratings(cls, filtered_lodgings: QuerySet):
-        return filtered_lodgings.annotate(average_rating=Round(Avg("reviews__score"), precision=1))
-
-    @classmethod
-    def retrieve_lodging_with_average_rating(cls, lodging_id: UUID):
+    def retrieve_lodging_with_average_rating(cls, lodging_id: UUID) -> Optional[Lodging]:
         lodging = Lodging.objects.filter(id=lodging_id)
         return cls._annotate_lodgings_with_average_ratings(lodging).first()
 

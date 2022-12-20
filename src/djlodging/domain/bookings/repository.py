@@ -1,4 +1,5 @@
 from typing import Dict, List, Optional, Union
+from uuid import UUID
 
 from django.db.models import QuerySet
 from django.utils.timezone import now
@@ -31,7 +32,7 @@ class BookingRepository:
         return paginate_queryset(sorted_bookings, query_params)
 
     @classmethod
-    def get_by_id(cls, booking_id):
+    def get_by_id(cls, booking_id: UUID) -> Booking:
         return Booking.objects.get(id=booking_id)
 
     @classmethod
@@ -53,7 +54,7 @@ class BookingRepository:
         return paginate_queryset(sorted_qs, query_params)
 
     @classmethod
-    def delete_by_id(cls, booking_id) -> tuple:
+    def delete_by_id(cls, booking_id: UUID) -> tuple:
         booking = cls.get_by_id(booking_id)
         return booking.delete()
 
