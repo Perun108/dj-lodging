@@ -1,4 +1,5 @@
 from decimal import Decimal
+from uuid import UUID
 
 import stripe
 from django.conf import settings
@@ -17,8 +18,14 @@ class StripePaymentProvider(BasePaymentProvider):
         return stripe.Customer.create(email=email)
 
     def create_payment_intent(
-        self, customer_id, amount, currency, metadata, capture_method, receipt_email
-    ):
+        self,
+        customer_id: UUID,
+        amount: Decimal,
+        currency: str,
+        metadata: dict,
+        capture_method: str,
+        receipt_email: str,
+    ) -> stripe.PaymentIntent:
         amount_in_cents = int(amount * 100)
         payment_intent = stripe.PaymentIntent.create(
             amount=amount_in_cents,
@@ -30,7 +37,7 @@ class StripePaymentProvider(BasePaymentProvider):
         )
         return payment_intent
 
-    def get_payment_intent(self, payment_intent_id: str):
+    def get_payment_intent(self, payment_intent_id: str) -> stripe.PaymentIntent:
         return stripe.PaymentIntent.retrieve(id=payment_intent_id)
 
     def create_refund(
@@ -38,7 +45,7 @@ class StripePaymentProvider(BasePaymentProvider):
         amount: Decimal,
         payment_intent_id: str,
         metadata: dict,
-    ):
+    ) -> stripe.Refund:
         amount_in_cents = int(amount * 100)
         try:
             return stripe.Refund.create(

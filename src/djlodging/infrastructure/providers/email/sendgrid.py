@@ -43,7 +43,7 @@ class SendgridEmailProvider(BaseEmailProvider):
         *,
         email: str,
         link: str,
-    ) -> dict:
+    ):
         data = {
             "personalizations": [
                 {
@@ -64,7 +64,7 @@ class SendgridEmailProvider(BaseEmailProvider):
         *,
         email: str,
         link: str,
-    ) -> dict:
+    ):
         data = {
             "personalizations": [
                 {
@@ -80,7 +80,7 @@ class SendgridEmailProvider(BaseEmailProvider):
         }
         return self.sendgrid_api.client.mail.send.post(request_body=data)
 
-    def send_forgot_password_email(self, *, email: str, username: str, link: str) -> dict:
+    def send_forgot_password_email(self, *, email: str, username: str, link: str):
         data = {
             "personalizations": [
                 {
@@ -93,7 +93,7 @@ class SendgridEmailProvider(BaseEmailProvider):
         }
         return self.sendgrid_api.client.mail.send.post(request_body=data)
 
-    def send_change_email_link(self, *, email: str, link: str) -> dict:
+    def send_change_email_link(self, *, email: str, link: str):
         data = {
             "personalizations": [
                 {
@@ -116,7 +116,7 @@ class SendgridEmailProvider(BaseEmailProvider):
         date_from: str,
         date_to: str,
         reference_code: str,
-    ) -> dict:
+    ):
         data = {
             "personalizations": [
                 {
@@ -148,7 +148,7 @@ class SendgridEmailProvider(BaseEmailProvider):
         date_from: str,
         date_to: str,
         reference_code: str,
-    ) -> dict:
+    ):
         data = {
             "personalizations": [
                 {
@@ -179,7 +179,7 @@ class SendgridEmailProvider(BaseEmailProvider):
         city: str,
         date_from: str,
         date_to: str,
-    ) -> dict:
+    ):
         data = {
             "personalizations": [
                 {
@@ -210,7 +210,7 @@ class SendgridEmailProvider(BaseEmailProvider):
         date_from: str,
         date_to: str,
         reference_code: str,
-    ) -> dict:
+    ):
         data = {
             "personalizations": [
                 {

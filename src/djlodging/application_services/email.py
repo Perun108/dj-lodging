@@ -23,7 +23,7 @@ class EmailService:
         return email_provider.send_change_email_link(email=new_email, link=link)
 
     @classmethod
-    def send_booking_confirmation_email_to_user(cls, booking_id: str):
+    def send_booking_confirmation_email_to_user(cls, booking_id: UUID):
         booking = BookingRepository.get_by_id(booking_id)
         user = booking.user
         return email_provider.send_booking_confirmation_email_to_user(
@@ -37,7 +37,7 @@ class EmailService:
         )
 
     @classmethod
-    def send_booking_confirmation_email_to_owner(cls, booking_id: str):
+    def send_booking_confirmation_email_to_owner(cls, booking_id: UUID):
         booking = BookingRepository.get_by_id(booking_id)
         user = booking.user
         owner = booking.lodging.owner
@@ -53,7 +53,7 @@ class EmailService:
         )
 
     @classmethod
-    def send_booking_cancellation_email_to_user(cls, booking_id: str):
+    def send_booking_cancellation_email_to_user(cls, booking_id: UUID):
         booking = BookingRepository.get_by_id(booking_id)
         user = booking.user
         return email_provider.send_booking_cancellation_email_to_user(
@@ -66,7 +66,7 @@ class EmailService:
         )
 
     @classmethod
-    def send_booking_cancellation_email_to_owner(cls, booking_id: str):
+    def send_booking_cancellation_email_to_owner(cls, booking_id: UUID):
         booking = BookingRepository.get_by_id(booking_id)
         user = booking.user
         owner = booking.lodging.owner

@@ -19,30 +19,30 @@ def send_change_email_link_task(new_email: str, token: UUID):
     return EmailService.send_change_email_link(new_email=new_email, token=token)
 
 
-def send_booking_confirmation_email_to_user_task(booking_id: str):
+def send_booking_confirmation_email_to_user_task(booking_id: UUID):
     return EmailService.send_booking_confirmation_email_to_user(booking_id)
 
 
-def send_booking_confirmation_email_to_owner_task(booking_id: str):
+def send_booking_confirmation_email_to_owner_task(booking_id: UUID):
     return EmailService.send_booking_confirmation_email_to_owner(booking_id)
 
 
-def send_booking_cancellation_email_to_owner_task(booking_id: str):
+def send_booking_cancellation_email_to_owner_task(booking_id: UUID):
     return EmailService.send_booking_cancellation_email_to_owner(booking_id)
 
 
-def send_booking_cancellation_email_to_user_task(booking_id: str):
+def send_booking_cancellation_email_to_user_task(booking_id: UUID):
     return EmailService.send_booking_cancellation_email_to_user(booking_id)
 
 
 # ==================CELERY TASKS=========================================
 @celery_app.task()
-def delete_unregistered_user_after_security_token_expired(user_id):
+def delete_unregistered_user_after_security_token_expired(user_id: UUID):
     UserRepository.delete_by_id(user_id)
 
 
 @celery_app.task()
-def delete_expired_unpaid_booking(booking_id):
+def delete_expired_unpaid_booking(booking_id: UUID):
     BookingRepository.delete_by_id(booking_id)
 
 
