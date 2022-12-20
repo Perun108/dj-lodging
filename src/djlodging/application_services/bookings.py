@@ -67,8 +67,17 @@ class BookingService:
 
     @classmethod
     def pay(cls, actor, booking_id: UUID, currency="usd", capture_method="automatic") -> str:
-        booking = BookingRepository.get_by_id(booking_id)
+        booking = cls._validate_booking_for_payment(actor, booking_id)
+        metadata = {"booking_id": booking.id}
+        payment_intent = PaymentService.create_payment(
+            actor, booking.lodging.price, metadata, currency, capture_method
+        )
+        cls._set_booking_payment_intent_id(booking, payment_intent.id)
+        return payment_intent.client_secret
 
+    @classmethod
+    def _validate_booking_for_payment(cls, actor: User, booking_id: UUID) -> Booking:
+        booking = BookingRepository.get_by_id(booking_id)
         if actor != booking.user:
             raise PermissionDenied
 
@@ -76,13 +85,7 @@ class BookingService:
             delete_expired_unpaid_booking.apply_async(args=[booking_id])
             raise PaymentExpirationTimePassed
 
-        metadata = {"booking_id": booking.id}
-
-        payment_intent = PaymentService.create_payment(
-            actor, booking.lodging.price, metadata, currency, capture_method
-        )
-        cls._set_booking_payment_intent_id(booking, payment_intent.id)
-        return payment_intent.client_secret
+        return booking
 
     @classmethod
     def _set_booking_payment_intent_id(cls, booking, payment_intent_id: str):
@@ -98,11 +101,7 @@ class BookingService:
 
     @classmethod
     def cancel(cls, actor: User, booking_id: UUID) -> Booking:
-        booking = BookingRepository.get_by_id(booking_id)
-        if actor != booking.user:
-            raise PermissionDenied
-        if booking.status != Booking.Status.PAID:
-            raise DjLodgingValidationError("This booking cannot be canceled!")
+        booking = cls._validate_booking_for_cancellation(actor, booking_id)
 
         PaymentService.create_refund(
             payment_intent_id=booking.payment_intent_id,
@@ -112,6 +111,15 @@ class BookingService:
         booking = BookingRepository.change_status(booking, new_status=Booking.Status.CANCELED)
         send_booking_cancellation_email_to_owner_task(str(booking.id))
         send_booking_cancellation_email_to_user_task(str(booking.id))
+        return booking
+
+    @classmethod
+    def _validate_booking_for_cancellation(cls, actor: User, booking_id: UUID) -> Booking:
+        booking = BookingRepository.get_by_id(booking_id)
+        if actor != booking.user:
+            raise PermissionDenied
+        if booking.status != Booking.Status.PAID:
+            raise DjLodgingValidationError("This booking cannot be canceled!")
         return booking
 
     @classmethod
