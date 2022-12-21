@@ -1,3 +1,5 @@
+"""API module for the management of Lodgings."""
+
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework.permissions import IsAuthenticated
@@ -18,7 +20,10 @@ from djlodging.domain.lodgings.repositories import LodgingRepository
 
 
 class LodgingViewSet(ViewSet):
+    """ViewSet for the management of Lodgings."""
+
     def get_permissions(self):
+        """Set respective roles' permissions for ViewSet actions."""
         if self.action in ["list", "retrieve"]:
             self.permission_classes = (IsAuthenticated,)
         else:
@@ -34,6 +39,7 @@ class LodgingViewSet(ViewSet):
         summary="Add a lodging by partner",
     )
     def create(self, request):
+        """Create a new lodging."""
         input_serializer = LodgingCreateInputSerializer(data=request.data)
         input_serializer.is_valid(raise_exception=True)
         lodging = LodgingService.create(actor=request.user, **input_serializer.validated_data)
@@ -64,6 +70,7 @@ class LodgingViewSet(ViewSet):
         summary="List lodgings in a city available for given dates by any user",
     )
     def list(self, request):
+        """List lodgings according to the query_params."""
         lodgings = LodgingRepository.get_paginated_filtered_list(query_params=request.query_params)
         output_serializer = LodgingListPaginatedOutputSerializer(lodgings)
         return Response(data=output_serializer.data, status=HTTP_200_OK)
@@ -115,6 +122,7 @@ class LodgingViewSet(ViewSet):
         summary="Update lodging's details by its owner",
     )
     def update(self, request, pk):
+        """Update a lodging's details."""
         input_serializer = LodgingUpdateInputSerializer(data=request.data)
         input_serializer.is_valid(raise_exception=True)
         lodging = LodgingService.update(
@@ -140,5 +148,6 @@ class LodgingViewSet(ViewSet):
         summary="Delete lodging by its owner",
     )
     def delete(self, request, pk):
+        """Delete a lodging."""
         LodgingService.delete(actor=request.user, lodging_id=pk)
         return Response(status=HTTP_204_NO_CONTENT)
