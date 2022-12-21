@@ -1,3 +1,5 @@
+"""API module for the management of cities."""
+
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework.permissions import IsAdminUser
@@ -15,6 +17,8 @@ from djlodging.application_services.lodgings import CityService
 
 
 class CityViewSet(ViewSet):
+    """ViewSet for the cities APIs."""
+
     permission_classes = (IsAdminUser,)
 
     @extend_schema(
@@ -31,6 +35,7 @@ class CityViewSet(ViewSet):
         summary="Add a city by admin",
     )
     def create(self, request, country_pk):
+        """Create a new city."""
         incoming_data = CityCreateInputSerializer(data=request.data)
         incoming_data.is_valid(raise_exception=True)
         city = CityService.create(
@@ -54,6 +59,7 @@ class CityViewSet(ViewSet):
         summary="Get city's details by admin",
     )
     def retrieve(self, request, country_pk, pk):  # pylint:disable=unused-argument
+        """Get city's details."""
         city = CityService.retrieve(actor=request.user, city_id=pk)
         output_serializer = CityOutputSerializer(city)
         return Response(data=output_serializer.data, status=HTTP_200_OK)
@@ -73,6 +79,7 @@ class CityViewSet(ViewSet):
         summary="Edit city's details by admin",
     )
     def update(self, request, country_pk, pk):  # pylint:disable=unused-argument
+        """Update a city's details."""
         incoming_data = CityUpdateInputSerializer(data=request.data)
         incoming_data.is_valid(raise_exception=True)
         city = CityService.update(actor=request.user, city_id=pk, **incoming_data.validated_data)
@@ -96,6 +103,7 @@ class CityViewSet(ViewSet):
         summary="List all available cities in a country by admin",
     )
     def list(self, request, country_pk):
+        """List all cities in a country."""
         cities = CityService.get_paginated_list(
             actor=request.user, country_id=country_pk, query_params=request.query_params
         )
@@ -117,6 +125,7 @@ class CityViewSet(ViewSet):
         summary="Delete a city from the DB by admin",
     )
     def destroy(self, request, country_pk, pk):  # pylint:disable=unused-argument
+        """Delete a city."""
         incoming_data = CityUpdateInputSerializer(data=request.data)
         incoming_data.is_valid(raise_exception=True)
         CityService.delete(actor=request.user, city_id=pk)
