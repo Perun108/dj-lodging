@@ -1,3 +1,5 @@
+"""API module for management of countries."""
+
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework.permissions import IsAdminUser
@@ -15,6 +17,8 @@ from djlodging.application_services.lodgings import CountryService
 
 
 class CountryViewSet(ViewSet):
+    """ViewSet for countries API."""
+
     permission_classes = (IsAdminUser,)
 
     @extend_schema(
@@ -26,6 +30,7 @@ class CountryViewSet(ViewSet):
         summary="Add a country to the DB by admin",
     )
     def create(self, request):
+        """Create a country."""
         incoming_data = CountryCreateInputSerializer(data=request.data)
         incoming_data.is_valid(raise_exception=True)
         country = CountryService.create(actor=request.user, **incoming_data.validated_data)
@@ -48,6 +53,7 @@ class CountryViewSet(ViewSet):
         summary="Get country's details by admin",
     )
     def retrieve(self, request, pk):
+        """Get a country's details."""
         country = CountryService.retrieve(actor=request.user, country_id=pk)
         output_serializer = CountryOutputSerializer(country)
         return Response(data=output_serializer.data, status=HTTP_200_OK)
@@ -60,6 +66,7 @@ class CountryViewSet(ViewSet):
         summary="List all available countries by admin",
     )
     def list(self, request):
+        """List all countries."""
         countries = CountryService.get_paginated_list(
             actor=request.user, query_params=request.query_params
         )
@@ -82,6 +89,7 @@ class CountryViewSet(ViewSet):
         summary="Edit country's details by admin",
     )
     def update(self, request, pk):
+        """Update a country's details."""
         incoming_data = CountryUpdateInputSerializer(data=request.data)
         incoming_data.is_valid(raise_exception=True)
         country = CountryService.update(
@@ -106,5 +114,6 @@ class CountryViewSet(ViewSet):
         summary="Delete a country from the DB by admin",
     )
     def destroy(self, request, pk):
+        """Delete a country."""
         CountryService.delete(actor=request.user, country_id=pk)
         return Response(status=HTTP_204_NO_CONTENT)
