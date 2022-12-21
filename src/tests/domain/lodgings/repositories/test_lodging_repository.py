@@ -8,7 +8,12 @@ from pytest_django.asserts import assertQuerysetEqual
 from djlodging.domain.lodgings.models.review import Review
 from djlodging.domain.lodgings.repositories import LodgingRepository
 from tests.domain.bookings.factories import BookingFactory
-from tests.domain.lodgings.factories import CityFactory, LodgingFactory, ReviewFactory
+from tests.domain.lodgings.factories import (
+    CityFactory,
+    CountryFactory,
+    LodgingFactory,
+    ReviewFactory,
+)
 
 fake = Faker()
 
@@ -18,7 +23,8 @@ def test_get_list_with_available_and_unavailable_for_same_dates_succeeds():
     number_of_lodgings = 5
     number_of_bookings = 3
 
-    city = CityFactory()
+    country = CountryFactory()
+    city = CityFactory(country=country)
     number_of_people = 1
     number_of_rooms = 1
 
@@ -53,6 +59,7 @@ def test_get_list_with_available_and_unavailable_for_same_dates_succeeds():
         "number_of_people": number_of_people,
         "number_of_rooms": number_of_rooms,
         "city": city,
+        "country": country,
         "available_only": available_only,
     }
     result = LodgingRepository.get_filtered_list(query_params)
@@ -74,8 +81,8 @@ def test_get_list_with_available_and_unavailable_for_same_dates_succeeds():
 def test_get_list_with_available_and_unavailable_for_different_dates_succeeds():
     number_of_lodgings = 4
     number_of_bookings = 2
-
-    city = CityFactory()
+    country = CountryFactory()
+    city = CityFactory(country=country)
     number_of_people = 1
     number_of_rooms = 1
 
@@ -110,6 +117,7 @@ def test_get_list_with_available_and_unavailable_for_different_dates_succeeds():
         "number_of_people": number_of_people,
         "number_of_rooms": number_of_rooms,
         "city": city,
+        "country": country,
         "available_only": available_only,
     }
     result = LodgingRepository.get_filtered_list(query_params)
@@ -132,7 +140,8 @@ def test_get_list_with_only_available_for_same_dates_succeeds():
     number_of_lodgings = 5
     number_of_bookings = 3
 
-    city = CityFactory()
+    country = CountryFactory()
+    city = CityFactory(country=country)
     number_of_people = 1
     number_of_rooms = 1
 
@@ -169,6 +178,7 @@ def test_get_list_with_only_available_for_same_dates_succeeds():
         "number_of_people": number_of_people,
         "number_of_rooms": number_of_rooms,
         "city": city,
+        "country": country,
         "available_only": available_only,
     }
     result = LodgingRepository.get_filtered_list(query_params)
@@ -189,7 +199,8 @@ def test_get_list_with_only_available_for_different_dates_succeeds():
     number_of_lodgings = 5
     number_of_bookings = 3
 
-    city = CityFactory()
+    country = CountryFactory()
+    city = CityFactory(country=country)
     number_of_people = 1
     number_of_rooms = 1
 
@@ -225,6 +236,7 @@ def test_get_list_with_only_available_for_different_dates_succeeds():
         "number_of_people": number_of_people,
         "number_of_rooms": number_of_rooms,
         "city": city,
+        "country": country,
         "available_only": available_only,
     }
     result = LodgingRepository.get_filtered_list(query_params)

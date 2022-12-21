@@ -153,9 +153,9 @@ class LodgingRepository:
         )
 
         if city and country:
-            lodging_filter |= Q(city__name__exact=city, country__name__exact=country)
+            lodging_filter |= Q(city__name__exact=city, city__country__name__exact=country)
         elif country:
-            lodging_filter |= Q(country__name__exact=country)
+            lodging_filter |= Q(city__country__name__exact=country)
         else:
             raise DjLodgingValidationError(
                 "You must provide a city name with a country name! "

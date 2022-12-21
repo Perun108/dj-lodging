@@ -18,7 +18,12 @@ from djlodging.application_services.exceptions import WrongOwnerError
 from djlodging.domain.lodgings.models.lodging import Lodging
 from djlodging.domain.lodgings.repositories import LodgingRepository
 from tests.domain.bookings.factories import BookingFactory
-from tests.domain.lodgings.factories import CityFactory, LodgingFactory, ReviewFactory
+from tests.domain.lodgings.factories import (
+    CityFactory,
+    CountryFactory,
+    LodgingFactory,
+    ReviewFactory,
+)
 
 fake = Faker()
 
@@ -97,7 +102,8 @@ class TestLodgingViewSet:
         assert str(response.data["detail"]) == "You do not have permission to perform this action."
 
     def test_list_available_succeeds_1(self, user_api_client_pytest_fixture):
-        city = CityFactory()
+        country = CountryFactory()
+        city = CityFactory(country=country)
 
         # Create 3 lodgings
         lodgings = LodgingFactory.create_batch(
@@ -118,6 +124,7 @@ class TestLodgingViewSet:
 
         query_params = {
             "city": city,
+            "country": country,
             "number_of_people": 1,
             "number_of_rooms": 1,
             # Check for availability for 7 days from today
@@ -133,7 +140,8 @@ class TestLodgingViewSet:
         assert response.data["count"] == 1
 
     def test_list_available_succeeds_2(self, user_api_client_pytest_fixture):
-        city = CityFactory()
+        country = CountryFactory()
+        city = CityFactory(country=country)
 
         lodgings = LodgingFactory.create_batch(
             size=3, city=city, number_of_people=1, number_of_rooms=1
@@ -150,6 +158,7 @@ class TestLodgingViewSet:
 
         query_params = {
             "city": city,
+            "country": country,
             "number_of_people": 1,
             "number_of_rooms": 1,
             "date_from": date_from1 + timezone.timedelta(days=4),
@@ -163,7 +172,8 @@ class TestLodgingViewSet:
         assert response.data["count"] == 3
 
     def test_list_available_succeeds_3(self, user_api_client_pytest_fixture):
-        city = CityFactory()
+        country = CountryFactory()
+        city = CityFactory(country=country)
 
         lodgings = LodgingFactory.create_batch(
             size=3, city=city, number_of_people=1, number_of_rooms=1
@@ -180,6 +190,7 @@ class TestLodgingViewSet:
 
         query_params = {
             "city": city,
+            "country": country,
             "number_of_people": 1,
             "number_of_rooms": 1,
             "date_from": date_from1,
@@ -194,7 +205,8 @@ class TestLodgingViewSet:
 
     def test_list_available_succeeds_4(self, user_api_client_pytest_fixture):
         size = 3
-        city = CityFactory()
+        country = CountryFactory()
+        city = CityFactory(country=country)
         lodgings = LodgingFactory.create_batch(
             size=size, city=city, number_of_people=1, number_of_rooms=1
         )
@@ -207,6 +219,7 @@ class TestLodgingViewSet:
 
         query_params = {
             "city": city,
+            "country": country,
             "number_of_people": 1,
             "number_of_rooms": 1,
             "date_from": date_from,
@@ -221,7 +234,8 @@ class TestLodgingViewSet:
 
     def test_list_all_succeeds_1(self, user_api_client_pytest_fixture):
         size = 3
-        city = CityFactory()
+        country = CountryFactory()
+        city = CityFactory(country=country)
         lodgings = LodgingFactory.create_batch(
             size=size, city=city, number_of_people=1, number_of_rooms=1
         )
@@ -234,6 +248,7 @@ class TestLodgingViewSet:
 
         query_params = {
             "city": city,
+            "country": country,
             "number_of_people": 1,
             "number_of_rooms": 1,
             "date_from": date_from,
