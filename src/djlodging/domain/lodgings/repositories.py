@@ -94,7 +94,7 @@ class LodgingRepository:
         country = query_params.get("country")
         city = query_params.get("city")
 
-        if not (country and city) or country:
+        if not (country and city or country):
             raise DjLodgingValidationError(
                 "You must provide either a city with a country or at least a country!"
             )
