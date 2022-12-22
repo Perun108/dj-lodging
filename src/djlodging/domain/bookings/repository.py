@@ -32,7 +32,7 @@ class BookingRepository:
         return paginate_queryset(sorted_bookings, query_params)
 
     @classmethod
-    def get_by_id(cls, booking_id: UUID) -> Booking:
+    def get_by_id(cls, booking_id: Union[UUID, str]) -> Booking:
         return Booking.objects.get(id=booking_id)
 
     @classmethod
@@ -54,7 +54,7 @@ class BookingRepository:
         return paginate_queryset(sorted_qs, query_params)
 
     @classmethod
-    def delete_by_id(cls, booking_id: UUID) -> tuple:
+    def delete_by_id(cls, booking_id: Union[UUID, str]) -> tuple:
         booking = cls.get_by_id(booking_id)
         return booking.delete()
 

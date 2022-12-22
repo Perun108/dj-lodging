@@ -1,3 +1,4 @@
+from typing import Union
 from uuid import UUID
 
 from django.contrib.auth import get_user_model
@@ -21,7 +22,7 @@ class UserRepository:
         user.save()
 
     @classmethod
-    def get_by_id(cls, user_id: UUID) -> UserModel:
+    def get_by_id(cls, user_id: Union[UUID, str]) -> UserModel:
         return User.objects.get(id=user_id)
 
     @classmethod
@@ -57,7 +58,7 @@ class UserRepository:
             raise UserDoesNotExist(message=WRONG_EMAIL_MESSAGE) from exc
 
     @classmethod
-    def delete_by_id(cls, user_id: UUID) -> tuple:
+    def delete_by_id(cls, user_id: Union[UUID, str]) -> tuple:
         user = cls.get_by_id(user_id)
         return user.delete()
 
