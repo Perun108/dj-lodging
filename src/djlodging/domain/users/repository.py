@@ -6,6 +6,7 @@ from django.utils.timezone import now
 from djlodging.domain.users.constants import (
     USER_DOES_NOT_EXIST_MESSAGE,
     USER_DOES_NOT_EXIST_OR_WAS_DELETED_MESSAGE,
+    WRONG_EMAIL_MESSAGE,
 )
 from djlodging.domain.users.exceptions import UserDoesNotExist
 from djlodging.domain.users.models import PaymentProviderUser
@@ -50,7 +51,10 @@ class UserRepository:
 
     @classmethod
     def get_by_email(cls, email: str) -> UserModel:
-        return User.objects.get(email=email)
+        try:
+            return User.objects.get(email=email)
+        except User.DoesNotExist as exc:
+            raise UserDoesNotExist(message=WRONG_EMAIL_MESSAGE) from exc
 
     @classmethod
     def delete_by_id(cls, user_id: UUID) -> tuple:
