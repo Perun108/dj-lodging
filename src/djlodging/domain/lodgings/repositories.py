@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from uuid import UUID
 
 from django.db.models import Avg, Case, Q, QuerySet, Value, When
@@ -13,6 +13,9 @@ from djlodging.domain.lodgings.models.city import City
 from djlodging.domain.lodgings.models.lodging import Lodging
 from djlodging.domain.lodgings.models.review import Review
 from djlodging.domain.users.models import User
+
+if TYPE_CHECKING:
+    from django.db.models.query import ValuesQuerySet
 
 
 class CountryRepository:
@@ -82,8 +85,8 @@ class LodgingRepository:
 
     @classmethod
     def get_filtered_list(cls, query_params: dict) -> QuerySet[Lodging]:
-        date_from = query_params.get("date_from")
-        date_to = query_params.get("date_to")
+        date_from: date = query_params["date_from"]
+        date_to: date = query_params["date_to"]
         number_of_people = int(query_params.get("number_of_people", 1))
         number_of_rooms = int(query_params.get("number_of_rooms", 1))
         kind = query_params.get("kind", "")
@@ -91,14 +94,17 @@ class LodgingRepository:
         country = query_params.get("country")
         city = query_params.get("city")
 
-        if not (country or city):
-            raise DjLodgingValidationError("You must provide either a city or a country!")
+        if not (country and city) or country:
+            raise DjLodgingValidationError(
+                "You must provide either a city with a country or at least a country!"
+            )
 
         lodging_filter = cls._construct_lodging_filter(
             number_of_people, number_of_rooms, kind, country, city
         )
+        filtered_lodgings_ids_list = cls._get_list_of_filtered_lodgings_ids(lodging_filter)
         query_expression = cls._generate_query_expression_for_filter(
-            date_from, date_to, lodging_filter
+            date_from, date_to, filtered_lodgings_ids_list
         )
         filtered_lodgings = cls._get_filtered_lodgings(available_only, query_expression)
         # Add average_rating to each lodging
@@ -106,17 +112,53 @@ class LodgingRepository:
         return result
 
     @classmethod
-    def _generate_query_expression_for_filter(
-        cls, date_from: date, date_to: date, lodging_filter: Q
+    def _construct_lodging_filter(
+        cls,
+        number_of_people: int,
+        number_of_rooms: int,
+        kind: str,
+        country: Optional[str],
+        city: Optional[str],
     ) -> Q:
-        filtered_lodgings = Lodging.objects.filter(lodging_filter)
-        filtered_lodgings_ids_list = filtered_lodgings.values_list("id", flat=True)
+        lodging_filter = Q(
+            number_of_people__gte=number_of_people,
+            number_of_rooms__exact=number_of_rooms,
+        )
+        if city and country:
+            lodging_filter |= Q(city__name__exact=city, city__country__name__exact=country)
+        elif country:
+            lodging_filter |= Q(city__country__name__exact=country)
+        else:
+            raise DjLodgingValidationError(
+                "You must provide a city name with a country name! "
+                "Or at least the name of the country."
+            )
+        if kind:
+            lodging_filter |= Q(kind__exact=kind)
+        return lodging_filter
+
+    @classmethod
+    def _generate_query_expression_for_filter(
+        cls,
+        date_from: date,
+        date_to: date,
+        filtered_lodgings_ids_list: "ValuesQuerySet[Lodging, Any]",
+    ) -> Q:
+
         query_expression = (
             ~Q(booking__lodging__id__in=filtered_lodgings_ids_list)
             | Q(id__in=filtered_lodgings_ids_list) & Q(booking__date_to__lte=date_from)
             | Q(id__in=filtered_lodgings_ids_list) & Q(booking__date_from__gte=date_to)
         )
         return query_expression
+
+    @classmethod
+    def _get_list_of_filtered_lodgings_ids(
+        cls, lodging_filter: Q
+    ) -> "ValuesQuerySet[Lodging, Any]":
+        filtered_lodgings = Lodging.objects.filter(lodging_filter)
+        filtered_lodgings_ids_list = filtered_lodgings.values_list("id", flat=True)
+        return filtered_lodgings_ids_list
 
     @classmethod
     def _get_filtered_lodgings(
@@ -137,34 +179,6 @@ class LodgingRepository:
             )
 
         return filtered_lodgings
-
-    @classmethod
-    def _construct_lodging_filter(
-        cls,
-        number_of_people: int,
-        number_of_rooms: int,
-        kind: str,
-        country: Optional[str],
-        city: Optional[str],
-    ) -> Q:
-        lodging_filter = Q(
-            number_of_people__gte=number_of_people,
-            number_of_rooms__exact=number_of_rooms,
-        )
-
-        if city and country:
-            lodging_filter |= Q(city__name__exact=city, city__country__name__exact=country)
-        elif country:
-            lodging_filter |= Q(city__country__name__exact=country)
-        else:
-            raise DjLodgingValidationError(
-                "You must provide a city name with a country name! "
-                "Or at least the name of the country."
-            )
-
-        if kind:
-            lodging_filter |= Q(kind__exact=kind)
-        return lodging_filter
 
     @classmethod
     def _annotate_lodgings_with_average_ratings(
