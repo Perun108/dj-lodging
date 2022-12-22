@@ -36,22 +36,25 @@ class BookingService:
             raise DjLodgingValidationError("The dates are invalid")
 
     @classmethod
-    def _check_lodging_availability(
-        cls, lodging_id: UUID, date_from: date, date_to: date
-    ) -> Lodging:
-        lodging = LodgingRepository.get_by_id(lodging_id)
+    def _is_lodging_available_for_given_dates(
+        cls, lodging: Lodging, date_from: date, date_to: date
+    ) -> bool:
         for booking in lodging.booking.all():
             if booking.status != Booking.Status.CANCELED and (
                 booking.date_from <= date_from < booking.date_to
                 or booking.date_from < date_to <= booking.date_to
             ):
-                raise LodgingAlreadyBookedError
-        return lodging
+                return False
+        return True
 
     @classmethod
     def create(cls, lodging_id: UUID, user: User, date_from: date, date_to: date) -> Booking:
         cls._validate_dates(date_from, date_to)
-        lodging = cls._check_lodging_availability(lodging_id, date_from, date_to)
+        lodging = LodgingRepository.get_by_id(lodging_id)
+
+        if not cls._is_lodging_available_for_given_dates(lodging, date_from, date_to):
+            raise LodgingAlreadyBookedError
+
         booking = Booking(
             lodging=lodging,
             user=user,
@@ -72,7 +75,8 @@ class BookingService:
     def pay(
         cls, actor, booking_id: UUID, currency: str = "usd", capture_method: str = "automatic"
     ) -> str:
-        booking = cls._validate_booking_for_payment(actor, booking_id)
+        booking = BookingRepository.get_by_id(booking_id)
+        cls._validate_booking_for_payment(actor, booking)
         metadata = {"booking_id": booking.id}
         payment_intent = PaymentService.create_payment(
             actor, booking.lodging.price, metadata, currency, capture_method
@@ -81,16 +85,13 @@ class BookingService:
         return payment_intent.client_secret
 
     @classmethod
-    def _validate_booking_for_payment(cls, actor: User, booking_id: UUID) -> Booking:
-        booking = BookingRepository.get_by_id(booking_id)
+    def _validate_booking_for_payment(cls, actor: User, booking: Booking) -> Booking:
         if actor != booking.user:
             raise PermissionDenied
 
         if booking.payment_expiration_time < now():
-            delete_expired_unpaid_booking.apply_async(args=[booking_id])
+            delete_expired_unpaid_booking.apply_async(args=[str(booking.id)])
             raise PaymentExpirationTimePassed
-
-        return booking
 
     @classmethod
     def _set_booking_payment_intent_id(cls, booking: Booking, payment_intent_id: str) -> None:
@@ -106,7 +107,8 @@ class BookingService:
 
     @classmethod
     def cancel(cls, actor: User, booking_id: UUID) -> Booking:
-        booking = cls._validate_booking_for_cancellation(actor, booking_id)
+        booking = BookingRepository.get_by_id(booking_id)
+        cls._validate_booking_for_cancellation(actor, booking)
 
         PaymentService.create_refund(
             payment_intent_id=booking.payment_intent_id,
@@ -119,13 +121,11 @@ class BookingService:
         return booking
 
     @classmethod
-    def _validate_booking_for_cancellation(cls, actor: User, booking_id: UUID) -> Booking:
-        booking = BookingRepository.get_by_id(booking_id)
+    def _validate_booking_for_cancellation(cls, actor: User, booking: Booking) -> Booking:
         if actor != booking.user:
             raise PermissionDenied
         if booking.status != Booking.Status.PAID:
             raise DjLodgingValidationError("This booking cannot be canceled!")
-        return booking
 
     @classmethod
     def get_filtered_paginated_list(cls, actor: User, query_params: dict) -> dict:
